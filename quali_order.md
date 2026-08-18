@@ -1,0 +1,16 @@
+- RAG definition: RAG (Lewis 2020), REALM (Guu, 2020)
+- Limitation of LLM and utility of augmentation
+- Parametric (implicit) vs No parametric (explicit) knowledge
+- Training reasoning models: DeepSeek-R1 (DeepSeek-AI 2025), Tulu 3
+- Interpretation of paramaters as connection of artificial neurons 
+- Hallucination: Unified Definition of Hallucination (Liu, 2026)
+  - world model definition
+  - intrinsic hallucination
+  - planning mistake
+  - error taxonomy: let's try to use another example similar to Sherlock Holmes (to avoid false copy warnings in out text)
+    - state error
+    - execution error
+    - goal misalignment
+  - Halluworld
+- Metrics:
+  - recall@k
