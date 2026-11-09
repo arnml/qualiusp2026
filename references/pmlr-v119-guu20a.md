@@ -30,8 +30,8 @@ proposal
 - Retrieval-Augmented Language Model (REALM) pre-training
   - end-to-end architecture: retriver and encoder in the same model, retrived document is latent variable
   - key intuition: performance-based
-  - 
-
+  - retriver ( Maximum Inner Product Search MIPS) asynchronously updated
+- Finetunning in QA tasks
 **Architecture:**
 
 ```mermaid

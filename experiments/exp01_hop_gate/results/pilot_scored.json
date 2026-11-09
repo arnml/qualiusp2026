@@ -1,0 +1,72 @@
+[
+ {
+  "id": "5a77b0395542997042120ae1",
+  "question": "Which star in the movie Hush was born April 20, 1949?",
+  "gold": "Jessica Lange",
+  "haiku_hop": "Jessica Lange",
+  "f1_haiku_hop": 1.0,
+  "tok_hop": 273,
+  "paper_k10_pred": "Jessica Lange",
+  "paper_k10_f1": "1.0",
+  "paper_k10_tok": "1185",
+  "paper_ng030_pred": "Jessica Lange",
+  "paper_ng030_f1": "1.0",
+  "paper_ng030_tok": "153"
+ },
+ {
+  "id": "5adcd7325542994d58a2f6f6",
+  "question": "What year did the person who beat Alex Clark for mayor in 1967 stop serving as a US senator?",
+  "gold": "2013",
+  "haiku_hop": "2013",
+  "f1_haiku_hop": 1.0,
+  "tok_hop": 296,
+  "paper_k10_pred": "2013",
+  "paper_k10_f1": "1.0",
+  "paper_k10_tok": "907",
+  "paper_ng030_pred": "2013",
+  "paper_ng030_f1": "1.0",
+  "paper_ng030_tok": "302"
+ },
+ {
+  "id": "5a8e3ea95542995a26add48d",
+  "question": "The director of the romantic comedy \"Big Stone Gap\" is based in what New York city?",
+  "gold": "Greenwich Village, New York City",
+  "haiku_hop": "Greenwich Village",
+  "f1_haiku_hop": 0.571,
+  "tok_hop": 403,
+  "paper_k10_pred": "Greenwich Village, New York City",
+  "paper_k10_f1": "1.0",
+  "paper_k10_tok": "1388",
+  "paper_ng030_pred": "Greenwich Village",
+  "paper_ng030_f1": "0.5714285714285715",
+  "paper_ng030_tok": "631"
+ },
+ {
+  "id": "5ac3d9135542995c82c4ac4c",
+  "question": "What is the population of the city that Munsonville is in the northwest corner of?",
+  "gold": "729 at the 2010 census",
+  "haiku_hop": "729",
+  "f1_haiku_hop": 0.4,
+  "tok_hop": 405,
+  "paper_k10_pred": "729",
+  "paper_k10_f1": "0.4",
+  "paper_k10_tok": "1952",
+  "paper_ng030_pred": "729",
+  "paper_ng030_f1": "0.4",
+  "paper_ng030_tok": "812"
+ },
+ {
+  "id": "5a849cc95542997175ce1efa",
+  "question": "In what city did Brian Mannal convene when he was a member of the 188th and 189th General Court?",
+  "gold": "Boston",
+  "haiku_hop": "Boston",
+  "f1_haiku_hop": 1.0,
+  "tok_hop": 456,
+  "paper_k10_pred": "Boston",
+  "paper_k10_f1": "1.0",
+  "paper_k10_tok": "1211",
+  "paper_ng030_pred": "Boston",
+  "paper_ng030_f1": "1.0",
+  "paper_ng030_tok": "462"
+ }
+]

@@ -1,0 +1,104 @@
+{
+ "selector": "hop@0.9",
+ "items": [
+  {
+   "id": "5a77b0395542997042120ae1",
+   "question": "Which star in the movie Hush was born April 20, 1949?",
+   "answer": "Jessica Lange",
+   "type": "bridge",
+   "hop_sel": [
+    8,
+    0
+   ],
+   "ng_sel": [
+    8
+   ],
+   "gold_idx": [
+    0,
+    8
+   ],
+   "prompt_tokens": 273,
+   "prompt": "Answer the HotpotQA question using only the provided context.\n\nRules:\n- Output only the final answer.\n- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.\n- Otherwise output a short span or entity name only.\n- Do not include any explanation.\n- Do not repeat the question.\n- If multiple positions/titles are mentioned, output only the one that\n  directly answers the question.\n\nContext:\n[1] Hush (1998 film). Hush is a 1998 American thriller starring Gwyneth Paltrow, Johnathon Schaech, and Jessica Lange.\n\n[2] Jessica Lange. Jessica Phyllis Lange ( ; born April 20, 1949) is an American actress who has received worldwide acclaim for her work in film, theater, and television. The recipient of several awards, including two Academy Awards, one Tony Award, three Emmy Awards, five Golden Globe Awards, one Screen Actors Guild Award, and three Dorian Awards; in 1998, \"Entertainment Weekly\" listed Lange among the 25 Greatest Actresses of the 1990s. In 2016, Lange became the twenty-second thespian in history to achieve the Triple Crown of Acting.\n\nQuestion: Which star in the movie Hush was born April 20, 1949?\n\nAnswer:"
+  },
+  {
+   "id": "5adcd7325542994d58a2f6f6",
+   "question": "What year did the person who beat Alex Clark for mayor in 1967 stop serving as a US senator?",
+   "answer": "2013",
+   "type": "bridge",
+   "hop_sel": [
+    9,
+    3
+   ],
+   "ng_sel": [
+    9
+   ],
+   "gold_idx": [
+    3,
+    9
+   ],
+   "prompt_tokens": 296,
+   "prompt": "Answer the HotpotQA question using only the provided context.\n\nRules:\n- Output only the final answer.\n- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.\n- Otherwise output a short span or entity name only.\n- Do not include any explanation.\n- Do not repeat the question.\n- If multiple positions/titles are mentioned, output only the one that\n  directly answers the question.\n\nContext:\n[1] Alex Clark. Republican Alex M. Clark (March 22, 1916 \u2013 February 14, 1991) was an American politician. He became the youngest mayor of Indianapolis in 1951. He served one term and later ran again in 1967, losing in the primary to eventual winner Richard Lugar. He was a World War II veteran, and a former POW. In 1956 he and a number of friends formed the Wyoming Antelope Hunters Club in Indianapolis, which is still an active social club today. Prior to being mayor, Clark was a deputy prosecutor and judge in Marion County, Indiana.\n\n[2] Richard Lugar. Richard Green \"Dick\" Lugar (born April 4, 1932) is an American politician and member of the Republican Party who served as a United States senator, representing Indiana from 1977 to 2013.\n\nQuestion: What year did the person who beat Alex Clark for mayor in 1967 stop serving as a US senator?\n\nAnswer:"
+  },
+  {
+   "id": "5a8e3ea95542995a26add48d",
+   "question": "The director of the romantic comedy \"Big Stone Gap\" is based in what New York city?",
+   "answer": "Greenwich Village, New York City",
+   "type": "bridge",
+   "hop_sel": [
+    9,
+    8,
+    3
+   ],
+   "ng_sel": [
+    9,
+    8
+   ],
+   "gold_idx": [
+    3,
+    9
+   ],
+   "prompt_tokens": 403,
+   "prompt": "Answer the HotpotQA question using only the provided context.\n\nRules:\n- Output only the final answer.\n- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.\n- Otherwise output a short span or entity name only.\n- Do not include any explanation.\n- Do not repeat the question.\n- If multiple positions/titles are mentioned, output only the one that\n  directly answers the question.\n\nContext:\n[1] Big Stone Gap (film). Big Stone Gap is a 2014 American drama romantic comedy film written and directed by Adriana Trigiani and produced by Donna Gigliotti for Altar Identity Studios, a subsidiary of Media Society. Based on Trigiani's 2000 best-selling novel of the same name, the story is set in the actual Virginia town of Big Stone Gap circa 1970s. The film had its world premiere at the Virginia Film Festival on November 6, 2014.\n\n[2] I Love NY (2015 film). I Love NY, also known as I Love New Year, is an Indian romantic comedy film directed by Radhika Rao and Vinay Sapru starring Sunny Deol and Kangana Ranaut in lead roles. The film is produced by Bhushan Kumar and Krishan Kumar under the banner of Super Cassettes Industries Ltd. The film was extensively shot in Mumbai, New York City and Bangkok. The main plot was taken from the Russian romantic comedy \"The Irony of Fate\" (1976). After numerous delays, the film released on 10 July 2015.\n\n[3] Adriana Trigiani. Adriana Trigiani is an Italian American best-selling author of sixteen books, television writer, film director, and entrepreneur based in Greenwich Village, New York City. Trigiani has published a novel a year since 2000.\n\nQuestion: The director of the romantic comedy \"Big Stone Gap\" is based in what New York city?\n\nAnswer:"
+  },
+  {
+   "id": "5ac3d9135542995c82c4ac4c",
+   "question": "What is the population of the city that Munsonville is in the northwest corner of?",
+   "answer": "729 at the 2010 census",
+   "type": "bridge",
+   "hop_sel": [
+    9,
+    4,
+    7
+   ],
+   "ng_sel": [
+    9
+   ],
+   "gold_idx": [
+    4,
+    9
+   ],
+   "prompt_tokens": 405,
+   "prompt": "Answer the HotpotQA question using only the provided context.\n\nRules:\n- Output only the final answer.\n- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.\n- Otherwise output a short span or entity name only.\n- Do not include any explanation.\n- Do not repeat the question.\n- If multiple positions/titles are mentioned, output only the one that\n  directly answers the question.\n\nContext:\n[1] Munsonville, New Hampshire. Munsonville is an unincorporated community in the town of Nelson in Cheshire County, New Hampshire. It is located in the northwestern corner of Nelson, around the outlet of Granite Lake.\n\n[2] Nelson, New Hampshire. Nelson is a town in Cheshire County, New Hampshire, United States. The population was 729 at the 2010 census. Nelson includes the village of Munsonville.\n\n[3] Sullivan's Corner Historic District. Sullivan's Corner Historic District is a historic district encompassing a historical rural crossroads in northeastern Norfolk, Massachusetts. The 18 acre district includes Norfolk's oldest cemetery, established c. 1736, and five 18th- to early 20th-century buildings currently used as residences. The core of the old cemetery is on the northeast corner of Seekonk and Main Streets, and the cemetery was enlarged north and east from that point in the 19th century. Four of the five houses in the district face the cemetery across Seekonk Street; the fifth, 1 Needham Street, lies across Main Street at the corner, and is one of Norfolk's best-preserved Greek Revival buildings. The building on the corner's northwest corner, Sullivan's Store, was built c. 1913, and is still somewhat recognizable as a corner store of the period, despite its conversion to residential use. It is Norfolk's only commercial building from that period.\n\nQuestion: What is the population of the city that Munsonville is in the northwest corner of?\n\nAnswer:"
+  },
+  {
+   "id": "5a849cc95542997175ce1efa",
+   "question": "In what city did Brian Mannal convene when he was a member of the 188th and 189th General Court?",
+   "answer": "Boston",
+   "type": "bridge",
+   "hop_sel": [
+    3,
+    5,
+    2
+   ],
+   "ng_sel": [
+    3
+   ],
+   "gold_idx": [
+    2,
+    3
+   ],
+   "prompt_tokens": 456,
+   "prompt": "Answer the HotpotQA question using only the provided context.\n\nRules:\n- Output only the final answer.\n- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.\n- Otherwise output a short span or entity name only.\n- Do not include any explanation.\n- Do not repeat the question.\n- If multiple positions/titles are mentioned, output only the one that\n  directly answers the question.\n\nContext:\n[1] Brian Mannal. Brian Mannal is an American politician, attorney, and artist from the Commonwealth of Massachusetts. Mannal was a member of the 188th and 189th General Court of the Commonwealth of Massachusetts state legislature, representing the \"Second Barnstable District\" in the Massachusetts House of Representatives. The Second Barnstable District is located on Cape Cod, and includes Barnstable Precincts 2-10 & 13 and Yarmouth Precincts 5 & 6. Mannal is a member of the Democratic Party.\n\n[2] List of Massachusetts Senate delegations. The Massachusetts Senate is the upper house of the Massachusetts General Court, the bicameral state legislature of the Commonwealth of Massachusetts. The Senate comprises 40 elected members from 40 single-member senatorial districts in the state. Descended from the colonial legislature, the current Massachusetts Senate was established in June 1780 upon the adoption of the Massachusetts Constitution. The first General Court met in October 1780 and consisted of one-year elected terms for both houses. This was expanded to two-year terms starting with the 142nd General Court in January 1921. The current delegation is the 187th General Court (2011\u20132012), consisting of 36 Democrats (D) and 4 Republicans (R).\n\n[3] Massachusetts House of Representatives. The Massachusetts House of Representatives is the lower house of the Massachusetts General Court, the state legislature of the Commonwealth of Massachusetts. It is composed of 160 members elected from 12 counties each divided into single-member electoral districts across the Commonwealth. The House of Representatives convenes at the Massachusetts State House in Boston.\n\nQuestion: In what city did Brian Mannal convene when he was a member of the 188th and 189th General Court?\n\nAnswer:"
+  }
+ ]
+}

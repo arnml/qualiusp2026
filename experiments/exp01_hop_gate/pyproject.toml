@@ -1,0 +1,15 @@
+[project]
+name = "exp01-hop-gate"
+version = "0.1.0"
+description = "Option 1: hop-aware Noise-Gate on HotpotQA distractor (training-free, cached embeddings)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "sentence-transformers>=3.0",
+    "tiktoken>=0.8",
+]
+
+[tool.uv]
+package = false
