@@ -97,3 +97,20 @@ PI framing: **"similar score with fewer neurons or FLOPs is good; it is the same
 - **Reported for every selector:** encoder GFLOPs, encoder parameters, removed heads/neurons/layers, and later CPU latency after physical pruning.
 - **Stage 1 under this framing:** Astra and Wanda reach the same quality (0.946 vs 0.945, McNemar p = 1.0) at ~23.8% fewer FLOPs than A1. A good result in itself (same selector, cheaper), but not cheaper than Wanda.
 - **Stage 2:** B = 10 passes, turn cap 80, same prompt except the `/work` → `WORK`/`NOTES` fix (see README deviation log).
+
+## Amendment before stage 3 (2026-11-12, recorded before the stage 3 run)
+
+**Evidence from stages 1–2:** at the 1-point target, Astra ties Wanda in FLOPs at equal quality (stage 1: ~29.8 vs 29.90 GF; stage 2: 28.56 vs 28.57 GF), with 2–3% fewer params. Both stages ended 1.3–1.9 points below A1. Wanda is **lossless at 85% FLOPs** (dev1000 0.959 = A1 at 33.22 GF; 80% gives 0.953).
+
+**PI decision:** run stage 3 (B = 50, turn cap 200), retargeted to the **lossless regime** (proposed by Claude, accepted by the PI):
+- **Prompt:** `prompt_trackC_s3.md`, the same as stage 2 except that the quality target is "within **0.5** points of the unedited model" (was 1 point), with a note that lossy edits are scored on the baseline cost curve. Astra is **not** told the baseline results.
+- **Harness fix:** the end-of-budget and handoff messages no longer mention `/work` (they use `NOTES` / current removals).
+
+**Pre-registered evaluation of the stage 3 final edit:**
+1. **Primary, cost at equal quality:** dev1000 both-gold@3 of the final edit vs a dense Wanda curve on dev1000 (fractions 0.75, 0.775, 0.80, 0.825, 0.85, 0.875, 0.90, plus the existing ones). Find the FLOPs Wanda needs for the same quality (linear interpolation between neighbouring fractions).
+   - **Clear win:** Astra needs ≥ 2.0 GF (5% of A1) fewer than Wanda.
+   - **Tie:** the difference is under 2.0 GF.
+   - **Loss:** Wanda needs ≥ 2.0 GF fewer.
+2. **Lossless check:** the final edit's dev1000 ≥ 0.954 (A1 0.959 − 0.5).
+3. **Paired McNemar** vs Wanda at Astra's FLOPs (dev1000). Encoder params of both.
+4. **Test, only once, at the end:** 400 test questions both-gold@3, and gpt-5.4-mini F1 with top-3 contexts for A1, Astra's edit and Wanda at the same FLOPs (`exp02_cross_encoder/generate.py` pattern, ~1,200 calls). CPU latency after physical pruning.

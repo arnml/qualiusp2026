@@ -389,7 +389,7 @@ def main():
         status = (f"Passes left: {left}/{args.budget}. Turn {turn}/{args.turn_cap}.")
         if left == 0:
             status += (" The forward-pass budget is used up. Code still runs (forward() is refused). "
-                       "Make sure /work/edited holds your final edit, then reply WITHOUT a code block "
+                       "Make sure your current removals are your final edit, then reply WITHOUT a code block "
                        "with your final explanation (mechanism, changes, evidence).")
         msg = f"OUTPUT:\n```\n{out}\n```\n{status}"
         since_handoff += 1
@@ -398,7 +398,7 @@ def main():
             since_handoff = 0
             notes = (run / "work" / "notes.md").read_text(encoding="utf-8")[-20000:]
             msg = (prompt + "\n\n---\nHANDOFF: this continues an earlier session. Your notes "
-                   f"(/work/notes.md):\n{notes}\n\nCurrent edit: kernel `edited()`; {status}\n"
+                   f"(the NOTES file):\n{notes}\n\nCurrent edit: kernel `edited()`; {status}\n"
                    f"Last output:\n```\n{out[:3000]}\n```")
     kernel.p.kill()
     final = el.EditState.load(run / "work" / "edited", args.track)
