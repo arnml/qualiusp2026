@@ -1,0 +1,4 @@
+models/
+runs/*/kernel_tmp/
+.venv/
+__pycache__/
