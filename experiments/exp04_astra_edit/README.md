@@ -98,9 +98,27 @@ Everything worked:
 
 **Readout:** Astra meets the ≤1-point target on held-out questions (−0.7) and is above the best baseline at equal FLOPs (+1.3 points over Wanda). But 1.3 points is 4 questions out of 300. The 1000-question dev check is running; see below.
 
-**Full dev (1000 questions):** Astra stage 1 = **0.946** both-gold@3. Unedited A1 and the matched baselines on the same 1000 questions are *running* (`baselines.py --eval-n 1000 --fractions 0.7616` → `results/baselines_dev1000.json`). The first 300 dev questions are easier than the full set, so compare only within the same set.
+**Full dev (1000 questions; `results/baselines_dev1000_matched_s1.json`):**
 
-**Stage gate (pre-registered):** go to stage 2 if Astra ≥ the best baseline at equal FLOPs on dev. On dev300 it holds (0.963 vs 0.950). Final decision after the dev1000 comparison.
+| Selector | GFLOPs | heads / neurons removed | dev1000 both-gold@3 | vs A1 |
+|---|---|---|---|---|
+| A1 unedited | 39.26 | — | 0.959 | — |
+| **Astra stage 1** | 29.90 | 0 / 3,584 | **0.946** | −1.3 |
+| Wanda-style | 29.78 | 19 / 2,147 | 0.945 | −1.4 |
+| Taylor | 29.77 | 23 / 1,839 | 0.923 | −3.6 |
+| Random | 29.90 | 16 / 2,334 | 0.895 | −6.4 |
+| Layer drop | 26.34 | 2 layers | 0.291 | −66.8 |
+
+**Readout (honest):**
+- On 1000 questions, **Astra ties with Wanda** (0.946 vs 0.945, one question apart). The dev300 advantage (+1.3) does not hold up at the larger sample.
+- Both lose ~1.3 points, slightly more than the 1-point target.
+- **The two reach the same quality with different solutions:** Astra removed neurons only and kept every head; Wanda removed 19 heads plus fewer neurons. That supports Astra's own finding that heads matter more than their attention patterns suggest.
+- Both are clearly better than Taylor and random.
+- A paired McNemar test (Astra vs Wanda, per question) is running.
+
+**Stage gate (pre-registered):** go to stage 2 if Astra ≥ the best baseline at equal FLOPs on dev.
+- Formally met (0.946 ≥ 0.945), but it's a **tie**, not an advantage.
+- Stage 2 (B = 10) tests whether more passes let Astra go *beyond* Wanda, for example by compressing further at the same quality.
 
 ## Harness deviations log
 
