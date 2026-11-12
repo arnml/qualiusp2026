@@ -29,16 +29,19 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
 - **Dry run** `runs/dry2` passed every check. A1 practice both-gold@3 = 0.945. A full practice pass (1,992 pairs, both models) takes **~5 min on CPU**, so B = 50 means hours of forward time.
 - **Running when this was written:** `uv run python baselines.py --eval-n 300` (log `results_baselines_log.txt`, output `results/baselines_dev300.json`). Layer drop, Taylor, Wanda-style and random pruning at FLOPs fractions 0.9–0.5 on 300 dev questions.
 
-**Partial baseline results** (2026-11-12, 6 of 21 configs; dev both-gold@3, 300 questions; A1 unedited = 0.970 at 39.26 GFLOPs):
+**Partial baseline results** (2026-11-12, 14 of 21 configs; dev both-gold@3, 300 questions; A1 unedited = 0.970 at 39.26 GFLOPs; the target fraction is approximate, actual GFLOPs are in the json):
 
-| Method | ~90% FLOPs | ~80% FLOPs |
-|---|---|---|
-| Layer drop | 0.767 (drop layer 5) | 0.290 (drop layers 4–5) |
-| Taylor | 0.943 | pending |
-| Wanda-style | **0.970** (3 heads + 1,270 neurons removed, no loss) | pending |
-| Random | 0.953 | pending |
+| Method | ~90% FLOPs | ~80% | ~70% | ~60% | ~50% |
+|---|---|---|---|---|---|
+| Layer drop | 0.767 (−layer 5) | 0.290 (−layers 4–5) | 0.290 (same) | 0.020 (−3 layers) | pending |
+| Taylor | 0.943 | 0.927 | 0.877 | pending | pending |
+| **Wanda-style** | **0.970** | **0.950** | **0.930** | pending | pending |
+| Random | 0.953 | 0.913 | 0.887 | pending | pending |
 
-Dropping whole layers is very costly. Neuron-level pruning is nearly free at 10%. Astra's bar: beat Wanda at equal FLOPs.
+- Wanda is the strongest baseline. It loses 0, 2 and 4 points at roughly 10%, 20% and 30% FLOPs saved.
+- Layer dropping collapses.
+- Taylor is no better than random here, probably because gradient importance on the 200 practice questions is noisy.
+- **Astra's bar:** beat Wanda at equal FLOPs, most interestingly at 60–50%.
 
 ### Next steps
 
