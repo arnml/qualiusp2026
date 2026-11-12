@@ -87,3 +87,13 @@ The prompt will be written in full and committed before stage 1.
 ## References
 
 Takehi et al. 2026 \cite{takehi2026weightspace}; Ahmed 2026 \cite{ahmed2026weightspaceaudit}; Michel et al. 2019; Voita et al. 2019; Sun et al. 2024 (Wanda); Sajjad et al. 2023; Gromov et al. 2024; Arditi et al. 2024 (direction editing) \cite{arditi2024refusal}; probing: Alain & Bengio 2016; Hewitt & Liang 2019; Belinkov 2022; Marks & Tegmark 2023.
+
+## Amendment before stage 2 (2026-11-12, recorded before the stage 2 run)
+
+PI framing: **"similar score with fewer neurons or FLOPs is good; it is the same but cheaper."** Track C's success is therefore read primarily as **cost at equal quality**:
+
+- **Primary:** for the editor's final edit, find the FLOPs each baseline (Wanda, Taylor, random) needs to reach the *same* dev1000 both-gold@3. That uses the baseline curve over fractions, interpolated. The editor wins if it needs fewer FLOPs, or fewer parameters, at the same quality.
+- **Secondary:** quality at equal FLOPs (the stage 1 comparison) and the distance to the unedited model (target ≤ 1 point).
+- **Reported for every selector:** encoder GFLOPs, encoder parameters, removed heads/neurons/layers, and later CPU latency after physical pruning.
+- **Stage 1 under this framing:** Astra and Wanda reach the same quality (0.946 vs 0.945, McNemar p = 1.0) at ~23.8% fewer FLOPs than A1. A good result in itself (same selector, cheaper), but not cheaper than Wanda.
+- **Stage 2:** B = 10 passes, turn cap 80, same prompt except the `/work` → `WORK`/`NOTES` fix (see README deviation log).
