@@ -70,10 +70,12 @@ def main():
         for k in range(1, 6):
             rows.append({"scorer": name, "rule": f"top{k}",
                          **{f"test_{m}": v for m, v in metrics(items["test"], sc["test"], topk(k)).items()}})
-        grid = np.round(np.concatenate([np.arange(0.01, 0.1, 0.01), np.arange(0.1, 0.96, 0.025)]), 3)
+        grid = np.round(np.concatenate([
+            [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3],
+            np.arange(0.01, 0.1, 0.01), np.arange(0.1, 0.96, 0.025)]), 4)
         dev = pd.DataFrame([{"t": t, **metrics(items["dev"], sc["dev"], thresh(t))} for t in grid])
         dev.to_csv(rdir / f"dev_thresholds_{name}.csv", index=False)
-        for target in (0.90, 0.95):
+        for target in (0.85, 0.90, 0.95):
             ok = dev[dev.full_recall >= target]
             if not len(ok):
                 continue

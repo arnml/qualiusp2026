@@ -34,6 +34,30 @@ The notebook is generated from the .py files by `uv run python make_notebook.py`
 - `results/dev_thresholds_<model>.csv`: the full threshold sweep on dev.
 - Model weights stay on Google Drive and are not committed.
 
+## Results (2026-11-12, Colab T4; test 400, thresholds chosen on dev)
+
+The full fine-tune (A1) took 28,115 steps, ~50 min on the T4. Colab and local CPU zero-shot scores agree (corr 1.000000, identical top-2 on every question).
+
+| Arm | Rule | Both-gold | Precision | Paragraphs | Tokens | vs k=10 |
+|---|---|---|---|---|---|---|
+| — | k=10 (all) | 1.000 | 0.20 | 10.0 | 1442 | — |
+| exp01 | Noise-Gate tau=0.20 | 0.928 | 0.25 | 8.4 | 1221 | −15% |
+| exp01 | hop gate | 0.918 | 0.29 | 7.6 | 1089 | −24% |
+| A0 zero-shot | threshold @0.90 | 0.915 | 0.27 | 8.2 | 1143 | −21% |
+| A2 n50 | threshold @0.90 | 0.932 | 0.38 | 6.4 | 888 | −38% |
+| A2 n200 | threshold @0.90 | 0.915 | 0.46 | 5.3 | 733 | −49% |
+| **A1 full** | **top-2** | **0.878** | 0.94 | 2.0 | **324** | **−78%** |
+| **A1 full** | **threshold @0.90 (t=0.07)** | **0.915** | 0.83 | 2.6 | **391** | **−73%** |
+| **A1 full** | **threshold @0.95 (t=0.02)** | **0.968** | 0.74 | 3.1 | **461** | **−68%** |
+| — | gold paragraphs only (oracle) | 1.000 | 1.00 | 2.0 | 323 | −78% |
+
+**Readout**
+- At the same both-gold level (~0.92), the fine-tuned 22.7M selector sends **391 tokens instead of 1089** (hop gate) or 1221 (Noise-Gate). Its top-2 uses the same tokens as the gold oracle.
+- Literature, large encoders (dev, exactly both gold in the top 2): SAE 92.0%, Beam Retrieval 97.5%. A1 top-2 reaches 87.8% (test) with a 22.7M model.
+- The data-matched baselines leave a large gap: n200 needs 733 tokens for 0.915, against A1's 391. That's the room exp03 (LLM weight editing) tries to close.
+- Selector cost, rough estimate: 10 pairs × ~160 tokens × 2 × 22.7M ≈ 0.07 TFLOPs per question. Saving ~830 tokens against Noise-Gate on an 8B generator ≈ 13 TFLOPs, so the selector costs ~1/180 of what it saves.
+- **Not yet measured:** answer F1 with an LLM generator. Both-gold is a proxy.
+
 ## Reference numbers (exp01, test 400)
 
 | Method | Full recall | Tokens |

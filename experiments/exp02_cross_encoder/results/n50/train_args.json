@@ -1,0 +1,14 @@
+{
+ "n_train": 50,
+ "tag": "n50",
+ "epochs": 20,
+ "batch": 32,
+ "lr": 2e-05,
+ "max_len": 256,
+ "save_every": 2000,
+ "seed": 0,
+ "base": "cross-encoder/ms-marco-MiniLM-L6-v2",
+ "n_questions": 50,
+ "n_pairs": 494,
+ "steps": 320
+}
