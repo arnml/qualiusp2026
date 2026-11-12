@@ -27,7 +27,7 @@
 |---|---|---|---|---|
 | exp01 | Hop-aware Noise-Gate (option 1): training-free 2nd-hop threshold on "question + top paragraph" | [`exp01_hop_gate`](exp01_hop_gate/README.md) | ✅ done | 6–10% fewer tokens than Noise-Gate at equal both-gold (0.918 at 1089 tok vs 0.928 at 1221). Precision stays at ~0.25–0.30: thresholds plateau. |
 | exp02 | Small learned selector (option 2): 22.7M MiniLM-L6 cross-encoder | [`exp02_cross_encoder`](exp02_cross_encoder/README.md) | ✅ done (offline + gpt-5.4-mini F1) | **F1 (gpt-5.4-mini, 400 q): A1 t=0.02 0.796 at 467 tok vs k=10 0.782 at 1448 (−68% tokens, ΔF1 +0.014, CI includes 0); top-2 0.780 at 330 tok (−77%).** Offline: | **A1 (full fine-tune): 0.915 both-gold at 391 tok (−73% vs k=10, −64% vs hop gate); 0.968 at 461 tok.** A2 n200: 0.915 at 733 tok. A0: 0.915 at 1143 tok. |
-| exp03 | LLM weight editing (option 7): Opus 5.5 / Astra edit the 22M cross-encoder with N examples, compared against fine-tuning on the same N | — | ⏳ planned | Go/no-go: linear probe for a "distractor direction" first. |
+| exp03 | LLM weight editing (option 7): Opus 5.5 / Astra edit the 22M cross-encoder with N examples, compared against fine-tuning on the same N | [`exp03_weight_edit`](exp03_weight_edit/PROTOCOL.md) | 📝 protocol drafted (modelled on Takehi et al. Exp 8 + Ahmed audit) | Go/no-go: linear probe for a "distractor direction" first. |
 | — | Sentence-level selection (gold sentences = 214 tok) | — | 💡 idea | — |
 | — | Transfer to 2Wiki / MuSiQue without retraining | — | 💡 idea | — |
 
