@@ -42,6 +42,25 @@ uv run python baselines.py --eval-n 300
   - *Soft flags* (executed, recorded): `lstsq`, regression/classifier `.fit`, re-implementing layers.
 - **Not isolated like the blog:** Windows has no bubblewrap, so the kernel runs in the same uv environment on the host. Rule compliance is enforced by the audit and the logs, not by an OS sandbox. This is reported as a limitation.
 
+## Baselines (2026-11-12, `results/baselines_dev300.json`)
+
+Setup: importance estimated on the editor's 200 practice questions; quality = dev both-gold@3 over 300 questions; A1 unedited = **0.970 at 39.26 GFLOPs** per question. The layer-drop rows' GFLOPs differ because whole layers are coarse.
+
+| Encoder FLOPs kept | Layer drop | Taylor (grad) | **Wanda-style** | Random |
+|---|---|---|---|---|
+| ~90% (35.2 GF) | 0.767 *(32.8 GF)* | 0.943 | **0.970** | 0.953 |
+| ~80% (31.2 GF) | 0.290 *(26.3 GF)* | 0.927 | **0.950** | 0.913 |
+| ~70% (27.5 GF) | 0.290 *(26.3 GF)* | 0.877 | **0.930** | 0.887 |
+| ~60% (23.6 GF) | 0.020 *(19.9 GF)* | 0.823 | **0.917** | 0.797 |
+| ~50% (19.5 GF) | 0.063 *(13.4 GF)* | 0.720 | **0.820** | 0.443 |
+
+**Readout**
+- **Wanda-style is the strongest baseline at every level:** −0, −2, −4, −5 and −15 points.
+- **Neurons are very redundant:** 4,586 of 9,216 MLP neurons plus 38 of 72 heads can go at a 15-point cost.
+- **Whole layers are not removable:** −1 layer costs 20 points; −3 layers collapses the model.
+- **Taylor** is no better than random until 50%, probably because gradients over 200 questions are noisy.
+- **Bar for Astra:** at ~60% FLOPs, beat 0.917; at ~50%, beat 0.820.
+
 ## Dry run (2026-11-12, dummy editor, `runs/dry2`)
 
 Everything worked:

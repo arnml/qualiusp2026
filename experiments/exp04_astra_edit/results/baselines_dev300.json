@@ -1,0 +1,205 @@
+[
+ {
+  "method": "A1_unedited",
+  "frac": 1.0,
+  "gflops": 39.2620032,
+  "dev_bg3": 0.97
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.9,
+  "gflops": 32.8018944,
+  "dev_bg3": 0.7666666666666667,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.9,
+  "gflops": 35.212032,
+  "dev_bg3": 0.9433333333333334,
+  "heads": 6,
+  "neurons": 1082,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.9,
+  "gflops": 35.3334528,
+  "dev_bg3": 0.97,
+  "heads": 3,
+  "neurons": 1270,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.9,
+  "gflops": 35.1463168,
+  "dev_bg3": 0.9533333333333334,
+  "heads": 7,
+  "neurons": 1029,
+  "layers": []
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.8,
+  "gflops": 26.3417856,
+  "dev_bg3": 0.29,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   4,
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.8,
+  "gflops": 31.4075136,
+  "dev_bg3": 0.9266666666666666,
+  "heads": 18,
+  "neurons": 1601,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.8,
+  "gflops": 31.223424,
+  "dev_bg3": 0.95,
+  "heads": 15,
+  "neurons": 1906,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.8,
+  "gflops": 31.2108032,
+  "dev_bg3": 0.9133333333333333,
+  "heads": 14,
+  "neurons": 1989,
+  "layers": []
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.7,
+  "gflops": 26.3417856,
+  "dev_bg3": 0.29,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   4,
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.7,
+  "gflops": 27.4811392,
+  "dev_bg3": 0.8766666666666667,
+  "heads": 28,
+  "neurons": 2323,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.7,
+  "gflops": 27.4824448,
+  "dev_bg3": 0.93,
+  "heads": 25,
+  "neurons": 2557,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.7,
+  "gflops": 27.4685184,
+  "dev_bg3": 0.8866666666666667,
+  "heads": 21,
+  "neurons": 2875,
+  "layers": []
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.6,
+  "gflops": 19.8816768,
+  "dev_bg3": 0.02,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   3,
+   4,
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.6,
+  "gflops": 23.5569408,
+  "dev_bg3": 0.8233333333333334,
+  "heads": 39,
+  "neurons": 2966,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.6,
+  "gflops": 23.5547648,
+  "dev_bg3": 0.9166666666666666,
+  "heads": 32,
+  "neurons": 3514,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.6,
+  "gflops": 23.5560704,
+  "dev_bg3": 0.7966666666666666,
+  "heads": 29,
+  "neurons": 3748,
+  "layers": []
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.5,
+  "gflops": 13.421568,
+  "dev_bg3": 0.06333333333333334,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   2,
+   3,
+   4,
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.5,
+  "gflops": 19.5443968,
+  "dev_bg3": 0.72,
+  "heads": 49,
+  "neurons": 3721,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.5,
+  "gflops": 19.5309056,
+  "dev_bg3": 0.82,
+  "heads": 38,
+  "neurons": 4586,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.5,
+  "gflops": 19.6288256,
+  "dev_bg3": 0.44333333333333336,
+  "heads": 35,
+  "neurons": 4783,
+  "layers": []
+ }
+]

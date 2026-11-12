@@ -27,9 +27,11 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
 - **Committed** (8d1a5c8): `editlib.py` (exact removals, cost), `kernel.py` + `kernel_api.py`, `harness.py`, `prompt_trackC.md` (pre-registered before any run), `baselines.py`, `dummy_script.json`, README, DESIGN.
 - **A1 weights:** `models/a1/` (git-ignored; sha256 prefix `605c986eb9a9a82b`). Verified identical to exp02 scores. The original is on Google Drive in `MyDrive/qualiusp2026/exp02_results/full/model`.
 - **Dry run** `runs/dry2` passed every check. A1 practice both-gold@3 = 0.945. A full practice pass (1,992 pairs, both models) takes **~5 min on CPU**, so B = 50 means hours of forward time.
-- **Running when this was written:** `uv run python baselines.py --eval-n 300` (log `results_baselines_log.txt`, output `results/baselines_dev300.json`). Layer drop, Taylor, Wanda-style and random pruning at FLOPs fractions 0.9–0.5 on 300 dev questions.
+- **Finished:** `uv run python baselines.py --eval-n 300` (log `results_baselines_log.txt`, output `results/baselines_dev300.json`). Layer drop, Taylor, Wanda-style and random pruning at FLOPs fractions 0.9–0.5 on 300 dev questions.
 
-**Partial baseline results** (2026-11-12, 14 of 21 configs; dev both-gold@3, 300 questions; A1 unedited = 0.970 at 39.26 GFLOPs; the target fraction is approximate, actual GFLOPs are in the json):
+**Baselines: DONE.** The full table is in `experiments/exp04_astra_edit/README.md`. At ~60% FLOPs Wanda reaches 0.917; at ~50%, 0.820; Taylor reaches 0.823 and 0.720; random 0.797 and 0.443. Next: `evaluate.py`, then stage 1.
+
+*(Earlier partial snapshot: 14 of 21 configs; dev both-gold@3, 300 questions; A1 unedited = 0.970 at 39.26 GFLOPs; the target fraction is approximate, actual GFLOPs are in the json):
 
 | Method | ~90% FLOPs | ~80% | ~70% | ~60% | ~50% |
 |---|---|---|---|---|---|
