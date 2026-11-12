@@ -1,0 +1,8 @@
+[
+  "Hypothesis: check the kernel API.\n```python\nimport numpy as np\nprint(len(NAMES), len(practice), cost()['encoder_gflops_per_question'])\nprint(sorted(set(len(q['paragraphs']) for q in practice)))\n```",
+  "Hypothesis: baseline quality on practice with one pass.\n```python\nitems=[(q,p) for q in range(len(practice)) for p in range(len(practice[q]['paragraphs']))]\nr=forward(items=items, model='both', cls=True, mlp=True, attn_n=2)\nprint(r['scores_edited'].shape, r['cls_original'].shape, r['mlp_original'].shape, len(r['attn_original']))\ndef bg3(s):\n    ok=[]; k=0\n    for q in practice:\n        n=len(q['paragraphs']); g=np.array(q['gold']); x=s[k:k+n]; k+=n\n        ok.append(g[np.argsort(-x)[:3]].sum()==g.sum())\n    return np.mean(ok)\nprint('both-gold@3 original', bg3(r['scores_original']), 'edited', bg3(r['scores_edited']))\n```",
+  "Hypothesis: forbidden code is refused.\n```python\nimport torch\nx=torch.zeros(2,requires_grad=True)\nx.sum().backward()\n```",
+  "Hypothesis: removing layer 5 and two heads changes cost and quality.\n```python\nremove_layer(5); remove_head(0,3); remove_neurons(2,[1,2,3])\nprint(edited()['cost'])\nr=forward(items=items, model='both')\nprint('edited', bg3(r['scores_edited']), 'original', bg3(r['scores_original']))\n```",
+  "Hypothesis: budget is now exhausted, forward is refused.\n```python\ntry:\n    forward(items=items[:10])\nexcept Exception as e:\n    print('refused:', e)\nprint(cost())\n```",
+  "Final: removed layer 5, head (0,3) and 3 neurons in layer 2 (dry run, no real reasoning)."
+]
