@@ -1,0 +1,2 @@
+[forward] pass used; 3 left
+{'name': 'mlp_C', 'original': 111, 'edited': 112, 'n': 120, 'losses': [47], 'gains': [124, 192], 'margin_delta_quantiles': [-6.966, -4.332, -2.72, -0.868, 0.848], 'score_correlation': 0.95791, 'cost': {'encoder_gflops_per_question': 28.566528, 'encoder_params': 7496960, 'removed': {'heads': 0, 'neurons': 4096, 'layers': []}}}

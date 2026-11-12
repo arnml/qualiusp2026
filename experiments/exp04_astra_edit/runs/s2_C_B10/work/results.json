@@ -1,0 +1,72 @@
+{
+  "chosen": "mlp_C",
+  "discovery": {
+    "name": "mlp_C",
+    "original": 111,
+    "edited": 112,
+    "n": 120,
+    "losses": [
+      47
+    ],
+    "gains": [
+      124,
+      192
+    ],
+    "margin_delta_quantiles": [
+      -6.966,
+      -4.332,
+      -2.72,
+      -0.868,
+      0.848
+    ],
+    "score_correlation": 0.95791,
+    "cost": {
+      "encoder_gflops_per_question": 28.566528,
+      "encoder_params": 7496960,
+      "removed": {
+        "heads": 0,
+        "neurons": 4096,
+        "layers": []
+      }
+    }
+  },
+  "confirmation": {
+    "name": "confirmation_mlp_C",
+    "original": 78,
+    "edited": 77,
+    "n": 80,
+    "losses": [
+      70
+    ],
+    "gains": [],
+    "margin_delta_quantiles": [
+      -6.128,
+      -4.018,
+      -2.315,
+      -1.457,
+      -0.088
+    ],
+    "score_correlation": 0.96146,
+    "cost": {
+      "encoder_gflops_per_question": 28.566528,
+      "encoder_params": 7496960,
+      "removed": {
+        "heads": 0,
+        "neurons": 4096,
+        "layers": []
+      }
+    }
+  },
+  "cost": {
+    "encoder_gflops_per_question": 28.566528,
+    "encoder_params": 7496960,
+    "removed": {
+      "heads": 0,
+      "neurons": 4096,
+      "layers": []
+    }
+  },
+  "flops_reduction_percent": 27.24128757648311,
+  "confirmation_delta_percentage_points": -1.25,
+  "selection_used_confirmation": false
+}

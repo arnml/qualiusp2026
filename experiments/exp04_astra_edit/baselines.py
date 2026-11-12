@@ -144,6 +144,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--eval-n", type=int, default=300)
     ap.add_argument("--fractions", type=float, nargs="+", default=[0.9, 0.8, 0.7, 0.6, 0.5])
+    ap.add_argument("--methods", nargs="+", default=["layerdrop", "taylor", "wanda", "random"])
+    ap.add_argument("--out", help="output file name (default baselines_dev<N>.json)")
     args = ap.parse_args()
     from transformers import AutoTokenizer
 
@@ -164,6 +166,8 @@ def main():
                  "wanda": greedy_state(*imp["wanda"], frac),
                  "random": greedy_state(*imp["taylor"], frac, rng=np.random.default_rng(0))}
         for name, st in cands.items():
+            if name not in args.methods:
+                continue
             g = st.cost()["encoder_gflops_per_question"]
             s = bg3(score(el.build_model(MODEL, st, base), tok, q, p), dev, owner)
             rows.append({"method": name, "frac": frac, "gflops": g, "dev_bg3": s,
@@ -171,7 +175,7 @@ def main():
             print(rows[-1], flush=True)
     out = HERE / "results"
     out.mkdir(exist_ok=True)
-    (out / f"baselines_dev{args.eval_n}.json").write_text(json.dumps(rows, indent=1))
+    (out / (args.out or f"baselines_dev{args.eval_n}.json")).write_text(json.dumps(rows, indent=1))
 
 
 if __name__ == "__main__":

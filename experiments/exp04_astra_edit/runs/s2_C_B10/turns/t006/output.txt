@@ -1,0 +1,8 @@
+Layer 0 remove 384 fraction of summed squared CLS contribution proxies 5e-05
+Layer 1 remove 384 fraction of summed squared CLS contribution proxies 0.00036
+Layer 2 remove 384 fraction of summed squared CLS contribution proxies 0.00063
+Layer 3 remove 512 fraction of summed squared CLS contribution proxies 0.02227
+Layer 4 remove 640 fraction of summed squared CLS contribution proxies 0.09858
+Layer 5 remove 1152 fraction of summed squared CLS contribution proxies 0.05219
+[forward] pass used; 7 left
+{'name': 'mlp_A', 'original': 111, 'edited': 112, 'n': 120, 'losses': [47], 'gains': [124, 139], 'margin_delta_quantiles': [-5.142, -3.149, -1.783, -0.602, 0.949], 'score_correlation': 0.97631, 'cost': {'encoder_gflops_per_question': 30.237696, 'encoder_params': 7989120, 'removed': {'heads': 0, 'neurons': 3456, 'layers': []}}}

@@ -1,0 +1,10 @@
+{"pass": 1, "t": 1794517978.847234, "model": "original", "n": 1192, "kind": "items", "cls": true, "mlp": true, "attn_n": 8}
+{"pass": 2, "t": 1794518198.537476, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 3, "t": 1794518383.1383138, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 4, "t": 1794518574.6833951, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 5, "t": 1794518759.0642972, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 6, "t": 1794518921.3350627, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 7, "t": 1794519073.3508236, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 8, "t": 1794519197.6610065, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 9, "t": 1794519333.7722182, "model": "both", "n": 1192, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}
+{"pass": 10, "t": 1794519431.354689, "model": "both", "n": 800, "kind": "items", "cls": false, "mlp": false, "attn_n": 0}

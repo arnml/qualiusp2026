@@ -1,0 +1,7 @@
+OUTPUT:
+```
+[forward] pass used; 5 left
+{'name': 'mlp_B', 'original': 111, 'edited': 109, 'n': 120, 'losses': [47, 86, 103], 'gains': [124], 'margin_delta_quantiles': [-8.819, -5.779, -4.033, -1.601, 0.48], 'score_correlation': 0.9272, 'cost': {'encoder_gflops_per_question': 26.5611264, 'encoder_params': 6906368, 'removed': {'heads': 0, 'neurons': 4864, 'layers': []}}}
+
+```
+Passes left: 5/10. Turn 9/80.

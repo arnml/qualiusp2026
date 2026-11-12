@@ -1,0 +1,114 @@
+OUTPUT:
+```
+Questions: 120 discovery; 80 confirmation
+Paragraphs: 1192 discovery; 800 confirmation
+Initial edits: {'track': 'C', 'heads_removed': [], 'neurons_removed': 0, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}}
+Initial cost: {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}
+bert.embeddings.LayerNorm.bias (384,) rms 0.114737 zero_fraction 0.0
+bert.embeddings.LayerNorm.weight (384,) rms 0.665573 zero_fraction 0.0
+bert.embeddings.position_embeddings.weight (512, 384) rms 0.020382 zero_fraction 0.0
+bert.embeddings.token_type_embeddings.weight (2, 384) rms 0.014504 zero_fraction 0.0
+bert.embeddings.word_embeddings.weight (30522, 384) rms 0.040239 zero_fraction 0.0
+bert.encoder.layer.0.attention.output.LayerNorm.bias (384,) rms 0.191725 zero_fraction 0.0
+bert.encoder.layer.0.attention.output.LayerNorm.weight (384,) rms 0.632058 zero_fraction 0.0
+bert.encoder.layer.0.attention.output.dense.bias (384,) rms 0.076406 zero_fraction 0.0
+bert.encoder.layer.0.attention.output.dense.weight (384, 384) rms 0.04094 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.key.bias (384,) rms 0.003032 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.key.weight (384, 384) rms 0.070155 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.query.bias (384,) rms 0.327629 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.query.weight (384, 384) rms 0.071578 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.value.bias (384,) rms 0.086047 zero_fraction 0.0
+bert.encoder.layer.0.attention.self.value.weight (384, 384) rms 0.040967 zero_fraction 0.0
+bert.encoder.layer.0.intermediate.dense.bias (1536,) rms 0.157582 zero_fraction 0.0
+bert.encoder.layer.0.intermediate.dense.weight (1536, 384) rms 0.051047 zero_fraction 0.0
+bert.encoder.layer.0.output.LayerNorm.bias (384,) rms 0.06239 zero_fraction 0.0
+bert.encoder.layer.0.output.LayerNorm.weight (384,) rms 0.671206 zero_fraction 0.0
+bert.encoder.layer.0.output.dense.bias (384,) rms 0.077368 zero_fraction 0.0
+bert.encoder.layer.0.output.dense.weight (384, 1536) rms 0.036796 zero_fraction 0.0
+bert.encoder.layer.1.attention.output.LayerNorm.bias (384,) rms 0.102204 zero_fraction 0.0
+bert.encoder.layer.1.attention.output.LayerNorm.weight (384,) rms 0.63577 zero_fraction 0.0
+bert.encoder.layer.1.attention.output.dense.bias (384,) rms 0.072711 zero_fraction 0.0
+bert.encoder.layer.1.attention.output.dense.weight (384, 384) rms 0.039988 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.key.bias (384,) rms 0.003641 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.key.weight (384, 384) rms 0.064885 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.query.bias (384,) rms 0.302391 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.query.weight (384, 384) rms 0.065282 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.value.bias (384,) rms 0.031507 zero_fraction 0.0
+bert.encoder.layer.1.attention.self.value.weight (384, 384) rms 0.046475 zero_fraction 0.0
+bert.encoder.layer.1.intermediate.dense.bias (1536,) rms 0.154375 zero_fraction 0.0
+bert.encoder.layer.1.intermediate.dense.weight (1536, 384) rms 0.055852 zero_fraction 0.0
+bert.encoder.layer.1.output.LayerNorm.bias (384,) rms 0.060004 zero_fraction 0.0
+bert.encoder.layer.1.output.LayerNorm.weight (384,) rms 0.662081 zero_fraction 0.0
+bert.encoder.layer.1.output.dense.bias (384,) rms 0.053285 zero_fraction 0.0
+bert.encoder.layer.1.output.dense.weight (384, 1536) rms 0.038364 zero_fraction 0.0
+bert.encoder.layer.2.attention.output.LayerNorm.bias (384,) rms 0.108649 zero_fraction 0.0
+bert.encoder.layer.2.attention.output.LayerNorm.weight (384,) rms 0.639604 zero_fraction 0.0
+bert.encoder.layer.2.attention.output.dense.bias (384,) rms 0.064602 zero_fraction 0.0
+bert.encoder.layer.2.attention.output.dense.weight (384, 384) rms 0.04158 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.key.bias (384,) rms 0.00411 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.key.weight (384, 384) rms 0.062149 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.query.bias (384,) rms 0.257963 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.query.weight (384, 384) rms 0.062507 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.value.bias (384,) rms 0.038854 zero_fraction 0.0
+bert.encoder.layer.2.attention.self.value.weight (384, 384) rms 0.049935 zero_fraction 0.0
+bert.encoder.layer.2.intermediate.dense.bias (1536,) rms 0.125171 zero_fraction 0.0
+bert.encoder.layer.2.intermediate.dense.weight (1536, 384) rms 0.055121 zero_fraction 0.0
+bert.encoder.layer.2.output.LayerNorm.bias (384,) rms 0.046182 zero_fraction 0.0
+bert.encoder.layer.2.output.LayerNorm.weight (384,) rms 0.675566 zero_fraction 0.0
+bert.encoder.layer.2.output.dense.bias (384,) rms 0.063676 zero_fraction 0.0
+bert.encoder.layer.2.output.dense.weight (384, 1536) rms 0.038363 zero_fraction 0.0
+bert.encoder.layer.3.attention.output.LayerNorm.bias (384,) rms 0.072419 zero_fraction 0.0
+bert.encoder.layer.3.attention.output.LayerNorm.weight (384,) rms 0.607924 zero_fraction 0.0
+bert.encoder.layer.3.attention.output.dense.bias (384,) rms 0.056954 zero_fraction 0.0
+bert.encoder.layer.3.attention.output.dense.weight (384, 384) rms 0.043741 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.key.bias (384,) rms 0.003843 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.key.weight (384, 384) rms 0.059702 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.query.bias (384,) rms 0.192772 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.query.weight (384, 384) rms 0.061213 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.value.bias (384,) rms 0.02194 zero_fraction 0.0
+bert.encoder.layer.3.attention.self.value.weight (384, 384) rms 0.053165 zero_fraction 0.0
+bert.encoder.layer.3.intermediate.dense.bias (1536,) rms 0.1005 zero_fraction 0.0
+bert.encoder.layer.3.intermediate.dense.weight (1536, 384) rms 0.049397 zero_fraction 0.0
+bert.encoder.layer.3.output.LayerNorm.bias (384,) rms 0.028207 zero_fraction 0.0
+bert.encoder.layer.3.output.LayerNorm.weight (384,) rms 0.733151 zero_fraction 0.0
+bert.encoder.layer.3.output.dense.bias (384,) rms 0.053434 zero_fraction 0.0
+bert.encoder.layer.3.output.dense.weight (384, 1536) rms 0.034779 zero_fraction 0.0
+bert.encoder.layer.4.attention.output.LayerNorm.bias (384,) rms 0.050891 zero_fraction 0.0
+bert.encoder.layer.4.attention.output.LayerNorm.weight (384,) rms 0.530486 zero_fraction 0.0
+bert.encoder.layer.4.attention.output.dense.bias (384,) rms 0.058079 zero_fraction 0.0
+bert.encoder.layer.4.attention.output.dense.weight (384, 384) rms 0.039067 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.key.bias (384,) rms 0.003079 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.key.weight (384, 384) rms 0.056718 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.query.bias (384,) rms 0.168199 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.query.weight (384, 384) rms 0.058803 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.value.bias (384,) rms 0.029107 zero_fraction 0.0
+bert.encoder.layer.4.attention.self.value.weight (384, 384) rms 0.048546 zero_fraction 0.0
+bert.encoder.layer.4.intermediate.dense.bias (1536,) rms 0.092755 zero_fraction 0.0
+bert.encoder.layer.4.intermediate.dense.weight (1536, 384) rms 0.046106 zero_fraction 0.0
+bert.encoder.layer.4.output.LayerNorm.bias (384,) rms 0.04487 zero_fraction 0.0
+bert.encoder.layer.4.output.LayerNorm.weight (384,) rms 0.681068 zero_fraction 0.0
+bert.encoder.layer.4.output.dense.bias (384,) rms 0.043657 zero_fraction 0.0
+bert.encoder.layer.4.output.dense.weight (384, 1536) rms 0.032678 zero_fraction 0.0
+bert.encoder.layer.5.attention.output.LayerNorm.bias (384,) rms 0.085749 zero_fraction 0.0
+bert.encoder.layer.5.attention.output.LayerNorm.weight (384,) rms 0.481707 zero_fraction 0.0
+bert.encoder.layer.5.attention.output.dense.bias (384,) rms 0.039586 zero_fraction 0.0
+bert.encoder.layer.5.attention.output.dense.weight (384, 384) rms 0.035566 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.key.bias (384,) rms 0.002382 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.key.weight (384, 384) rms 0.053925 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.query.bias (384,) rms 0.101814 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.query.weight (384, 384) rms 0.055143 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.value.bias (384,) rms 0.012619 zero_fraction 0.0
+bert.encoder.layer.5.attention.self.value.weight (384, 384) rms 0.043049 zero_fraction 0.0
+bert.encoder.layer.5.intermediate.dense.bias (1536,) rms 0.060305 zero_fraction 0.0
+bert.encoder.layer.5.intermediate.dense.weight (1536, 384) rms 0.036776 zero_fraction 0.0
+bert.encoder.layer.5.output.LayerNorm.bias (384,) rms 0.04493 zero_fraction 0.0
+bert.encoder.layer.5.output.LayerNorm.weight (384,) rms 0.482489 zero_fraction 0.0
+bert.encoder.layer.5.output.dense.bias (384,) rms 0.026994 zero_fraction 0.0
+bert.encoder.layer.5.output.dense.weight (384, 1536) rms 0.024403 zero_fraction 0.0
+bert.pooler.dense.bias (384,) rms 0.007419 zero_fraction 0.0
+bert.pooler.dense.weight (384, 384) rms 0.010427 zero_fraction 0.0
+classifier.bias (1,) rms 2.7e-05 zero_fraction 0.0
+classifier.weight (1, 384) rms 0.028982 zero_fraction 0.0
+
+```
+Passes left: 10/10. Turn 1/80.

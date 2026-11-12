@@ -1,0 +1,2 @@
+[forward] pass used; 8 left
+{'name': 'drop_layer1', 'original': 111, 'edited': 99, 'n': 120, 'losses': [13, 22, 23, 45, 47, 61, 68, 86, 103, 119, 135, 142, 143, 156], 'gains': [124, 141], 'margin_delta_quantiles': [-11.037, -7.217, -3.782, -1.795, 0.904], 'score_correlation': 0.85496, 'cost': {'encoder_gflops_per_question': 32.8018944, 'encoder_params': 8872320, 'removed': {'heads': 0, 'neurons': 0, 'layers': [1]}}}

@@ -1,0 +1,12 @@
+OUTPUT:
+```
+Traceback (most recent call last):
+  File "C:\code\qualiusp2026\experiments\exp04_astra_edit\kernel.py", line 26, in <module>
+    exec(compile(msg["code"], "<cell>", "exec"), ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<cell>", line 19, in <module>
+  File "<cell>", line 14, in evaluate
+IndexError: list index out of range
+
+```
+Passes left: 9/10. Turn 3/80.

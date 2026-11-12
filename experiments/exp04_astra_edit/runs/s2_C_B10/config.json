@@ -1,0 +1,15 @@
+{
+ "run": "s2_C_B10",
+ "track": "C",
+ "budget": 10,
+ "turn_cap": 80,
+ "editor": "astra",
+ "model_name": "gpt-6-astra",
+ "effort": "xhigh",
+ "script": null,
+ "model_dir": "C:\\code\\qualiusp2026\\experiments\\exp04_astra_edit\\models\\a1",
+ "practice": "heldval",
+ "n": 200,
+ "prompt": "C:\\code\\qualiusp2026\\experiments\\exp04_astra_edit\\prompt_trackC.md",
+ "started": "2026-11-12 18:11:24"
+}
