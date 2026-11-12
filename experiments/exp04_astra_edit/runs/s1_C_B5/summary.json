@@ -1,0 +1,20 @@
+{
+ "turns": 11,
+ "passes_used": 5,
+ "tool_violations": 0,
+ "hard_flags": 0,
+ "soft_flag_turns": 0,
+ "input_tokens": 1201813,
+ "output_tokens": 80267,
+ "editor_seconds": 481.7,
+ "final_cost": {
+  "encoder_gflops_per_question": 29.9034624,
+  "encoder_params": 7890688,
+  "removed": {
+   "heads": 0,
+   "neurons": 3584,
+   "layers": []
+  }
+ },
+ "finished": "2026-11-12 15:56:38"
+}

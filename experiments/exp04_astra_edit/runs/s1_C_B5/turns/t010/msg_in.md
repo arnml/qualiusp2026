@@ -1,0 +1,10 @@
+OUTPUT:
+```
+Candidate C cost: {'encoder_gflops_per_question': 27.5638272, 'encoder_params': 7201664, 'removed': {'heads': 0, 'neurons': 4480, 'layers': []}}
+[forward] pass used; 1 left
+Candidate C selection: {'n': 100, 'original_successes': 92, 'edited_successes': 88, 'losses': [29, 47, 76, 103, 129], 'gains': [124], 'margin_change_q10_median_q90': [-7.7878, -3.9825, -0.022], 'by_type': {'bridge': {'n': 78, 'original': 70, 'edited': 66}, 'comparison': {'n': 22, 'original': 22, 'edited': 22}}}
+Candidate C within-question score correlation: 0.9369
+Selection-only preferred candidate: A_mlp
+
+```
+Passes left: 1/5. Turn 9/40.

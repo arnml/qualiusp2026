@@ -1,0 +1,198 @@
+[
+ {
+  "turn": 1,
+  "usage": {
+   "input_tokens": 11227,
+   "cached_input_tokens": 0,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 944,
+   "reasoning_output_tokens": 530
+  },
+  "seconds": 47.3,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 0,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 2,
+  "usage": {
+   "input_tokens": 23769,
+   "cached_input_tokens": 12032,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 1395,
+   "reasoning_output_tokens": 612
+  },
+  "seconds": 28.2,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 0,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 3,
+  "usage": {
+   "input_tokens": 37282,
+   "cached_input_tokens": 24832,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 2354,
+   "reasoning_output_tokens": 1017
+  },
+  "seconds": 37.7,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 0,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 4,
+  "usage": {
+   "input_tokens": 53609,
+   "cached_input_tokens": 39168,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 3060,
+   "reasoning_output_tokens": 1189
+  },
+  "seconds": 24.1,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 0,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 5,
+  "usage": {
+   "input_tokens": 71073,
+   "cached_input_tokens": 56064,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 4844,
+   "reasoning_output_tokens": 1703
+  },
+  "seconds": 45.5,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 1,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 6,
+  "usage": {
+   "input_tokens": 94463,
+   "cached_input_tokens": 75136,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 7136,
+   "reasoning_output_tokens": 3019
+  },
+  "seconds": 68.1,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 1,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 7,
+  "usage": {
+   "input_tokens": 120351,
+   "cached_input_tokens": 100608,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 9023,
+   "reasoning_output_tokens": 4003
+  },
+  "seconds": 54.4,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 2,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 8,
+  "usage": {
+   "input_tokens": 149315,
+   "cached_input_tokens": 128256,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 10199,
+   "reasoning_output_tokens": 4662
+  },
+  "seconds": 32.2,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 2,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 9,
+  "usage": {
+   "input_tokens": 179710,
+   "cached_input_tokens": 158208,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 12951,
+   "reasoning_output_tokens": 6732
+  },
+  "seconds": 89.8,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 3,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 10,
+  "usage": {
+   "input_tokens": 213093,
+   "cached_input_tokens": 191232,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 13816,
+   "reasoning_output_tokens": 7065
+  },
+  "seconds": 29.6,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": true,
+  "passes_used": 4,
+  "hard_flags": [],
+  "soft_flags": []
+ },
+ {
+  "turn": 11,
+  "usage": {
+   "input_tokens": 247921,
+   "cached_input_tokens": 225280,
+   "cache_write_input_tokens": 0,
+   "output_tokens": 14545,
+   "reasoning_output_tokens": 7503
+  },
+  "seconds": 24.8,
+  "tool_items": [],
+  "returncode": 0,
+  "thread": "01a1d100-40b0-7821-9fb1-96010e87a06d",
+  "has_code": false,
+  "passes_used": 5
+ }
+]

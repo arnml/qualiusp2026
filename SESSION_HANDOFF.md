@@ -76,3 +76,15 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
 - Explain things simply when asked. Write plain-language md files for methods worth keeping.
 - Each experiment self-contained (own dir + uv env). Save results durably (Drive + repo).
 - Go step by step with gates (5 → 10 → 50); avoid big bursts of agent or API calls.
+
+## Update 2026-11-12, evening: exp04 stage 1 DONE
+
+- **Run** `experiments/exp04_astra_edit/runs/s1_C_B5`: Astra, Track C, B = 5, 11 turns, 0 tool violations.
+- **Final edit:** 3,584 MLP neurons removed (384/512/512/512/640/1,024 in layers 0–5), no heads or layers. 29.90 GFLOPs (−23.8%).
+- **Held-out:** dev300 0.963 (A1 0.970; matched Wanda 0.950, Taylor 0.927, random 0.913). dev1000 Astra = 0.946. **Pending:** A1 and matched baselines on dev1000 (`results/baselines_dev1000.json`, background job).
+- **Harness deviations:** the `/work` path (fixed in the prompt for stage 2+). Astra also wrote to `C:\work\`; the files are copied into the run folder, and `C:\work` is left for the PI to delete.
+- `baselines.py` overwrites `results/baselines_dev{N}.json`. For extra fractions, rename the output afterwards (the matched s1 rows are saved as `baselines_dev300_matched_s1.json`).
+- **Next:** finish the dev1000 comparison → apply the stage gate → stage 2:
+  ```bash
+  uv run python harness.py --run s2_C_B10 --track C --budget 10 --turn-cap 80 --editor astra
+  ```

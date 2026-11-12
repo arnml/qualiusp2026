@@ -1,0 +1,16 @@
+{
+ "run": "s1_C_B5",
+ "valid": true,
+ "errors": [],
+ "cost": {
+  "encoder_gflops_per_question": 29.9034624,
+  "encoder_params": 7890688,
+  "removed": {
+   "heads": 0,
+   "neurons": 3584,
+   "layers": []
+  }
+ },
+ "flops_fraction": 0.7616387337057727,
+ "dev1000_bg3": 0.946
+}

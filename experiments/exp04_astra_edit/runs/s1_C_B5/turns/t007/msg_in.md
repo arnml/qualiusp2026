@@ -1,0 +1,8 @@
+OUTPUT:
+```
+Candidate A cost: {'encoder_gflops_per_question': 29.9034624, 'encoder_params': 7890688, 'removed': {'heads': 0, 'neurons': 3584, 'layers': []}}
+[forward] pass used; 3 left
+Candidate A selection: {'n': 100, 'original_successes': 92, 'edited_successes': 93, 'losses': [47], 'gains': [124, 139], 'margin_change_q10_median_q90': [-4.8861, -2.4556, 0.3293], 'by_type': {'bridge': {'n': 78, 'original': 70, 'edited': 71}, 'comparison': {'n': 22, 'original': 22, 'edited': 22}}}
+
+```
+Passes left: 3/5. Turn 6/40.

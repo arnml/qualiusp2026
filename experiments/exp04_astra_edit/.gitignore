@@ -1,5 +1,7 @@
+runs/*/fwd/
+runs/dry*/
+runs/*/codex_cwd/
 models/
-runs/
 .venv/
 __pycache__/
 results_*_log.txt

@@ -49,7 +49,7 @@ Only removals and the allowed rescalings below change the model. Everything else
    - **Inspecting:**
      - `edited()`: what is removed now
      - `cost()`: FLOPs and parameters now
-   - **Folders:** `/work` (read-write; keep `NOTES` = /work/notes.md updated). Your current removals are always the submitted edit.
+   - **Folders:** the variable `WORK` is your read-write folder (a `pathlib.Path`; write files as `WORK / "name"`). Keep your notes in the file `NOTES` (= `WORK / "notes.md"`). Do not write anywhere else; absolute paths like `/work` do not exist here. Your current removals are always the submitted edit.
 2. **`forward(...)`: runs the network; budget {B} passes in total.** One call is one pass, whatever its size; failed calls are not counted.
    - **Inputs:** `items=[(question_index, paragraph_index), ...]` from `practice` (up to 2,048, so one pass can score every practice paragraph), or `pairs=[(question_text, paragraph_text), ...]` you write yourself (up to 64).
    - **`model`:** `"edited"`, `"original"` or `"both"` (the same inputs through both models; counts as one pass).

@@ -1,0 +1,47 @@
+[
+ {
+  "method": "A1_unedited",
+  "frac": 1.0,
+  "gflops": 39.2620032,
+  "dev_bg3": 0.97
+ },
+ {
+  "method": "layerdrop",
+  "frac": 0.7616,
+  "gflops": 26.3417856,
+  "dev_bg3": 0.29,
+  "heads": 0,
+  "neurons": 0,
+  "layers": [
+   4,
+   5
+  ]
+ },
+ {
+  "method": "taylor",
+  "frac": 0.7616,
+  "gflops": 29.765504,
+  "dev_bg3": 0.9266666666666666,
+  "heads": 23,
+  "neurons": 1839,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.7616,
+  "gflops": 29.7776896,
+  "dev_bg3": 0.95,
+  "heads": 19,
+  "neurons": 2147,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.7616,
+  "gflops": 29.9017216,
+  "dev_bg3": 0.9133333333333333,
+  "heads": 16,
+  "neurons": 2334,
+  "layers": []
+ }
+]
