@@ -114,7 +114,7 @@ Everything worked:
 - Both lose ~1.3 points, slightly more than the 1-point target.
 - **The two reach the same quality with different solutions:** Astra removed neurons only and kept every head; Wanda removed 19 heads plus fewer neurons. That supports Astra's own finding that heads matter more than their attention patterns suggest.
 - Both are clearly better than Taylor and random.
-- A paired McNemar test (Astra vs Wanda, per question) is running.
+- **Paired McNemar test (Astra vs Wanda, per question, dev1000):** Astra-only correct 25, Wanda-only correct 24, exact p = 1.0. No difference; they disagree on ~5% of questions in both directions.
 
 **Stage gate (pre-registered):** go to stage 2 if Astra ≥ the best baseline at equal FLOPs on dev.
 - Formally met (0.946 ≥ 0.945), but it's a **tie**, not an advantage.

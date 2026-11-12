@@ -81,7 +81,7 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
 
 - **Run** `experiments/exp04_astra_edit/runs/s1_C_B5`: Astra, Track C, B = 5, 11 turns, 0 tool violations.
 - **Final edit:** 3,584 MLP neurons removed (384/512/512/512/640/1,024 in layers 0–5), no heads or layers. 29.90 GFLOPs (−23.8%).
-- **Held-out:** dev300 0.963 (A1 0.970; Wanda 0.950). **dev1000: A1 0.959, Astra 0.946, Wanda 0.945 (tie), Taylor 0.923, random 0.895** (`results/baselines_dev1000_matched_s1.json`). A paired McNemar test was running.
+- **Held-out:** dev300 0.963 (A1 0.970; Wanda 0.950). **dev1000: A1 0.959, Astra 0.946, Wanda 0.945 (tie), Taylor 0.923, random 0.895** (`results/baselines_dev1000_matched_s1.json`). Paired McNemar: 25 vs 24 discordant questions, p = 1.0 (a true tie).
 - **Harness deviations:** the `/work` path (fixed in the prompt for stage 2+). Astra also wrote to `C:\work\`; the files are copied into the run folder, and `C:\work` is left for the PI to delete.
 - `baselines.py` overwrites `results/baselines_dev{N}.json`. For extra fractions, rename the output afterwards (the matched s1 rows are saved as `baselines_dev300_matched_s1.json`).
 - **Next:** finish the dev1000 comparison → apply the stage gate → stage 2:
