@@ -124,3 +124,54 @@ Everything worked:
 
 - **2026-11-12, stage 1 (`s1_C_B5`), turn 1:** the prompt names `/work/notes.md` (copied from the Exp 8 Linux wording). On Windows, `Path("/work/...")` resolves to `C:\work`, so Astra's first cell failed with FileNotFoundError. The kernel's `NOTES`/`WORK` variables point to the right folder. Not interrupted mid-run. **Fix for stages 2–3:** the prompt will say to use the `NOTES` / `WORK` variables, and the kernel will map `/work` paths.
 - **Same run, later turns:** Astra created `C:\work\` itself and wrote `notes.md` and `removal_plan.json` there. These are copied into `runs/s1_C_B5/work/from_C_work/`. The folder `C:\work\` was left in place: removing a root-level folder needs the PI's approval. **Fixed for stage 2+:** the prompt now says to use the `WORK` / `NOTES` variables only, and that absolute paths like `/work` don't exist.
+
+## Stage 2 result (`runs/s2_C_B10`, 2026-11-12): Astra, Track C, B = 10
+
+**Run:**
+- 15 turns, 10/10 passes, **0 tool violations**, 2.5M Codex input tokens.
+- **Candidates Astra tested** (selection-half score /120; A1 = 112):
+  - drop layer 1: 99
+  - mlp_A, 3,456 neurons: 112
+  - mlp_A + 8 heads: 102
+  - mlp_B, 4,864 neurons: 109
+  - mlp_B rescaled: 109
+  - mlp_C, 4,096 neurons: 112
+  - mlp_D, 4,608 neurons: 110
+  - mlp_C + 2 heads: 110
+- **Frozen edit: mlp_C.** 4,096 neurons removed (512/512/512/640/640/1,280 in layers 0–5), no heads or layers. **28.57 GFLOPs (−27.2%), 7.50M encoder params (−29.6%).**
+- **Confirmation on the untouched half:** 77/80 vs A1 78/80. Astra itself reported that this narrowly misses the 1-point target.
+
+**Held-out, dev1000** (`runs/s2_C_B10/eval.json`, `results/baselines_dev1000_matched_s2.json`):
+
+| Selector | GFLOPs | Encoder params | heads / neurons removed | dev1000 both-gold@3 |
+|---|---|---|---|---|
+| A1 unedited | 39.26 | 10.65M | — | 0.959 |
+| **Astra stage 2** | **28.57** | **7.50M** | 0 / 4,096 | **0.940** |
+| Wanda-style, same FLOPs | 28.56 | 7.74M | 22 / 2,377 | 0.940 |
+| Taylor, same FLOPs | 28.57 | — | 26 / 2,064 | 0.897 |
+| Random, same FLOPs | 28.57 | — | 20 / 2,533 | 0.880 |
+
+**Paired McNemar test, Astra vs Wanda** (`runs/s2_C_B10/mcnemar_dev1000.json`): Astra-only correct 31, Wanda-only correct 31, p = 1.0.
+
+**Wanda cost curve on dev1000** (`results/wanda_curve_dev1000.json`), for the pre-registered primary criterion:
+
+| FLOPs kept | 60% | 65% | 70% | 72.8% | 80% | 85% | 100% (A1) |
+|---|---|---|---|---|---|---|---|
+| GFLOPs | 23.55 | 25.52 | 27.48 | 28.56 | 31.22 | 33.22 | 39.26 |
+| both-gold@3 | 0.909 | 0.916 | 0.930 | 0.940 | 0.953 | **0.959** | 0.959 |
+
+**Primary criterion (cost at equal quality), honest readout:**
+- **FLOPs:**
+  - *Stage 2:* Wanda needs 28.56 GF to reach Astra's 0.940; Astra used 28.57 GF.
+  - *Stage 1:* interpolating the curve, Wanda needs ~29.8 GF to reach 0.946; Astra used 29.90 GF.
+  - **Not cheaper than Wanda; a tie at both stages.**
+- **Parameters:** at equal FLOPs and quality, Astra's models are smaller:
+  - stage 2: 7.50M vs Wanda 7.74M (−3.1%)
+  - stage 1: 7.89M vs 8.06M (−2.1%)
+
+  This holds because Astra removes neurons only (cheap in FLOPs, heavy in parameters), while Wanda also removes heads. It's a small edge, and a consequence of the unit choice rather than a better importance estimate.
+- **Distance to A1:** Astra's stage 2 edit is −1.9 points, beyond the 1-point target. Its stage 1 edit was −1.3.
+- **Lossless point:** Wanda keeps A1's full quality (0.959) at 85% FLOPs (−15%, 9 heads + 1,609 neurons). Neither Astra stage aimed there.
+- **Noise:** ±0.7 points SE on 1,000 questions.
+
+**Stage gate to stage 3** (pre-registered: Astra ≥ the best baseline at equal FLOPs): formally met, but again only as a tie, not an advantage. The PI decides whether to run B = 50.

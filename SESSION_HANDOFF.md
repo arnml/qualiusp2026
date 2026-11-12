@@ -88,3 +88,17 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
   ```bash
   uv run python harness.py --run s2_C_B10 --track C --budget 10 --turn-cap 80 --editor astra
   ```
+
+## Update 2026-11-12, night: exp04 stage 2 DONE and evaluated
+
+- **Run** `runs/s2_C_B10`: Astra, B = 10, 15 turns, 0 violations. Frozen edit mlp_C: 4,096 neurons (512/512/512/640/640/1,280), 28.57 GF (−27.2%), 7.50M params.
+- **dev1000:** Astra 0.940 = Wanda 0.940 at the same FLOPs. Taylor 0.897, random 0.880, A1 0.959. McNemar 31 vs 31, p = 1.0.
+- **Wanda curve (dev1000):**
+
+  | FLOPs kept | 60% | 65% | 70% | 72.8% | 80% | 85% |
+  |---|---|---|---|---|---|---|
+  | both-gold@3 | 0.909 | 0.916 | 0.930 | 0.940 | 0.953 | 0.959 |
+
+  Wanda is lossless at 85%.
+- **Primary criterion (cost at equal quality):** a tie in FLOPs at both stages. Params: Astra −3.1% vs Wanda (stage 2), −2.1% (stage 1).
+- **Next:** the PI decides whether to run stage 3 (B = 50, turn cap 200), stop Track C, or pivot (e.g. Track R, or ask Astra to aim for the lossless point). Pending: delete `C:\work` (PI).

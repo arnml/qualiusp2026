@@ -1,0 +1,35 @@
+[
+ {
+  "method": "A1_unedited",
+  "frac": 1.0,
+  "gflops": 39.2620032,
+  "dev_bg3": 0.959
+ },
+ {
+  "method": "taylor",
+  "frac": 0.7276,
+  "gflops": 28.5656576,
+  "dev_bg3": 0.897,
+  "heads": 26,
+  "neurons": 2064,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.7276,
+  "gflops": 28.5647872,
+  "dev_bg3": 0.94,
+  "heads": 22,
+  "neurons": 2377,
+  "layers": []
+ },
+ {
+  "method": "random",
+  "frac": 0.7276,
+  "gflops": 28.5656576,
+  "dev_bg3": 0.88,
+  "heads": 20,
+  "neurons": 2533,
+  "layers": []
+ }
+]

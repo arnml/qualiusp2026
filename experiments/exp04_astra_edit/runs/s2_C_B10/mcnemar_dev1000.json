@@ -1,0 +1,9 @@
+{
+ "run": "s2_C_B10",
+ "frac": 0.7276,
+ "editor": 0.94,
+ "wanda": 0.94,
+ "editor_only": 31,
+ "wanda_only": 31,
+ "mcnemar_exact_p": 1.0
+}
