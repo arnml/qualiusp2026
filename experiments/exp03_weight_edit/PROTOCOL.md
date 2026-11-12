@@ -102,6 +102,32 @@ Why the classifier is excluded: otherwise the trivial solution is to fit a linea
 
 See `prompt_template.md`. Placeholders: `{N}`, `{B}`, `{TURN_CAP}`.
 
+## 9b. Go/no-go result (2026-11-12, `probe.py`, `results/probe.json`)
+
+Setup: practice = the 200 A2 train questions; held-out = 300 dev questions. "Top-3" = both gold paragraphs in the top 3.
+
+| Readout of the off-the-shelf model | AUC (gold vs distractor) | Top-3 |
+|---|---|---|
+| A0's own output score | 0.825 | 0.58 |
+| Mean-difference direction, best layer (allowed to the editor) | 0.824 (layer 6) | 0.58, the same as A0 |
+| Logistic probe on [CLS], best layer (not allowed; upper bound) | 0.886 (layer 5) | 0.65 |
+| *Reference: A2 n200 fine-tune, top-3 (exp02, test)* | — | *0.78* |
+| *Reference: A1 full fine-tune, top-3 (exp02, test)* | — | *0.94* |
+
+**Readout**
+1. **The mean-difference direction the editor may use reproduces A0's own score** (corr 0.985 at layer 6; 1.000 at the pooler). Simple statistics find no unused signal.
+2. **Even an unrestricted linear probe on [CLS] adds only ~+7 points of top-3** (0.58 → 0.65), and that's already below A2 n50 (0.71 test) and A2 n200 (0.78 test). Small-data gradient fine-tuning already exceeds what any single-direction readout of A0 offers.
+3. **The lexical bias is real but weak.** Distractors that outrank a gold paragraph overlap slightly more with the question (Jaccard 0.102 vs 0.087 for all distractors). The score's correlation with overlap is similar for gold (0.39) and distractors (0.35), so there is no single "word-overlap direction" to remove.
+
+**Verdict, under the pre-registered rule: no-go for the main hypothesis** (A3 beats A2).
+- The obstacle is not one unused direction. The multi-hop relevance ability is largely *missing* from A0, not suppressed.
+- This is the situation where Takehi et al. saw no gain (Gemma: no single component to fix). Their Qwen gain came from removing a failure mode.
+- Limits of the probe: [CLS] only, linear only, 300 dev questions. Attention-level or token-level mechanisms are not tested, so a minimal pilot could still surprise.
+- **Decision (needs sign-off):** do not run the 24-run grid. Options:
+  - (a) a single minimal pilot (Opus, N = 200, B = 50), framed as a negative-result test;
+  - (b) re-target: edit A2 (already fine-tuned) to remove its remaining failures;
+  - (c) park exp03 for the PhD and focus the qualification on exp02 + sentence-level + transfer.
+
 ## 9. Go/no-go before any agent run (~1 h, no LLM)
 
 On the N = 200 practice questions, extract the [CLS] hidden state per layer for all pairs. Fit a linear probe offline (this is our check, not the editor's method) and measure, per layer, how well one direction separates gold from distractor (AUC). Also check whether A0's errors align with a lexical-overlap direction.

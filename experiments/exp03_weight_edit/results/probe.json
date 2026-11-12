@@ -1,0 +1,70 @@
+{
+ "A0_output": {
+  "auc": 0.8245894633599552,
+  "top3_both": 0.58
+ },
+ "layer0": {
+  "meandiff_auc": 0.5006305170239597,
+  "meandiff_top3": 0.08333333333333333,
+  "probe_auc": 0.5,
+  "probe_top3": 0.08333333333333333,
+  "corr_meandiff_vs_A0score": 0.00785939423919492
+ },
+ "layer1": {
+  "meandiff_auc": 0.6103005464480874,
+  "meandiff_top3": 0.17333333333333334,
+  "probe_auc": 0.6203299705758721,
+  "probe_top3": 0.19666666666666666,
+  "corr_meandiff_vs_A0score": 0.19457929239255095
+ },
+ "layer2": {
+  "meandiff_auc": 0.6044024099761806,
+  "meandiff_top3": 0.16333333333333333,
+  "probe_auc": 0.6256501331091494,
+  "probe_top3": 0.17666666666666667,
+  "corr_meandiff_vs_A0score": 0.22740003988225774
+ },
+ "layer3": {
+  "meandiff_auc": 0.6463948437718929,
+  "meandiff_top3": 0.2,
+  "probe_auc": 0.731860025220681,
+  "probe_top3": 0.3566666666666667,
+  "corr_meandiff_vs_A0score": 0.38971610456819905
+ },
+ "layer4": {
+  "meandiff_auc": 0.7455296343001261,
+  "meandiff_top3": 0.39,
+  "probe_auc": 0.8518270982205407,
+  "probe_top3": 0.6166666666666667,
+  "corr_meandiff_vs_A0score": 0.6972935049503806
+ },
+ "layer5": {
+  "meandiff_auc": 0.8078191116715707,
+  "meandiff_top3": 0.57,
+  "probe_auc": 0.8857832422586521,
+  "probe_top3": 0.65,
+  "corr_meandiff_vs_A0score": 0.9380110816970681
+ },
+ "layer6": {
+  "meandiff_auc": 0.8243806921675775,
+  "meandiff_top3": 0.5766666666666667,
+  "probe_auc": 0.8776369623090934,
+  "probe_top3": 0.6533333333333333,
+  "corr_meandiff_vs_A0score": 0.985454628742425
+ },
+ "pooler": {
+  "meandiff_auc": 0.8245866610620709,
+  "meandiff_top3": 0.58,
+  "probe_auc": 0.8342258652094717,
+  "probe_top3": 0.5933333333333334,
+  "corr_meandiff_vs_A0score": 0.9999986961454568
+ },
+ "lexical": {
+  "overlap_auc_gold_vs_distr": 0.6106764046518145,
+  "corr_A0score_overlap_distractors": 0.3503452012164917,
+  "corr_A0score_overlap_gold": 0.3865456734432241,
+  "mean_overlap_gold": 0.1117879800673236,
+  "mean_overlap_distr": 0.08681099646134866,
+  "mean_overlap_distr_outranking_gold": 0.10205432761272779
+ }
+}

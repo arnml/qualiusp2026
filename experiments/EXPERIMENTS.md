@@ -27,7 +27,7 @@
 |---|---|---|---|---|
 | exp01 | Hop-aware Noise-Gate (option 1): training-free 2nd-hop threshold on "question + top paragraph" | [`exp01_hop_gate`](exp01_hop_gate/README.md) | ✅ done | 6–10% fewer tokens than Noise-Gate at equal both-gold (0.918 at 1089 tok vs 0.928 at 1221). Precision stays at ~0.25–0.30: thresholds plateau. |
 | exp02 | Small learned selector (option 2): 22.7M MiniLM-L6 cross-encoder | [`exp02_cross_encoder`](exp02_cross_encoder/README.md) | ✅ done (offline + gpt-5.4-mini F1) | **F1 (gpt-5.4-mini, 400 q): A1 t=0.02 0.796 at 467 tok vs k=10 0.782 at 1448 (−68% tokens, ΔF1 +0.014, CI includes 0); top-2 0.780 at 330 tok (−77%).** Offline: | **A1 (full fine-tune): 0.915 both-gold at 391 tok (−73% vs k=10, −64% vs hop gate); 0.968 at 461 tok.** A2 n200: 0.915 at 733 tok. A0: 0.915 at 1143 tok. |
-| exp03 | LLM weight editing (option 7): Opus 5.5 / Astra edit the 22M cross-encoder with N examples, compared against fine-tuning on the same N | [`exp03_weight_edit`](exp03_weight_edit/PROTOCOL.md) | 📝 protocol drafted (modelled on Takehi et al. Exp 8 + Ahmed audit) | Go/no-go: linear probe for a "distractor direction" first. |
+| exp03 | LLM weight editing (option 7): Opus 5.5 / Astra edit the 22M cross-encoder with N examples, compared against fine-tuning on the same N | [`exp03_weight_edit`](exp03_weight_edit/PROTOCOL.md) | ⛔ go/no-go: **no-go** for main hypothesis | Protocol pre-registered (f0f955a). Probe: the editor-allowed mean-difference direction just reproduces A0's score; even an unrestricted [CLS] probe adds only +7 pts top-3 (0.58 → 0.65), below A2 n200 (0.78). The ability is missing, not suppressed. | Go/no-go: linear probe for a "distractor direction" first. |
 | — | Sentence-level selection (gold sentences = 214 tok) | — | 💡 idea | — |
 | — | Transfer to 2Wiki / MuSiQue without retraining | — | 💡 idea | — |
 
@@ -45,6 +45,7 @@
 1. **Multi-hop structure matters, but cosine thresholds plateau.** The hop gate helps, yet only about 1 in 4 kept paragraphs is gold (exp01).
 2. **Reading question and paragraph together helps a bit even untrained.** The zero-shot cross-encoder slightly beats the hop gate (exp02 A0).
 2b. **A 22.7M fine-tuned selector closes most of the gap.** It keeps both gold in 91.5% of questions at 391 tokens (oracle 323), about 2.6 paragraphs on average. Its estimated cost is ~1/180 of the generator FLOPs it saves (exp02 A1). Small-data fine-tuning (n200) needs ~2× the tokens for the same recall, which leaves room for exp03.
+2d. **Weight editing has little to work with here (exp03 probe).** A0 has no unused linear signal for multi-hop relevance that an editor could unlock; small-data fine-tuning already beats the best linear readout of A0.
 2c. **Answer quality holds.** With the paper's generator, every A1 rule matches k=10 F1 (paired CIs include 0) at 68–77% fewer tokens. Gold-only context *beats* k=10 by +0.040 F1 (CI excludes 0), so distractors hurt the generator.
 3. **The literature ceiling is high.** Large trained selectors pick exactly both gold paragraphs 92–97.5% of the time (SAE → Beam Retrieval). Our question is how small and cheap the selector can be.
 4. **Embedder mismatch:** the BRACIS Noise-Gate numbers appear to come from OpenAI `text-embedding-3-small` (per the `cart-code` runner), not the MiniLM model stated in the paper. To be checked.
