@@ -1,0 +1,16 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Using the latest cached version of the dataset since hotpot_qa couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'distractor' at C:\Users\devar\.cache\huggingface\datasets\hotpot_qa\distractor\0.0.0\1908d6afbbead072334abe2965f91bd2709910ab (last modified on Thu Nov 12 10:18:07 2026).
+k10_all: 3 done, 397 to run
+oracle_gold: 3 done, 397 to run
+a1_top2: 3 done, 397 to run
+a1_t0.07: 3 done, 397 to run
+a1_t0.02: 3 done, 397 to run
+  condition   n     f1     em  input_tokens  usd_per_query
+   a1_t0.02 400 0.7957 0.6300      467.1450         0.0001
+   a1_t0.07 400 0.7780 0.6225      396.5700         0.0001
+    a1_top2 400 0.7802 0.6275      329.9175         0.0001
+    k10_all 400 0.7817 0.6200     1447.7600         0.0003
+oracle_gold 400 0.8216 0.6700      328.8775         0.0001
+
+Paper (same 400, gpt-5.4-mini): k=10 F1 0.792 @1452.5 tok; Noise-Gate tau=0.30 F1 0.764 @1065.3 tok; band = k10 F1 +-0.05

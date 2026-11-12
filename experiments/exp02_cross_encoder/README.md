@@ -56,7 +56,27 @@ The full fine-tune (A1) took 28,115 steps, ~50 min on the T4. Colab and local CP
 - Literature, large encoders (dev, exactly both gold in the top 2): SAE 92.0%, Beam Retrieval 97.5%. A1 top-2 reaches 87.8% (test) with a 22.7M model.
 - The data-matched baselines leave a large gap: n200 needs 733 tokens for 0.915, against A1's 391. That's the room exp03 (LLM weight editing) tries to close.
 - Selector cost, rough estimate: 10 pairs × ~160 tokens × 2 × 22.7M ≈ 0.07 TFLOPs per question. Saving ~830 tokens against Noise-Gate on an 8B generator ≈ 13 TFLOPs, so the selector costs ~1/180 of what it saves.
-- **Not yet measured:** answer F1 with an LLM generator. Both-gold is a proxy.
+### Answer quality with the paper's generator (2026-11-12)
+
+Setup: `generate.py`, gpt-5.4-mini via the OpenAI API with default params, the paper's exact prompt and F1, the same 400 test questions. 2,000 calls, no failures.
+- Tokens are the API-reported prompt tokens; USD uses the paper's prices.
+- ΔF1 is paired against today's k=10 run (same day, same model), with a 95% bootstrap CI over the 400 questions (5,000 resamples).
+
+| Context | F1 | EM | Tokens | USD / query | ΔF1 vs k=10 [95% CI] |
+|---|---|---|---|---|---|
+| k=10, all paragraphs (today) | 0.782 | 0.620 | 1448 | 2.95e-4 | — |
+| *Paper k=10 (BRACIS)* | *0.792* | — | *1452.5* | *2.95e-4* | *same setup, earlier run* |
+| *Paper Noise-Gate tau=0.30* | *0.764* | — | *1065.3* | *2.17e-4* | — |
+| **A1 threshold t=0.02** | **0.796** | 0.630 | **467 (−68%)** | 0.99e-4 | **+0.014 [−0.013, +0.043]** |
+| A1 threshold t=0.07 | 0.778 | 0.623 | 397 (−73%) | 0.85e-4 | −0.004 [−0.033, +0.026] |
+| A1 top-2 | 0.780 | 0.628 | 330 (−77%) | 0.71e-4 | −0.001 [−0.033, +0.030] |
+| Oracle gold paragraphs | 0.822 | 0.670 | 329 | 0.71e-4 | +0.040 [+0.017, +0.064] |
+
+**Readout**
+- All three A1 rules are **statistically indistinguishable from k=10**, and all are inside the paper's ±0.05 band, using 68–77% fewer tokens and costing a third to a quarter as much per query. In the paper, Noise-Gate saved 27% tokens at −0.028 F1.
+- The gold-only oracle is *better* than k=10 (+0.040, CI excludes 0). Distractors actively hurt the generator, so a good selector can improve answers, not only save tokens.
+- Today's k=10 (0.782) is within 0.01 of the paper's run (0.792), so the setup reproduces.
+- Remaining gap to the oracle: ~0.026 F1 (t=0.02) at +138 tokens. That's room for sentence-level selection or a better selector.
 
 ## Reference numbers (exp01, test 400)
 
