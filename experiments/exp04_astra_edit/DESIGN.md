@@ -79,7 +79,7 @@ The prompt will be written in full and committed before stage 1.
 
 ## What is needed before stage 1
 
-1. **A1 weights locally:** download `exp02_results/full/model` from Google Drive into `exp04_astra_edit/models/a1/` (git-ignored).
+1. ✅ **A1 weights locally** (2026-11-12): `models/a1/model.safetensors` (git-ignored), sha256 prefix `605c986eb9a9a82b`. Copied from Google Drive via Colab. The config and tokenizer were rebuilt from the base model. Local CPU scores reproduce the exp02 Colab scores (500 test pairs: max |diff| 0.0057, corr 1.000000, identical top-2 on 50/50 questions).
 2. **Harness code:** about 300 lines (turn loop, kernel, forward server, audit), with a dry run using a dummy editor.
 3. **Baselines** (CPU, no LLM): layer drop, head ablation, Wanda-style, random, all at the same removed fractions.
 4. **Codex usage:** ChatGPT-plan limits, not dollars. The blog's 50-pass Qwen run took 20 h; ours is a 22M model, but stage 3 may still take hours.

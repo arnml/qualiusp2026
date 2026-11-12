@@ -1,0 +1,17 @@
+[project]
+name = "exp04-astra-edit"
+version = "0.1.0"
+description = "Astra edits the selector: compress and repair (staged)"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "tiktoken>=0.8",
+    "torch>=2.4",
+    "transformers>=4.45",
+]
+
+[tool.uv]
+package = false
