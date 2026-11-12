@@ -1,0 +1,16 @@
+[project]
+name = "exp02-cross-encoder"
+version = "0.1.0"
+description = "Option 2: small learned cross-encoder selector on HotpotQA distractor"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "tiktoken>=0.8",
+    "torch>=2.4",
+    "transformers>=4.45",
+]
+
+[tool.uv]
+package = false

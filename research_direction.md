@@ -57,6 +57,33 @@ Optional label variant: replace the gold labels with "useful-to-the-LLM" labels 
 
 **Target claim:** *a gate with fewer than 10^5 parameters on cached embeddings stays within the ±0.05 F1 band of fixed k=10 with ≥50% fewer tokens (Noise-Gate: 26.7%), and its selector cost per query is about 10^6× smaller than letting an LLM choose.*
 
+## 3b. Plan after exp01 (2026-11-10)
+
+exp01 (option 1, `experiments/exp01_hop_gate`): the hop gate needs about 6–10% fewer tokens than Noise-Gate at equal gold recall. But only ~25–30% of kept paragraphs are gold, against a gold-only oracle of 323 tokens (gold sentences: 214). Training-free thresholds plateau there, so the next step is learned.
+
+**Literature check:** trained encoder selectors already pick exactly both gold HotpotQA paragraphs ~92–97.5% of the time (SAE 92.0, FE2H 96.3, Beam Retrieval 97.5; Beam Retrieval Table 3, dev). They use large encoders and target accuracy, not cost. A small fine-tuned cross-encoder alone is **not** new; the contribution has to be one of the following:
+1. A size ladder (Noise-Gate → MLP on cached embeddings → 22M cross-encoder → ~100M → large), scored on total cost: selector FLOPs + generator tokens, with LLM-reader F1.
+2. Choosing how many paragraphs to keep per question, instead of a fixed top-2 (MuSiQue has 2–4 hops).
+3. Transfer without retraining (HotpotQA → 2Wiki / MuSiQue).
+4. LLM weight editing (below).
+
+Closest competitors to read in full before writing: EnComp (arXiv:2603.09222, AACL 2026; encoder-only sentence pruning) and Provence \cite{chirkova2025provence}.
+
+**exp02:** learned selectors on the same 400 test / 1000 dev split as exp01.
+- 2a: MLP on cached MiniLM embeddings
+- 2b: `cross-encoder/ms-marco-MiniLM-L6-v2` (22.7M) zero-shot, and fine-tuned on HotpotQA train (`supporting_facts` labels)
+- 2c: the same encoder with a hop-2 pass ("question + top paragraph" vs candidate)
+- data-matched baselines: fine-tuned on N = 50 / 200 questions (these are the A2 arm of exp03)
+
+**exp03: LLM weight editing (option 7, concrete version).** Opus 5.5 or Astra, working as an agent (forward passes, activation inspection, numpy edits; no backprop, at most N forward passes, at most 1% of weights edited), repairs the off-the-shelf 22M cross-encoder's HotpotQA failure modes. The target failures are lexical BM25 distractors and missed bridge paragraphs: "removing an obstacle", the setting where the Qwen edit worked \cite{takehi2026weightspace}. Arms:
+- A0: zero-shot
+- A1: full fine-tune (ceiling)
+- **A2: fine-tune on N examples (fair baseline)**
+- A3: LLM edit with N examples
+- A4: LLM edit guided by a large reranker's activations (an LLM-made alternative to distillation)
+
+Audit as in \cite{ahmed2026weightspaceaudit}: a random-edit control of the same size, ablating the edit to check the claimed mechanism, a held-out test set, and a transfer check. Go/no-go before spending agent tokens: a linear probe on the cross-encoder's activations. If one direction separates gold from distractors, a rank-1 LLM edit is plausible.
+
 ## 4. Evaluation: fair cost accounting
 
 Keep the BRACIS protocol: matched samples, fixed generator, ±0.05 F1 band around k=10.
