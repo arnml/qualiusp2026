@@ -180,7 +180,7 @@ Everything worked:
 
 Pre-registered in `8a39213` (DESIGN.md, "Amendment before stage 3"). Prompt: `prompt_trackC_s3.md` (target within 0.5 points of A1).
 
-**Run:** 23 turns, 50/50 passes, **0 tool violations, 0 refused code**, 5.85M Codex input / 210k output tokens, ~2 h wall clock (14 min of editor time; the rest is CPU forward passes). Codex weekly usage went from 19% to about 25%.
+**Run:** 23 turns, 50/50 passes, **0 tool violations, 0 refused code**, 5.85M Codex input / 210k output tokens, ~2 h wall clock (14 min of editor time; the rest is CPU forward passes). Codex weekly usage went from 19% to 22% (5-hour window: 16%).
 
 **Final edit:**
 - **Removed:** 2,016 MLP neurons, no heads or layers.
