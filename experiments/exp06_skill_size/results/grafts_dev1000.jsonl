@@ -6,3 +6,5 @@
 {"config": "astra_scope_random_108k", "params_grafted": 108000, "entries_changed": 108000, "fraction_of_all": 0.0047548603147515005, "bg3": 0.6, "tok90": 1084.648, "seconds": 778}
 {"config": "lowrank_r4", "params_grafted": 328425, "entries_changed": 22713510, "fraction_of_all": 0.99999599358992, "bg3": 0.885, "tok90": 523.232, "seconds": 714}
 {"config": "lowrank_r16", "params_grafted": 1216929, "entries_changed": 22713568, "fraction_of_all": 0.999998547126015, "bg3": 0.951, "tok90": 401.721, "seconds": 640}
+{"config": "lowrank_r2", "params_grafted": 180341, "entries_changed": 22713462, "fraction_of_all": 0.999993880318669, "bg3": 0.815, "tok90": 633.927, "seconds": 912}
+{"config": "lowrank_r8", "params_grafted": 624593, "entries_changed": 22713535, "fraction_of_all": 0.9999970942520299, "bg3": 0.931, "tok90": 444.274, "seconds": 734}
