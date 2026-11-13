@@ -175,3 +175,63 @@ Everything worked:
 - **Noise:** ±0.7 points SE on 1,000 questions.
 
 **Stage gate to stage 3** (pre-registered: Astra ≥ the best baseline at equal FLOPs): formally met, but again only as a tie, not an advantage. The PI decides whether to run B = 50.
+
+## Stage 3 result (`runs/s3_C_B50`, 2026-11-12): Astra, Track C, B = 50, lossless target
+
+Pre-registered in `8a39213` (DESIGN.md, "Amendment before stage 3"). Prompt: `prompt_trackC_s3.md` (target within 0.5 points of A1).
+
+**Run:** 23 turns, 50/50 passes, **0 tool violations, 0 refused code**, 5.85M Codex input / 210k output tokens, ~2 h wall clock (14 min of editor time; the rest is CPU forward passes). Codex weekly usage went from 19% to about 25%.
+
+**Final edit:**
+- **Removed:** 2,016 MLP neurons, no heads or layers.
+  - 96 low-norm neurons in each of layers 0–4
+  - **the whole MLP of layer 5** (1,536 neurons)
+- **Cost:** 34.00 GFLOPs (−13.4%), 9.10M encoder params (−14.6%).
+- **Astra's evidence:** the layer-5 MLP is unnecessary for the ranking, but dropping the whole of layer 5 hurts badly, so layer 5's attention still matters.
+- **Practice:** 94.5% → 95.0% (selection 111 → 112/120; confirmation 78 → 78/80, the same questions right).
+- **Caveat Astra stated itself:** it also used the confirmation half to roll back larger cuts, so that half was not untouched at the end.
+
+**Held-out, dev1000** (`runs/s3_C_B50/eval.json`, `results/baselines_dev1000_matched_s3.json`):
+
+| Selector | GFLOPs | heads / neurons removed | dev1000 both-gold@3 |
+|---|---|---|---|
+| A1 unedited | 39.26 | — | 0.959 |
+| **Astra stage 3** | **34.00** | 0 / 2,016 | **0.957** |
+| Wanda-style, same FLOPs | 33.99 | 7 / 1,473 | 0.962 |
+| Taylor, same FLOPs | 34.00 | 9 / 1,313 | 0.945 |
+| Random, same FLOPs | 34.00 | 9 / 1,313 | 0.933 |
+
+**Paired McNemar test, Astra vs Wanda** (`runs/s3_C_B50/mcnemar_dev1000.json`): Astra-only correct 9, Wanda-only correct 14, p = 0.40.
+
+**Dense Wanda curve on dev1000** (`results/wanda_curve_dense_dev1000.json` plus the earlier files):
+
+| FLOPs kept | 70% | 72.8% | 75% | 77.5% | 80% | 82.5% | 85% | 86.6% | 87.5% | 90% |
+|---|---|---|---|---|---|---|---|---|---|---|
+| GFLOPs | 27.48 | 28.56 | 29.45 | 30.37 | 31.22 | 32.20 | 33.22 | 33.99 | 34.35 | 35.33 |
+| both-gold@3 | 0.930 | 0.940 | 0.938 | 0.952 | 0.953 | 0.954 | 0.959 | 0.962 | 0.956 | 0.958 |
+
+The curve is not monotone above 80%: the differences there are within noise (±0.7 points).
+
+**Test400, params and CPU latency** (`runs/s3_C_B50/final_eval.json`, `final_eval.py`):
+- Removed neurons and heads are sliced out of the matrices; scores match the zeroed model to ≤ 1.2e-5.
+- Latency: torch with 8 CPU threads, one question's paragraphs per batch, mean over 200 dev questions, median of 3 repeats.
+
+| Selector | GFLOPs | Encoder params | test400 both-gold@3 | CPU ms per question |
+|---|---|---|---|---|
+| A1 unedited | 39.26 | 10,646,784 | 0.940 | 241 |
+| **Astra stage 3** | 34.00 | **9,096,480** | 0.9375 | 219 (−9.1%) |
+| Wanda, same FLOPs | 33.99 | 9,169,311 | 0.9425 | 217 (−10.0%) |
+
+**Pre-registered verdict:**
+1. **Lossless check: passed.** dev1000 0.957 ≥ 0.954; −0.2 points vs A1 on dev, −0.25 on test.
+2. **Primary, cost at equal quality: TIE (leaning Wanda).** Wanda first reaches 0.957 at ~32.8 GF (interpolating 82.5% → 85%), against Astra's 34.00 GF. That is 1.2 GF, under the pre-registered 2.0 GF margin.
+3. **At equal FLOPs:** Wanda 0.962 vs Astra 0.957 on dev (p = 0.40) and 0.9425 vs 0.9375 on test; both differences within noise. Astra's model has 0.8% fewer params; latency is the same within 2 ms.
+
+**exp04 Track C overall (stages 1–3):**
+- **Cheaper than A1:** an LLM editing weights with only 5–50 forward passes reliably produces selectors that are 13–27% cheaper, near or at A1's quality. CPU time drops by ~9% at −13% FLOPs.
+- **Not better than Wanda:** the gradient-free Wanda-style baseline matches it at every stage. More forward passes did not open a gap.
+- **Qualitatively different solutions:**
+  - Astra never removes heads.
+  - It found that the last layer's MLP can go entirely while its attention must stay.
+  - It audits its own cuts with paired tests on held-out practice questions.
+- **For the thesis:** an honest negative-to-neutral result on "LLM weight editing beats classical pruning", with a positive engineering result (a cheaper selector at the same quality) and an interpretable mechanism finding.

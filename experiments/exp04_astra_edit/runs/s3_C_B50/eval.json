@@ -1,0 +1,16 @@
+{
+ "run": "s3_C_B50",
+ "valid": true,
+ "errors": [],
+ "cost": {
+  "encoder_gflops_per_question": 33.997824,
+  "encoder_params": 9096480,
+  "removed": {
+   "heads": 0,
+   "neurons": 2016,
+   "layers": []
+  }
+ },
+ "flops_fraction": 0.8659217877094972,
+ "dev1000_bg3": 0.957
+}

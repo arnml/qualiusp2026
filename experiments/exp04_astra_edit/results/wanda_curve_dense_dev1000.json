@@ -1,0 +1,53 @@
+[
+ {
+  "method": "A1_unedited",
+  "frac": 1.0,
+  "gflops": 39.2620032,
+  "dev_bg3": 0.959
+ },
+ {
+  "method": "wanda",
+  "frac": 0.75,
+  "gflops": 29.445632,
+  "dev_bg3": 0.938,
+  "heads": 20,
+  "neurons": 2196,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.775,
+  "gflops": 30.3734784,
+  "dev_bg3": 0.952,
+  "heads": 18,
+  "neurons": 1997,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.825,
+  "gflops": 32.196096,
+  "dev_bg3": 0.954,
+  "heads": 12,
+  "neurons": 1768,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.875,
+  "gflops": 34.3529472,
+  "dev_bg3": 0.956,
+  "heads": 6,
+  "neurons": 1411,
+  "layers": []
+ },
+ {
+  "method": "wanda",
+  "frac": 0.9,
+  "gflops": 35.3334528,
+  "dev_bg3": 0.958,
+  "heads": 3,
+  "neurons": 1270,
+  "layers": []
+ }
+]

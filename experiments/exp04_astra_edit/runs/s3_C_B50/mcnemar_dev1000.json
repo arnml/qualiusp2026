@@ -1,0 +1,9 @@
+{
+ "run": "s3_C_B50",
+ "frac": 0.8659,
+ "editor": 0.957,
+ "wanda": 0.962,
+ "editor_only": 9,
+ "wanda_only": 14,
+ "mcnemar_exact_p": 0.4048728942871094
+}

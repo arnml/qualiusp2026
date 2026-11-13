@@ -114,3 +114,11 @@ Run this **after stage 3 is finished and evaluated**:
   - a Track R prompt (raw edits, 1% edit-size cap, already in editlib)
   - a pre-registration commit
   - stages 5 → 10 → 50 as before
+
+## Update 2026-11-12, late night: exp04 stage 3 DONE; Track C closed
+
+- **Run** `runs/s3_C_B50`: B = 50, lossless prompt, 23 turns, 0 violations. Edit: 2,016 neurons (96 × layers 0–4 + the whole layer-5 MLP), 34.00 GF (−13.4%), 9.10M params.
+- **dev1000:** 0.957 (A1 0.959; Wanda at the same FLOPs 0.962; McNemar 9 vs 14, p = 0.40). **test400:** 0.9375 (A1 0.940, Wanda 0.9425). **CPU:** 219 ms vs A1 241 vs Wanda 217.
+- **Verdict:** lossless, but a TIE with Wanda (~1.2 GF gap, under the 2 GF margin). `final_eval.py` does physical pruning plus latency.
+- **gpt-5.4-mini F1 on stage 3:** not run yet (pre-registered; ~1,200 calls). Low value given the tie; ask the PI.
+- **Next:** the queued A0 / Track R experiment (see above). `C:\work` still needs deleting by the PI (blocked for Claude).

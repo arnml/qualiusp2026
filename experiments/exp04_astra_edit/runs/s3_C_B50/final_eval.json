@@ -1,0 +1,34 @@
+{
+ "run": "s3_C_B50",
+ "frac": 0.8659,
+ "threads": 8,
+ "rows": [
+  {
+   "model": "A1",
+   "gflops": 39.2620032,
+   "params_formula": 10646784,
+   "params_physical": 10646784,
+   "max_abs_diff_phys_vs_zeroed": 0.0,
+   "test400_bg3": 0.94,
+   "cpu_ms_per_question": 241.23958449985366
+  },
+  {
+   "model": "editor",
+   "gflops": 33.997824,
+   "params_formula": 9096480,
+   "params_physical": 9096480,
+   "max_abs_diff_phys_vs_zeroed": 1.1563301086425781e-05,
+   "test400_bg3": 0.9375,
+   "cpu_ms_per_question": 219.2871774995001
+  },
+  {
+   "model": "wanda",
+   "gflops": 33.986944,
+   "params_formula": 9169311,
+   "params_physical": 9169311,
+   "max_abs_diff_phys_vs_zeroed": 8.821487426757812e-06,
+   "test400_bg3": 0.9425,
+   "cpu_ms_per_question": 217.05876599997282
+  }
+ ]
+}
