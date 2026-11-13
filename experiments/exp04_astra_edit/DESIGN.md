@@ -155,3 +155,32 @@ PI framing: **"similar score with fewer neurons or FLOPs is good; it is the same
 - **Beats learning:** tok@90 CI vs A2 entirely below 0.
 
 **Prior, stated before running:** the exp03 probe found no linear [CLS] direction in A0 separating gold from distractors (no-go). We therefore expect **no repair or a small partial repair**. A positive result would mean the editor found a non-linear or attention-level route the probe cannot see. A2 sees the same 200 questions with gradients, so "matches learning" would be a strong result.
+
+## Second editor: Opus 5.5 replication (pre-registered 2026-11-13, before any Opus run)
+
+**Why:** every exp04 result so far comes from one editor with one run per stage. A second frontier model on the identical harness tests whether the findings are about LLM editors or about Astra:
+- compression that ties Wanda
+- a null repair with an honest rollback
+- no tool violations
+
+**Editor:** `claude -p --model claude-opus-5-5 --effort xhigh`, the `ClaudeEditor` in `harness.py`.
+- All built-in tools are off (`--tools ""`), with no MCP servers, no settings, hooks or skills, and no CLAUDE.md.
+- The working folder is outside the git repo, so no commit messages, which contain our results, reach the editor.
+- A probe confirmed tools = [], mcp = [], the answer NO_TOOLS, and that `--resume` keeps context.
+- *Disclosure:* the analysis is written by Claude Opus 5.5, the same model family. The pre-registered rules below fix the evaluation in advance.
+
+**Runs, identical to Astra's except for the editor:**
+
+| Run | Track | Model | Practice | B | Turn cap | Prompt |
+|---|---|---|---|---|---|---|
+| `o1_C_B5` | C (compress A1) | A1 | heldval 200 | 5 | 40 | `prompt_trackC.md` (the stage 2+ wording with `WORK`/`NOTES`) |
+| `o1_R_B5` | R (repair A0) | A0 | train 200 (= A2's) | 5 | 40 | `prompt_trackR.md` |
+
+**Evaluation, identical to Astra's:**
+- **Track C:** `evaluate.py --eval-n 1000`, Wanda / Taylor / random at the same FLOPs, McNemar vs Wanda.
+- **Track R:** `evaluate_r.py`, with tok@90 CI and McNemar vs A0 and A2.
+
+**Pre-registered readings:**
+- **Track C, cost at equal quality vs Wanda (the stage 3 rule):** FLOPs Wanda needs for Opus's dev1000 quality, read off the dense Wanda curve. Win/tie/loss margin is 2 GF.
+- **Track R:** the same outcome categories as R1 (no repair / partial / matches A2 / beats A2).
+- **Editor comparison (descriptive):** turns, tokens, violations, the kind of edits, and whether the editor used a held-out confirmation split.
