@@ -1,0 +1,18 @@
+[project]
+name = "exp09-iterative-rerank"
+version = "0.1.0"
+description = "Iterative (query-updated) reranking on MuSiQue-Ans"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "openai>=3.50.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "tiktoken>=0.8",
+    "torch>=2.4",
+    "transformers>=4.45",
+]
+
+[tool.uv]
+package = false
