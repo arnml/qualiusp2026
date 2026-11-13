@@ -1,0 +1,18 @@
+[project]
+name = "exp08-musique"
+version = "0.1.0"
+description = "Chain-aware adaptive evidence selection on top of A1"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "openai>=3.50.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "tiktoken>=0.8",
+    "torch>=2.4",
+    "transformers>=4.45",
+]
+
+[tool.uv]
+package = false
