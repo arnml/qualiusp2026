@@ -3,8 +3,8 @@
   uv run python score_pool.py            # pool (validation minus dev/test), dev, test
 
 For every (question, paragraph) pair: A1's score and the 384-d pooler output the classifier reads
-(float16). Saved to cache/a1_<split>.npz (git-ignored, rebuildable). The pool contains every
-validation question not in dev (1000) or test (400); A1 never saw validation questions in training.
+(float16). Saved to cache/a1_<split>.npz (git-ignored, rebuildable). The pool is a random sample
+(seed 0) of 4,000 validation questions not in dev (1000) or test (400); A1 never saw validation questions in training.
 """
 
 from __future__ import annotations
@@ -22,13 +22,16 @@ from data import SPLIT_IDS, _load, gold_mask, paragraphs_of
 HERE = Path(__file__).resolve().parent
 A1 = HERE.parent / "exp04_astra_edit" / "models" / "a1"
 torch.set_num_threads(8)
+POOL_N = 4000  # random sample of the unused validation questions (seed 0), for CPU time
 
 
 def rows_for(split):
     ds = _load("validation")
     if split == "pool":
         used = set(SPLIT_IDS["dev"]) | set(SPLIT_IDS["test"])
-        return [dict(r) for r in ds if r["id"] not in used]
+        pool = [i for i, qid in enumerate(ds["id"]) if qid not in used]
+        pick = sorted(np.random.default_rng(0).choice(pool, min(POOL_N, len(pool)), replace=False))
+        return [dict(ds[int(i)]) for i in pick]
     pos = {i: k for k, i in enumerate(SPLIT_IDS[split])}
     out = [None] * len(pos)
     for r in ds:

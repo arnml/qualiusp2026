@@ -2,7 +2,7 @@
 
 **Goal:** a descriptive failure anatomy of the fine-tuned selector A1, to find what is left to improve (it feeds exp06 and exp07). No decision rules and no LLM.
 
-**Data:** every HotpotQA validation question that is not in dev (1000) or test (400), the "pool". A1 never trained on validation questions. dev is analysed too, for comparison.
+**Data:** a random sample (seed 0) of 4,000 HotpotQA validation questions not in dev (1000) or test (400), the "pool" (capped for CPU time). A1 never trained on validation questions. dev is analysed too, for comparison.
 
 **Steps:**
 
