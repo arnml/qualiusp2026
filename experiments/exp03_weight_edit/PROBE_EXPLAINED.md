@@ -33,7 +33,9 @@ If the thoughts separated gold from distractors **much better than the output do
 
 - **The simple direction just repeats what the model already says** (correlation 0.985). Nothing hidden.
 - **Even the best probe gains only +7 points.** Ordinary training on 200 questions already does much better (+20 points).
-- **Conclusion:** the student doesn't secretly know the answer. The skill of spotting multi-hop evidence is **missing, not blocked**. Removing a blockage won't help, so the expensive editing experiment is unlikely to beat normal training. **No-go**, decided by a rule written down *before* we looked.
+- **Conclusion (as first written):** the student doesn't secretly know the answer *in a form a straight-line readout can find*. ~~The skill of spotting multi-hop evidence is missing, not blocked.~~
+  **Correction (2026-11-13, PI):** a failed linear probe does not show the capability is absent from A0. It shows only that *this* probe (linear, [CLS], one paragraph at a time) could not extract it reliably. The information may be non-linear, distributed across layers or tokens, or recoverable only through interactions between paragraphs.
+- **What the probe does support:** there is no single unused [CLS] direction to unlock. Removing one blockage won't help, so the expensive editing experiment is unlikely to beat normal training. **No-go**, decided by a rule written down *before* we looked.
 
 ## Why this methodology is useful (reusable recipe)
 

@@ -120,7 +120,8 @@ Setup: practice = the 200 A2 train questions; held-out = 300 dev questions. "Top
 3. **The lexical bias is real but weak.** Distractors that outrank a gold paragraph overlap slightly more with the question (Jaccard 0.102 vs 0.087 for all distractors). The score's correlation with overlap is similar for gold (0.39) and distractors (0.35), so there is no single "word-overlap direction" to remove.
 
 **Verdict, under the pre-registered rule: no-go for the main hypothesis** (A3 beats A2).
-- The obstacle is not one unused direction. The multi-hop relevance ability is largely *missing* from A0, not suppressed.
+- The obstacle is not one unused direction. ~~The multi-hop relevance ability is largely *missing* from A0, not suppressed.~~
+- **Correction (2026-11-13, PI):** a failed linear probe does not show the capability is absent from A0. It shows only that *this* probe (linear, [CLS], one paragraph at a time) could not extract it reliably. The information may be non-linear, distributed across layers or tokens, or recoverable only through interactions between paragraphs.
 - This is the situation where Takehi et al. saw no gain (Gemma: no single component to fix). Their Qwen gain came from removing a failure mode.
 - Limits of the probe: [CLS] only, linear only, 300 dev questions. Attention-level or token-level mechanisms are not tested, so a minimal pilot could still surprise.
 - **Decision (needs sign-off):** do not run the 24-run grid. Options:

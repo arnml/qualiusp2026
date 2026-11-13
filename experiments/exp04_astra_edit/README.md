@@ -267,7 +267,7 @@ Pre-registered in `25bc080` (DESIGN.md, "Track R pre-registration"). The start m
 McNemar vs A0: 4 vs 3, p = 1.0. **The candidate has no effect on held-out questions, so Astra's rejection was correct.** Its discovery-half gain (−38 tokens) was overfitting to 100 questions.
 
 **Readout:**
-- This matches the prior from the exp03 probe: A0 lacks the skill, and a 1% weight edit found by analysis does not add it.
+- This matches the prior from the exp03 probe (no single linear [CLS] direction to unlock). It does **not** show A0 lacks the skill: the probe tested only linear readouts at [CLS], and R1 tested only one MLP-level edit with 5 passes.
 - **The editor behaved like a careful experimenter:**
   - a predeclared split and rule
   - an honest null submission, rather than shipping an unconfirmed gain

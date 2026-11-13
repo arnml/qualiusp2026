@@ -65,7 +65,7 @@ We followed the harness of Takehi et al. (2026, Exp 8) and kept its seven-sectio
 ## What we can claim
 
 1. **LLM weight editing can compress, but not beat pruning.** With 5–50 forward passes, a frontier model produces a selector that is 13–27% cheaper at (near-)equal quality. A simple gradient-free baseline (Wanda) does the same.
-2. **LLM weight editing did not add a missing skill.** With 5 passes and a 1% edit cap, it could not teach the off-the-shelf encoder multi-hop selection. Fine-tuning on the same 200 questions saves ~390 tokens per question.
+2. **LLM weight editing did not repair A0, in this setting.** With 5 passes, a 1% edit cap and no fitting allowed, it found no edit that improves the off-the-shelf encoder. This does not show the ability is absent from A0 (see the exp03 correction); only that this editor, under these constraints, did not find a repair. Fine-tuning on the same 200 questions saves ~390 tokens per question.
 3. **The editor is a careful experimenter.** Over 4 sessions and 65 turns:
    - 0 tool violations and 0 refused code
    - predeclared discovery/confirmation splits, paired tests and rollbacks of edits that failed confirmation
