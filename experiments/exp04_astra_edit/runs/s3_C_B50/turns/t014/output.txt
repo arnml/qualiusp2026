@@ -1,0 +1,10 @@
+[forward] pass used; 19 left
+{'label': 'balanced2_heads1_plus_0_2', 'n': 120, 'original': 111, 'edited': 109, 'lost': [14, 66, 103, 156], 'gained': [91, 124], 'margin_delta_quantiles': [-6.1131, -2.6456, 0.0746], 'score_correlation': 0.945857649255608, 'cost': {'encoder_gflops_per_question': 28.1522176, 'encoder_params': 7418394, 'removed': {'heads': 4, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 18 left
+{'label': 'balanced2_heads1_plus_2_11', 'n': 120, 'original': 111, 'edited': 114, 'lost': [], 'gained': [91, 124, 192], 'margin_delta_quantiles': [-5.4603, -2.4271, 0.1953], 'score_correlation': 0.9518721385428431, 'cost': {'encoder_gflops_per_question': 28.1522176, 'encoder_params': 7418394, 'removed': {'heads': 4, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 17 left
+{'label': 'balanced2_heads1_plus_3_1', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-5.7094, -2.4749, 0.2296], 'score_correlation': 0.9548636790476727, 'cost': {'encoder_gflops_per_question': 28.1522176, 'encoder_params': 7418394, 'removed': {'heads': 4, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 16 left
+{'label': 'balanced2_heads1_plus_4_9', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-5.0869, -2.114, 0.0953], 'score_correlation': 0.9565424507563283, 'cost': {'encoder_gflops_per_question': 28.1522176, 'encoder_params': 7418394, 'removed': {'heads': 4, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 15 left
+{'label': 'balanced2_heads1_plus_5_9', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-5.6271, -2.6733, -0.0215], 'score_correlation': 0.9556685477658188, 'cost': {'encoder_gflops_per_question': 28.1522176, 'encoder_params': 7418394, 'removed': {'heads': 4, 'neurons': 3942, 'layers': []}}}

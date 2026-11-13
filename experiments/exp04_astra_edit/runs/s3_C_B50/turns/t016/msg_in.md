@@ -1,0 +1,11 @@
+OUTPUT:
+```
+[forward] pass used; 14 left
+{'label': 'balanced2_head4_9', 'n': 120, 'original': 111, 'edited': 114, 'lost': [], 'gained': [91, 124, 171], 'margin_delta_quantiles': [-4.4581, -1.9922, 0.3787], 'score_correlation': 0.9644533612915152, 'cost': {'encoder_gflops_per_question': 28.764544, 'encoder_params': 7566138, 'removed': {'heads': 1, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 13 left
+{'label': 'balanced2_scale1.1', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 171], 'margin_delta_quantiles': [-4.077, -1.6355, 0.4672], 'score_correlation': 0.9674288760878543, 'cost': {'encoder_gflops_per_question': 28.9686528, 'encoder_params': 7615386, 'removed': {'heads': 0, 'neurons': 3942, 'layers': []}}}
+[forward] pass used; 12 left
+{'label': 'balanced2_earlyprotected', 'n': 120, 'original': 111, 'edited': 112, 'lost': [], 'gained': [171], 'margin_delta_quantiles': [-4.5494, -2.0287, 0.5133], 'score_correlation': 0.9672473684781057, 'cost': {'encoder_gflops_per_question': 28.9686528, 'encoder_params': 7615386, 'removed': {'heads': 0, 'neurons': 3942, 'layers': []}}}
+
+```
+Passes left: 12/50. Turn 15/200.

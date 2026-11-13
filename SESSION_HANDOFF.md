@@ -102,3 +102,15 @@ Cheaper multi-hop QA: a **small, cheap selector** (few params/FLOPs) decides whi
   Wanda is lossless at 85%.
 - **Primary criterion (cost at equal quality):** a tie in FLOPs at both stages. Params: Astra −3.1% vs Wanda (stage 2), −2.1% (stage 1).
 - **Next:** the PI decides whether to run stage 3 (B = 50, turn cap 200), stop Track C, or pivot (e.g. Track R, or ask Astra to aim for the lossless point). Pending: delete `C:\work` (PI).
+
+## Queued by the PI (2026-11-12, during stage 3): Astra edits the NON-fine-tuned encoder
+
+Run this **after stage 3 is finished and evaluated**:
+- **Start model:** A0 = off-the-shelf `cross-encoder/ms-marco-MiniLM-L6-v2` (the model A1 was fine-tuned from), edited directly by Astra.
+- **This is Track R** in DESIGN.md: repair A0 for HotpotQA by weight editing, compared with A2 (fine-tune on the same N practice questions) and with A1.
+- **Prior expectation:** exp03 probe = no-go (A0 has no linear [CLS] direction to unlock). Keep this honest in the write-up; the run tests non-linear routes the probe can't see.
+- **Possible second arm:** Track C on A0 (compress A0 and compare with Wanda on A0).
+- **Needs:**
+  - a Track R prompt (raw edits, 1% edit-size cap, already in editlib)
+  - a pre-registration commit
+  - stages 5 → 10 → 50 as before

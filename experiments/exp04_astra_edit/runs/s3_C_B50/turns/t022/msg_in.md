@@ -1,0 +1,9 @@
+OUTPUT:
+```
+[forward] pass used; 1 left
+{'label': 'FULL_FINAL_MLP_REMOVAL_CONFIRMATION', 'n': 80, 'original': 78, 'edited': 78, 'lost': [], 'gained': [], 'margin_delta_quantiles': [nan, nan, nan], 'score_correlation': 0.9936603353773391, 'cost': {'encoder_gflops_per_question': 33.997824, 'encoder_params': 9096480, 'removed': {'heads': 0, 'neurons': 2016, 'layers': []}}}
+Whole-final-MLP simplification accepted.
+Final edit: {'track': 'C', 'heads_removed': [], 'neurons_removed': 2016, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 33.997824, 'encoder_params': 9096480, 'removed': {'heads': 0, 'neurons': 2016, 'layers': []}}}
+
+```
+Passes left: 1/50. Turn 21/200.

@@ -1,0 +1,15 @@
+OUTPUT:
+```
+AttributeError: 'float' object has no attribute 'log'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\code\qualiusp2026\experiments\exp04_astra_edit\kernel.py", line 26, in <module>
+    exec(compile(msg["code"], "<cell>", "exec"), ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<cell>", line 16, in <module>
+TypeError: loop of ufunc does not support argument 0 of type float which has no callable log method
+
+```
+Passes left: 49/50. Turn 4/200.

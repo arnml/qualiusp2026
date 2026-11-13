@@ -1,0 +1,14 @@
+OUTPUT:
+```
+[forward] pass used; 10 left
+{'label': 'MLP_balanced_selection_recheck', 'n': 120, 'original': 111, 'edited': 114, 'lost': [], 'gained': [91, 124, 141], 'margin_delta_quantiles': [-3.671, -1.4678, 0.5296], 'score_correlation': 0.9722844885196043, 'cost': {'encoder_gflops_per_question': 29.9713536, 'encoder_params': 7910682, 'removed': {'heads': 0, 'neurons': 3558, 'layers': []}}}
+{'label': 'MLP_balanced_confirmation', 'n': 80, 'original': 78, 'edited': 75, 'lost': [29, 47, 70], 'gained': [], 'margin_delta_quantiles': [nan, nan, nan], 'score_correlation': 0.9747786481558353, 'cost': {'encoder_gflops_per_question': 29.9713536, 'encoder_params': 7910682, 'removed': {'heads': 0, 'neurons': 3558, 'layers': []}}}
+[forward] pass used; 9 left
+{'label': 'MLP_late90_selection_recheck', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-3.4394, -1.4518, 0.4175], 'score_correlation': 0.9740235522290478, 'cost': {'encoder_gflops_per_question': 30.6398208, 'encoder_params': 8107546, 'removed': {'heads': 0, 'neurons': 3302, 'layers': []}}}
+{'label': 'MLP_late90_confirmation', 'n': 80, 'original': 78, 'edited': 74, 'lost': [29, 47, 70, 120], 'gained': [], 'margin_delta_quantiles': [nan, nan, nan], 'score_correlation': 0.976186992371866, 'cost': {'encoder_gflops_per_question': 30.6398208, 'encoder_params': 8107546, 'removed': {'heads': 0, 'neurons': 3302, 'layers': []}}}
+[forward] pass used; 8 left
+{'label': 'MLP_weight_25_selection_recheck', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-3.7499, -1.8196, 0.2136], 'score_correlation': 0.9731244885859638, 'cost': {'encoder_gflops_per_question': 33.2457984, 'encoder_params': 8875008, 'removed': {'heads': 0, 'neurons': 2304, 'layers': []}}}
+{'label': 'MLP_weight_25_confirmation', 'n': 80, 'original': 78, 'edited': 74, 'lost': [29, 47, 70, 120], 'gained': [], 'margin_delta_quantiles': [nan, nan, nan], 'score_correlation': 0.975603218520411, 'cost': {'encoder_gflops_per_question': 33.2457984, 'encoder_params': 8875008, 'removed': {'heads': 0, 'neurons': 2304, 'layers': []}}}
+
+```
+Passes left: 8/50. Turn 17/200.

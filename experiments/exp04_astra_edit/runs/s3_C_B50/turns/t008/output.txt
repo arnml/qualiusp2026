@@ -1,0 +1,4 @@
+[forward] pass used; 42 left
+{'label': 'MLP_weight_25_scale_1.1', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-3.6164, -1.6062, 0.1029], 'score_correlation': 0.974198661708097, 'cost': {'encoder_gflops_per_question': 33.2457984, 'encoder_params': 8875008, 'removed': {'heads': 0, 'neurons': 2304, 'layers': []}}}
+[forward] pass used; 41 left
+{'label': 'MLP_weight_25_scale_1.25', 'n': 120, 'original': 111, 'edited': 112, 'lost': [], 'gained': [91], 'margin_delta_quantiles': [-3.7938, -1.5835, 0.0645], 'score_correlation': 0.9685084006091959, 'cost': {'encoder_gflops_per_question': 33.2457984, 'encoder_params': 8875008, 'removed': {'heads': 0, 'neurons': 2304, 'layers': []}}}

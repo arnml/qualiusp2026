@@ -1,0 +1,6 @@
+[forward] pass used; 34 left
+{'label': 'MLP_late75', 'n': 120, 'original': 111, 'edited': 113, 'lost': [], 'gained': [91, 124], 'margin_delta_quantiles': [-3.8075, -1.8684, 0.1786], 'score_correlation': 0.9734501962945161, 'cost': {'encoder_gflops_per_question': 31.2403968, 'encoder_params': 8284416, 'removed': {'heads': 0, 'neurons': 3072, 'layers': []}}}
+[forward] pass used; 33 left
+{'label': 'MLP_mixed', 'n': 120, 'original': 111, 'edited': 112, 'lost': [], 'gained': [124], 'margin_delta_quantiles': [-4.7219, -2.5917, 0.3492], 'score_correlation': 0.9595097315910008, 'cost': {'encoder_gflops_per_question': 30.237696, 'encoder_params': 7989120, 'removed': {'heads': 0, 'neurons': 3456, 'layers': []}}}
+[forward] pass used; 32 left
+{'label': 'MLP_mixed_deep', 'n': 120, 'original': 111, 'edited': 108, 'lost': [14, 66, 103], 'gained': [], 'margin_delta_quantiles': [-6.449, -3.3518, 0.1078], 'score_correlation': 0.9430614965374473, 'cost': {'encoder_gflops_per_question': 28.2322944, 'encoder_params': 7398528, 'removed': {'heads': 0, 'neurons': 4224, 'layers': []}}}
