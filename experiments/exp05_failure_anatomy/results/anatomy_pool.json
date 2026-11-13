@@ -1,0 +1,85 @@
+{
+ "split": "pool",
+ "questions": 4000,
+ "bg3": 0.9527,
+ "bg2": 0.8768,
+ "failures_top3": 189,
+ "by_type": {
+  "bridge": {
+   "n": 3196,
+   "bg3": 0.9409,
+   "bg2": 0.8482
+  },
+  "comparison": {
+   "n": 804,
+   "bg3": 1.0,
+   "bg2": 0.99
+  }
+ },
+ "categories_top3": {
+  "D other": 96,
+  "A bridge-linked": 61,
+  "C alt-evidence": 32
+ },
+ "categories_top2_only": {
+  "D other": 153,
+  "A bridge-linked": 108,
+  "C alt-evidence": 35,
+  "B comparison": 8
+ },
+ "miss_rank_top3_failures": {
+  "4": 95,
+  "5": 40,
+  "6": 19,
+  "7": 12,
+  "8": 12,
+  "9": 7,
+  "10": 4
+ },
+ "features": {
+  "miss_title_in_q": {
+   "failures": 0.026,
+   "successes": 0.339
+  },
+  "found_title_in_q": {
+   "failures": 0.302,
+   "successes": 0.544
+  },
+  "link_found_to_miss": {
+   "failures": 0.333,
+   "successes": 0.355
+  },
+  "link_miss_to_found": {
+   "failures": 0.439,
+   "successes": 0.274
+  },
+  "answer_in_miss": {
+   "failures": 0.725,
+   "successes": 0.639
+  },
+  "answer_in_found": {
+   "failures": 0.561,
+   "successes": 0.517
+  },
+  "distractor_above_has_answer": {
+   "failures": 0.222,
+   "successes": 0.013
+  },
+  "distractor_above_title_in_q": {
+   "failures": 0.27,
+   "successes": 0.02
+  },
+  "jac_q_miss": {
+   "failures": 0.104,
+   "successes": 0.111
+  },
+  "jac_q_found": {
+   "failures": 0.137,
+   "successes": 0.125
+  },
+  "jac_q_top_distractor": {
+   "failures": 0.109,
+   "successes": 0.109
+  }
+ }
+}
