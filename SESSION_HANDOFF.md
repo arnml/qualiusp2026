@@ -147,3 +147,12 @@ Run this **after stage 3 is finished and evaluated**:
 **Open for the PI:**
 1. Are gradients allowed? This unblocks "Astra repair v2" with a rank budget in L3–L4.
 2. Is the thesis contribution exp07 (the practical, cheap adaptive selector) to be tested on MuSiQue/2Wiki next?
+
+## Update 2026-11-13, night: exp08 (exp07 on MuSiQue) done
+
+| Result | Where |
+|---|---|
+| Pre-registered primary/secondary **not testable** (A1 top-10 full recall 0.68 < targets); F1 not run | `experiments/exp08_musique/README.md` |
+| Exploratory k ≤ 20: adaptive_full −62 / −100 tok vs A1 threshold at 0.90 / 0.95 (recall n.s.); text = a1only; A0 top-10 0.51 | `results/results_kmax20.json`, `results/a0_vs_a1_topk_test.json` |
+
+**Open for the PI:** next direction: iterative reranking on MuSiQue (a), MuSiQue-fine-tuned A1 (b), or Astra repair v2 (needs the gradients decision).

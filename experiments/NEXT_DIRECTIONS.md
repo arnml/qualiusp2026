@@ -61,3 +61,14 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
 - **a. exp07 on MuSiQue / 2Wiki:** the real test of chain awareness, and the practical thesis line.
 - **b. Astra repair v2:** a rank-≤ 4 budget in L3–L4. Needs the gradients decision.
 - **c. Interaction surgery** (candidate 5) for real latency.
+
+## Update (2026-11-13, night): exp08 = exp07 on MuSiQue
+
+- **Pre-registered outcome: not testable.** A1's top 10 holds all supporting paragraphs for only 68% of MuSiQue questions (A0: 51%). The k ≤ 10 policy chosen from HotpotQA cannot reach recall 0.90/0.95.
+- **Exploratory (k ≤ 20):** the adaptive MLP still saves 62–100 tokens vs the A1 threshold at equal recall (n.s.). Title/link features add nothing; the signal is A1's vectors.
+- **Consequence:** on 2–4-hop questions the bottleneck is the **one-shot ranker**, not the stopping rule. Sending 0.95 recall still costs ~2,000 of 2,535 tokens.
+
+**Suggested next steps:**
+- **a. Iterative / query-updated reranking:** re-score the remaining paragraphs with the question + selected paragraphs (A1 or a small fine-tune on MuSiQue train). This is the direct fix for the 4-hop recall collapse, and the natural PhD line.
+- **b. Fine-tune A1 on MuSiQue train** (a cheap upper bound on what one-shot ranking can do there), then rerun exp08 unchanged with k ≤ 10.
+- **c. Astra repair v2** and **interaction surgery** as before.

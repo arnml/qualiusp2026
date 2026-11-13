@@ -10,6 +10,7 @@ results/test_selections.json.
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from math import comb
@@ -23,7 +24,8 @@ from sklearn.preprocessing import StandardScaler
 from data import build_retrieval_prompt, gold_mask, hops, load, n_tokens, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
-KS = list(range(2, 11))
+KS = list(range(2, 11))  # pre-registered; --kmax overrides (exploratory)
+TOPN = 10
 TARGETS = (0.90, 0.95)
 WORD = re.compile(r"[a-z0-9]+")
 STOP = set("the a an of in on and or to for is was were be by with as at from which what who whom whose when where "
@@ -71,12 +73,13 @@ def load_split(split):
 def feats(x):
     """Per k in KS: (a1only, link, vec) features and the label."""
     o = np.argsort(-x["s"]); s = x["s"][o]
-    top10 = np.pad(s[:10], (0, max(0, 10 - len(s))), constant_values=s[-1])
+    top10 = np.pad(s[:TOPN], (0, max(0, TOPN - len(s))), constant_values=s[-1])
     A, L, V, Y = [], [], [], []
     for k in KS:
         T, O = o[:k], o[k:]
         nxt = o[k] if k < len(o) else None
-        A.append(np.r_[k, top10, s[k - 1] - (s[k] if k < len(s) else s[k - 1] - 1)])
+        kk = min(k, len(s))  # some questions have < 20 paragraphs
+        A.append(np.r_[k, top10, s[kk - 1] - (s[kk] if kk < len(s) else s[kk - 1] - 1)])
         sub = x["M"][np.ix_(T, T)]
         dang = x["M"][np.ix_(T, O)].any() if len(O) else False
         dnext = x["M"][T, nxt].any() if nxt is not None else False
@@ -182,6 +185,12 @@ def boot(d, rng, n=2000):
 
 
 def main():
+    global KS, TOPN
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--kmax", type=int, default=10, help="10 = pre-registered; larger = exploratory")
+    args = ap.parse_args()
+    KS = list(range(2, args.kmax + 1)); TOPN = max(10, min(20, args.kmax + 1))
+    suf = "" if args.kmax == 10 else f"_kmax{args.kmax}"
     pool, dev, test = (load_split(s) for s in ("pool", "dev", "test"))
     idx = np.random.default_rng(0).permutation(len(pool)); cut = int(0.8 * len(pool))
     tr, va = [pool[i] for i in idx[:cut]], [pool[i] for i in idx[cut:]]
@@ -208,7 +217,7 @@ def main():
     models = ("a1only", "text", "full")
     tables = {"dev": topk_tables(dev), "test": topk_tables(test)}
     P = {(m, s): probs(m, s) for m in models for s in ("dev", "test")}
-    rep = {"pool_train": len(tr), "pool_val": len(va), "mlp": info,
+    rep = {"kmax": KS[-1], "pool_train": len(tr), "pool_val": len(va), "mlp": info,
            "a1_topk_full_recall": {s: {int(k): float(np.mean([x["gold"][np.argsort(-x["s"])[:k]].sum() == x["gold"].sum()
                                                                for x in d])) for k in range(1, 21)}
                                    for s, d in (("dev", dev), ("test", test))},
@@ -226,6 +235,9 @@ def main():
         R, TOK = tables["test"]; per = {"a1_thresh": (a1_rec, a1_tok)}
         for m in models:
             b = tune_adaptive(P[(m, "dev")], *tables["dev"], target)
+            if b is None:  # target unreachable within k <= max(KS) on dev: policy not testable
+                row[f"adaptive_{m}"] = {"dev": None, "unreachable": True}
+                continue
             c = adaptive_pick(P[(m, "test")], b[0])
             rec, tok = R[np.arange(len(c)), c].astype(float), TOK[np.arange(len(c)), c]
             per[m] = (rec, tok)
@@ -236,6 +248,9 @@ def main():
         # 1. primary: adaptive text/full vs A1 threshold; 2. secondary: text/full vs a1only
         for m, ref in (("text", "a1_thresh"), ("full", "a1_thresh"), ("a1only", "a1_thresh"),
                        ("text", "a1only"), ("full", "a1only")):
+            if m not in per or ref not in per:
+                row[f"{m}_vs_{ref}"] = {"success": False, "not_testable": True}
+                continue
             dt = per[m][1] - per[ref][1]; dr = per[m][0] - per[ref][0]
             ct, cr = boot(dt, rng), boot(dr, rng)
             row[f"{m}_vs_{ref}"] = {"tokens_diff": float(dt.mean()), "tokens_ci95": ct, "recall_diff": float(dr.mean()),
@@ -252,8 +267,8 @@ def main():
     rep["primary_success"] = any(pol[f"recall_{t:g}"][f"{m}_vs_a1_thresh"]["success"] for t in TARGETS for m in ("text", "full"))
     rep["secondary_success"] = any(pol[f"recall_{t:g}"][f"{m}_vs_a1only"]["success"] for t in TARGETS for m in ("text", "full"))
     (HERE / "results").mkdir(exist_ok=True)
-    (HERE / "results" / "results.json").write_text(json.dumps(rep, indent=1))
-    (HERE / "results" / "test_selections.json").write_text(json.dumps(sels))
+    (HERE / "results" / f"results{suf}.json").write_text(json.dumps(rep, indent=1))
+    (HERE / "results" / f"test_selections{suf}.json").write_text(json.dumps(sels))
     print(json.dumps(rep, indent=1))
 
 
