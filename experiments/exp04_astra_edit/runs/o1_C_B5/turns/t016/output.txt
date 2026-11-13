@@ -1,0 +1,7 @@
+c4 quantiles [0.686 0.892 0.947 0.974 0.991]
+L4cos [0.686,0.916]: n=399 final cos 0.881  |dscore| 3.24  mean dscore +2.26
+L4cos [0.916,0.938]: n=398 final cos 0.913  |dscore| 2.84  mean dscore +2.27
+L4cos [0.938,0.954]: n=398 final cos 0.930  |dscore| 2.57  mean dscore +1.85
+L4cos [0.954,0.967]: n=398 final cos 0.932  |dscore| 2.45  mean dscore +1.85
+L4cos [0.967,0.991]: n=399 final cos 0.946  |dscore| 2.15  mean dscore +1.66
+all: |dscore| 2.65 mean +1.98; score std 5.06

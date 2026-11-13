@@ -1,0 +1,15 @@
+hard_perp  corr(within-q): ntok=0.31 has_ans=-0.27 title_in_q=-0.35 overlap=-0.51 score=-0.91 | cos(hard_perp)=1.00
+ans_perp   corr(within-q): ntok=-0.12 has_ans=0.21 title_in_q=0.32 overlap=0.39 score=0.38 | cos(hard_perp)=-0.08
+      dir  beta  A_b3  A_tokens90
+hard_perp  0.00  0.58       945.5
+hard_perp  0.25  0.60       929.8
+hard_perp  0.50  0.59       884.7
+hard_perp  0.75  0.54       800.8
+hard_perp  1.00  0.50       930.4
+hard_perp  1.50  0.12      1146.4
+ ans_perp  0.00  0.58       945.5
+ ans_perp  0.25  0.57       940.4
+ ans_perp  0.50  0.58       806.6
+ ans_perp  0.75  0.60       790.7
+ ans_perp  1.00  0.60       916.5
+ ans_perp  1.50  0.58       977.5

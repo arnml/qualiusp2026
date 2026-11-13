@@ -1,0 +1,15 @@
+{"config": "A0", "params_grafted": 0, "entries_changed": 0, "fraction_of_all": 0.0, "bg3": 0.58, "tok90": 1098.1166666666666, "seconds": 358}
+{"config": "A1", "params_grafted": 22713601, "entries_changed": 22713588, "fraction_of_all": 0.9999994276557028, "bg3": 0.97, "tok90": 380.61, "seconds": 220}
+{"config": "sparse_top_0.1", "params_grafted": 2271360, "entries_changed": 2271360, "fraction_of_all": 0.09999999559735157, "bg3": 0.8733333333333333, "tok90": 547.5933333333334, "seconds": 268}
+{"config": "sparse_top_0.01", "params_grafted": 227136, "entries_changed": 227136, "fraction_of_all": 0.009999999559735157, "bg3": 0.6233333333333333, "tok90": 1027.0, "seconds": 178}
+{"config": "sparse_top_0.001", "params_grafted": 22713, "entries_changed": 22713, "fraction_of_all": 0.000999973540082878, "bg3": 0.5833333333333334, "tok90": 1089.1233333333332, "seconds": 188}
+{"config": "sparse_top_0.0001", "params_grafted": 2271, "entries_changed": 2271, "fraction_of_all": 9.998414606296905e-05, "bg3": 0.58, "tok90": 1098.1166666666666, "seconds": 206}
+{"config": "sparse_random_0.01", "params_grafted": 227136, "entries_changed": 227136, "fraction_of_all": 0.009999999559735157, "bg3": 0.5833333333333334, "tok90": 1088.6566666666668, "seconds": 239}
+{"config": "astra_scope_top_108k", "params_grafted": 108000, "entries_changed": 108000, "fraction_of_all": 0.0047548603147515005, "bg3": 0.6, "tok90": 1065.2066666666667, "seconds": 203}
+{"config": "astra_scope_random_108k", "params_grafted": 108000, "entries_changed": 108000, "fraction_of_all": 0.0047548603147515005, "bg3": 0.5833333333333334, "tok90": 1090.9366666666667, "seconds": 235}
+{"config": "lowrank_r1", "params_grafted": 105917, "entries_changed": 22712857, "fraction_of_all": 0.9999672442956095, "bg3": 0.6666666666666666, "tok90": 980.45, "seconds": 277}
+{"config": "lowrank_r2", "params_grafted": 180341, "entries_changed": 22713462, "fraction_of_all": 0.999993880318669, "bg3": 0.8266666666666667, "tok90": 630.59, "seconds": 259}
+{"config": "lowrank_r4", "params_grafted": 328425, "entries_changed": 22713510, "fraction_of_all": 0.99999599358992, "bg3": 0.89, "tok90": 527.6666666666666, "seconds": 264}
+{"config": "lowrank_r8", "params_grafted": 624593, "entries_changed": 22713535, "fraction_of_all": 0.9999970942520299, "bg3": 0.9366666666666666, "tok90": 445.25, "seconds": 193}
+{"config": "lowrank_r16", "params_grafted": 1216929, "entries_changed": 22713568, "fraction_of_all": 0.999998547126015, "bg3": 0.9533333333333334, "tok90": 403.34, "seconds": 217}
+{"config": "lowrank_r32", "params_grafted": 2401601, "entries_changed": 22713570, "fraction_of_all": 0.9999986351789837, "bg3": 0.9666666666666667, "tok90": 392.96666666666664, "seconds": 201}

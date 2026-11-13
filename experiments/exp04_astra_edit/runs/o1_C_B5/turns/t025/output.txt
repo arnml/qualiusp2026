@@ -1,0 +1,2 @@
+{'encoder_gflops_per_question': 36.6603776, 'encoder_params': 9902328, 'removed': {'heads': 2, 'neurons': 840, 'layers': []}}
+{'track': 'C', 'heads_removed': [(5, 5), (5, 11)], 'neurons_removed': 840, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 36.6603776, 'encoder_params': 9902328, 'removed': {'heads': 2, 'neurons': 840, 'layers': []}}}

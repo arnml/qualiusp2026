@@ -1,0 +1,9 @@
+OUTPUT:
+```
+noise 0.25: mean change -0.31pp  P(change<-1pp) 0.03  P(<-0.5pp) 0.54
+noise 0.35: mean change -0.36pp  P(change<-1pp) 0.09  P(<-0.5pp) 0.59
+noise 0.45: mean change -0.43pp  P(change<-1pp) 0.11  P(<-0.5pp) 0.60
+noise 0.55: mean change -0.55pp  P(change<-1pp) 0.20  P(<-0.5pp) 0.64
+
+```
+Passes left: 1/5. Turn 23/40.

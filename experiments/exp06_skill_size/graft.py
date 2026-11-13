@@ -77,7 +77,7 @@ def groups(a0, d, keep: set[str] | None = None, drop: set[str] | None = None, on
     out, n_par = {}, 0
     for n in a0:
         g = group_of(n)
-        use = (g in keep) if keep is not None else (g not in drop)
+        use = (g in keep) if keep is not None else (g not in (drop or set()))
         if only_1d:
             use = d[n].dim() == 1 and not n.startswith("bert.embeddings.position")
         out[n] = a0[n] + d[n] if use else a0[n].clone()

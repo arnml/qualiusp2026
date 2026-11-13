@@ -1,0 +1,12 @@
+OUTPUT:
+```
+k=87 | changed cols == S_cov: True | zeroed: True
+[forward] pass used; 1 left
+saved; passes_left: 1
+A orig {'tok85': 829.9, 'tok90': 945.51, 'tok95': 1026.5, 'b3': 0.58, 'AUC': 0.72} 
+  cov a=1 {'tok85': 819.39, 'tok90': 932.06, 'tok95': 1005.95, 'b3': 0.58, 'AUC': 0.724} | tok90 Δ (-14.9, 19.3) | tok85 Δ (-15.9, 22.3)
+B orig {'tok85': 911.7, 'tok90': 963.06, 'tok95': 1044.46, 'b3': 0.51, 'AUC': 0.641} 
+  cov a=1 {'tok85': 902.61, 'tok90': 964.67, 'tok95': 1044.93, 'b3': 0.51, 'AUC': 0.646} | tok90 Δ (-5.5, 13.9) | tok85 Δ (-14.2, 16.9)
+
+```
+Passes left: 1/5. Turn 25/40.

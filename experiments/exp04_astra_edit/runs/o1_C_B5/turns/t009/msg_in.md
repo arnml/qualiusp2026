@@ -1,0 +1,15 @@
+OUTPUT:
+```
+within-q std of final h.d6: 4.041  (MLP5 contribution pre-LN, /sigma unknown)
+L3 readout-OV: [0.19 0.08 0.21 0.19 0.14 0.13 0.18 0.18 0.22 0.19 0.17 0.11]  rank: [ 1 11  5  4 10  7  6  9  0  3  2  8]
+L4 readout-OV: [0.22 0.12 0.18 0.13 0.11 0.2  0.12 0.11 0.32 0.07 0.1  0.1 ]  rank: [ 9 11 10  7  4  1  6  3  2  5  0  8]
+L5 readout-OV: [0.23 0.3  0.24 0.17 0.26 0.08 0.24 0.17 0.13 0.19 0.28 0.05]  rank: [11  5  8  7  3  9  0  2  6  4 10  1]
+L0: proxy z quantiles [-1.61 -0.85 -0.34]  corr(z, CLS active frac)=0.16
+L1: proxy z quantiles [-0.96 -0.5  -0.19]  corr(z, CLS active frac)=0.16
+L2: proxy z quantiles [-0.83 -0.46 -0.19]  corr(z, CLS active frac)=0.26
+L3: proxy z quantiles [-0.58 -0.33 -0.12]  corr(z, CLS active frac)=0.06
+L4: proxy z quantiles [-0.52 -0.27 -0.02]  corr(z, CLS active frac)=0.14
+L5: proxy z quantiles [-1.13 -0.07  0.19]  corr(z, CLS active frac)=0.65
+
+```
+Passes left: 4/5. Turn 8/40.

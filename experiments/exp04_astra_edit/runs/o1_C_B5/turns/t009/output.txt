@@ -1,0 +1,7 @@
+L0: max|a|<0.005:   24   <0.02:   62   <0.05:  109   near-floor const (std<0.01 & mean<-0.1): 147
+L1: max|a|<0.005:   92   <0.02:  176   <0.05:  297   near-floor const (std<0.01 & mean<-0.1): 263
+L2: max|a|<0.005:   14   <0.02:   27   <0.05:   57   near-floor const (std<0.01 & mean<-0.1): 111
+L3: max|a|<0.005:   10   <0.02:   16   <0.05:   18   near-floor const (std<0.01 & mean<-0.1): 81
+L4: max|a|<0.005:    1   <0.02:    1   <0.05:    1   near-floor const (std<0.01 & mean<-0.1): 8
+L5: max|a|<0.005:    0   <0.02:    0   <0.05:    0   near-floor const (std<0.01 & mean<-0.1): 3
+L5 imp_var of 1300th neuron: 0.00042274236  max: 0.11649112

@@ -1,0 +1,13 @@
+OUTPUT:
+```
+n A questions for ans-dir: 77
+         r    ov   ans  hard
+r     1.00  0.94  0.96 -0.94
+ov    0.94  1.00  0.99 -0.99
+ans   0.96  0.99  1.00 -0.99
+hard -0.94 -0.99 -0.99  1.00
+ans            B: hard-vs-beating paired mean/sd=-0.92 frac>0=0.06 | hard-vs-all-distr frac>0=0.78 | within-q sd=2.404 corr(score)=0.99 corr(ov)=0.59
+ans _|_ r,ov   B: hard-vs-beating paired mean/sd=0.04 frac>0=0.48 | hard-vs-all-distr frac>0=0.56 | within-q sd=0.348 corr(score)=0.38 corr(ov)=0.39
+
+```
+Passes left: 4/5. Turn 9/40.

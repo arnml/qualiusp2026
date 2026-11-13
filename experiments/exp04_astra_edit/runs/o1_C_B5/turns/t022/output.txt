@@ -1,0 +1,11 @@
+corr(|extra dscore|, L4-out perturbation P4) = 0.10
+corr(|extra dscore|, increase in L4-out perturbation) = 0.13
+L0 MLP@CLS corr: P3 1.00000  P4 1.00000
+L1 MLP@CLS corr: P3 0.99991  P4 0.99923
+L2 MLP@CLS corr: P3 0.99914  P4 0.99756
+L3 MLP@CLS corr: P3 0.99781  P4 0.99119
+L4 MLP@CLS corr: P3 0.99515  P4 0.97679
+P3: L5 MLP input-driven change on P4-kept neurons rel 0.123
+P4: L5 MLP input-driven change on P4-kept neurons rel 0.182
+P4 flips (q, orig->P4, in A?): [(13, 1, 0, True), (119, 1, 0, True), (141, 0, 1, True)]
+P3 flips: [(119, 1, 0, True), (141, 0, 1, True)]

@@ -1,0 +1,15 @@
+cos(cls_l, cls_l+1): [0.849, 0.98, 0.978, 0.959, 0.821, 0.761]
+cos(cls_l, cls_final): [0.461, 0.537, 0.524, 0.539, 0.579, 0.761, 1.0]
+layer-out 0: B bg3 with mean-diff direction = 0.05
+layer-out 1: B bg3 with mean-diff direction = 0.19
+layer-out 2: B bg3 with mean-diff direction = 0.21
+layer-out 3: B bg3 with mean-diff direction = 0.25
+layer-out 4: B bg3 with mean-diff direction = 0.50
+layer-out 5: B bg3 with mean-diff direction = 0.70
+layer-out 6: B bg3 with mean-diff direction = 0.98
+L0: mean|act| quantiles [0.026 0.057 0.111 0.158 0.259]  frac neurons with max act<0.01: 0.512  frac mean|a|<0.02: 0.079
+L1: mean|act| quantiles [0.006 0.034 0.077 0.134 0.162]  frac neurons with max act<0.01: 0.764  frac mean|a|<0.02: 0.178
+L2: mean|act| quantiles [0.04  0.068 0.113 0.15  0.163]  frac neurons with max act<0.01: 0.571  frac mean|a|<0.02: 0.056
+L3: mean|act| quantiles [0.067 0.098 0.133 0.153 0.16 ]  frac neurons with max act<0.01: 0.479  frac mean|a|<0.02: 0.02
+L4: mean|act| quantiles [0.067 0.09  0.117 0.144 0.17 ]  frac neurons with max act<0.01: 0.283  frac mean|a|<0.02: 0.004
+L5: mean|act| quantiles [0.012 0.023 0.037 0.067 0.133]  frac neurons with max act<0.01: 0.339  frac mean|a|<0.02: 0.187

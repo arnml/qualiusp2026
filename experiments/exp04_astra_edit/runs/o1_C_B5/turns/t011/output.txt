@@ -1,0 +1,8 @@
+layer 0: |delta CLS| 5.06  within-q std on u 0.008  on d6 0.010  corr(d6-proj, gold) +0.21
+layer 1: |delta CLS| 2.05  within-q std on u 0.011  on d6 0.010  corr(d6-proj, gold) -0.15
+layer 2: |delta CLS| 2.16  within-q std on u 0.024  on d6 0.019  corr(d6-proj, gold) -0.21
+layer 3: |delta CLS| 3.05  within-q std on u 0.073  on d6 0.063  corr(d6-proj, gold) +0.41
+layer 4: |delta CLS| 6.24  within-q std on u 1.200  on d6 1.205  corr(d6-proj, gold) +0.72
+layer 5: |delta CLS| 7.01  within-q std on u 2.783  on d6 3.063  corr(d6-proj, gold) +0.81
+final CLS within-q std on u 3.749, on d6 4.041
+cos(u,d6)=0.93

@@ -1,0 +1,4 @@
+{"config": "A0", "params_grafted": 0, "entries_changed": 0, "fraction_of_all": 0.0, "bg3": 0.593, "tok90": 1089.086, "seconds": 926}
+{"config": "A1", "params_grafted": 22713601, "entries_changed": 22713588, "fraction_of_all": 0.9999994276557028, "bg3": 0.959, "tok90": 385.455, "seconds": 953}
+{"config": "sparse_top_0.01", "params_grafted": 227136, "entries_changed": 227136, "fraction_of_all": 0.009999999559735157, "bg3": 0.639, "tok90": 1035.384, "seconds": 1389}
+{"config": "sparse_random_0.01", "params_grafted": 227136, "entries_changed": 227136, "fraction_of_all": 0.009999999559735157, "bg3": 0.599, "tok90": 1086.901, "seconds": 1797}

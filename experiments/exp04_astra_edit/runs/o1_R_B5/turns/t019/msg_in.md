@@ -1,0 +1,18 @@
+OUTPUT:
+```
+{'track': 'R', 'heads_removed': [], 'neurons_removed': 0, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}, 'raw_changed_entries': {'bert.encoder.layer.5.attention.output.dense.weight': 24576}}
+[forward] pass used; 3 left
+passes_left: 3
+h0h6x2 A orig {'tok85': np.float64(829.9), 'tok90': np.float64(945.5), 'tok95': np.float64(1026.5), 'b3': np.float64(0.58), 'AUC_hard_vs_distr_pooled': np.float64(0.72)}
+      edit {'tok85': np.float64(809.0), 'tok90': np.float64(947.6), 'tok95': np.float64(1034.3), 'b3': np.float64(0.6), 'AUC_hard_vs_distr_pooled': np.float64(0.724)} | b3 per-q +2/-0
+h0h6x2 B orig {'tok85': np.float64(911.7), 'tok90': np.float64(963.1), 'tok95': np.float64(1044.5), 'b3': np.float64(0.51), 'AUC_hard_vs_distr_pooled': np.float64(0.641)}
+      edit {'tok85': np.float64(884.7), 'tok90': np.float64(965.6), 'tok95': np.float64(1041.4), 'b3': np.float64(0.51), 'AUC_hard_vs_distr_pooled': np.float64(0.646)} | b3 per-q +2/-2
+Traceback (most recent call last):
+  File "C:\code\qualiusp2026\experiments\exp04_astra_edit\kernel.py", line 26, in <module>
+    exec(compile(msg["code"], "<cell>", "exec"), ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<cell>", line 12, in <module>
+TypeError: not enough arguments for format string
+
+```
+Passes left: 3/5. Turn 18/40.

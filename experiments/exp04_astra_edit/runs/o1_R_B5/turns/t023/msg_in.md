@@ -1,0 +1,14 @@
+OUTPUT:
+```
+L3 k= 60 | signed hard-beating gain per +100% re-weight: A +0.003 B +0.003 (layer MLP total A -0.02 B -0.02) | signed hard-all: A +0.005 B +0.003 | frac sgn>0 0.48
+L3 k=120 | signed hard-beating gain per +100% re-weight: A +0.004 B +0.007 (layer MLP total A -0.02 B -0.02) | signed hard-all: A +0.017 B +0.014 | frac sgn>0 0.56
+L3 k=200 | signed hard-beating gain per +100% re-weight: A +0.009 B +0.012 (layer MLP total A -0.02 B -0.02) | signed hard-all: A +0.030 B +0.023 | frac sgn>0 0.55
+L4 k= 60 | signed hard-beating gain per +100% re-weight: A -0.000 B -0.004 (layer MLP total A -0.61 B -0.70) | signed hard-all: A +0.021 B +0.012 | frac sgn>0 0.53
+L4 k=120 | signed hard-beating gain per +100% re-weight: A -0.005 B -0.012 (layer MLP total A -0.61 B -0.70) | signed hard-all: A +0.053 B +0.029 | frac sgn>0 0.54
+L4 k=200 | signed hard-beating gain per +100% re-weight: A +0.019 B +0.006 (layer MLP total A -0.61 B -0.70) | signed hard-all: A +0.069 B +0.035 | frac sgn>0 0.55
+L5 k= 60 | signed hard-beating gain per +100% re-weight: A -0.001 B +0.001 (layer MLP total A -0.02 B -0.01) | signed hard-all: A +0.015 B +0.010 | frac sgn>0 0.48
+L5 k=120 | signed hard-beating gain per +100% re-weight: A -0.000 B +0.001 (layer MLP total A -0.02 B -0.01) | signed hard-all: A +0.015 B +0.011 | frac sgn>0 0.47
+L5 k=200 | signed hard-beating gain per +100% re-weight: A -0.001 B +0.001 (layer MLP total A -0.02 B -0.01) | signed hard-all: A +0.017 B +0.012 | frac sgn>0 0.45
+
+```
+Passes left: 3/5. Turn 22/40.

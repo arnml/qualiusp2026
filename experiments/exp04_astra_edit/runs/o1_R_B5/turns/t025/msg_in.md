@@ -1,0 +1,8 @@
+OUTPUT:
+```
+['S_cov_L4.npy', 'cls_L5h0h6x2.npy', 'cls_orig.npy', 'dirs_L6.npy', 'dirs_len_title.npz', 'edited', 'feats.pkl', 'hard_dir_L6.npy', 'hard_dir_L6_perp.npy', 'l4_neuron_stats.npz', 'mlp_orig.npy', 'neuron_tab.pkl', 'notes.md', 'scores_L5h0h6x2.npy', 'scores_orig.npy', 'setup.py', 'title_neurons.pkl']
+{'bert.encoder.layer.4.output.dense.weight': 33408}
+orig A {'tok85': 829.9, 'tok90': 945.51, 'tok95': 1026.5, 'b3': 0.58, 'AUC': 0.72} | B {'tok85': 911.7, 'tok90': 963.06, 'tok95': 1044.46, 'b3': 0.51, 'AUC': 0.641}
+
+```
+Passes left: 2/5. Turn 24/40.

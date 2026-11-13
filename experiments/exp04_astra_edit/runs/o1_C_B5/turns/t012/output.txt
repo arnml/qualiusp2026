@@ -1,0 +1,4 @@
+1000 overlap with all-data set 1.00  within-q proj std A 0.020 B 0.021  mean-shift 1.61 of full 1.98
+1200 overlap with all-data set 1.00  within-q proj std A 0.041 B 0.042  mean-shift 1.72 of full 1.98
+1300 overlap with all-data set 1.00  within-q proj std A 0.057 B 0.058  mean-shift 1.80 of full 1.98
+1400 overlap with all-data set 1.00  within-q proj std A 0.078 B 0.078  mean-shift 1.82 of full 1.98

@@ -1,0 +1,53 @@
+Using the latest cached version of the dataset since hotpot_qa couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'distractor' at C:\Users\devar\.cache\huggingface\datasets\hotpot_qa\distractor\0.0.0\1908d6afbbead072334abe2965f91bd2709910ab (last modified on Thu Nov 12 10:18:07 2026).
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 1049.26it/s]
+turn 1: code=True passes_left=5 tools=[] 72.9s
+turn 2: code=True passes_left=4 tools=[] 21.7s
+turn 3: code=True passes_left=4 tools=[] 31.0s
+turn 4: code=True passes_left=4 tools=[] 19.2s
+turn 5: code=True passes_left=4 tools=[] 16.8s
+turn 6: code=True passes_left=4 tools=[] 52.5s
+turn 7: code=True passes_left=4 tools=[] 55.1s
+turn 8: code=True passes_left=4 tools=[] 64.7s
+turn 9: code=True passes_left=4 tools=[] 49.9s
+turn 10: code=True passes_left=4 tools=[] 38.9s
+turn 11: code=True passes_left=4 tools=[] 60.2s
+turn 12: code=True passes_left=4 tools=[] 31.7s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  16%|█▌        | 17/105 [00:00<00:00, 169.31it/s]Loading weights:  37%|███▋      | 39/105 [00:00<00:00, 197.33it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 442.13it/s]
+turn 13: code=True passes_left=3 tools=[] 23.4s
+turn 14: code=True passes_left=3 tools=[] 22.0s
+turn 15: code=True passes_left=3 tools=[] 24.0s
+turn 16: code=True passes_left=3 tools=[] 13.4s
+turn 17: code=True passes_left=3 tools=[] 72.8s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  31%|███▏      | 33/105 [00:00<00:00, 328.99it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 672.54it/s]
+turn 18: code=True passes_left=2 tools=[] 56.6s
+turn 19: code=True passes_left=2 tools=[] 31.5s
+turn 20: code=True passes_left=2 tools=[] 62.9s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  45%|████▍     | 47/105 [00:00<00:00, 459.52it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 809.21it/s]
+turn 21: code=True passes_left=1 tools=[] 32.9s
+turn 22: code=True passes_left=1 tools=[] 38.5s
+turn 23: code=True passes_left=1 tools=[] 44.7s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  33%|███▎      | 35/105 [00:00<00:00, 335.01it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 678.87it/s]
+turn 24: code=True passes_left=0 tools=[] 36.1s
+turn 25: code=True passes_left=0 tools=[] 22.8s
+turn 26: code=False passes_left=0 tools=[] 25.6s
+{
+ "turns": 26,
+ "passes_used": 5,
+ "tool_violations": 0,
+ "hard_flags": 0,
+ "soft_flag_turns": 0,
+ "input_tokens": 1328334,
+ "output_tokens": 77164,
+ "editor_seconds": 1021.8,
+ "final_cost": {
+  "encoder_gflops_per_question": 36.6603776,
+  "encoder_params": 9902328,
+  "removed": {
+   "heads": 2,
+   "neurons": 840,
+   "layers": []
+  }
+ },
+ "finished": "2026-11-13 10:52:39"
+}

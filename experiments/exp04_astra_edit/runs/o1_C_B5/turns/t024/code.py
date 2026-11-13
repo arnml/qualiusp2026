@@ -1,0 +1,13 @@
+# Hypothesis: dropping P4's early-layer injections (L1h6, L1h7, extra L0-L3 near-silent neurons) while keeping L5 RMS-1000 + L5h8 + L4h9 brings within-q score noise to <=~0.4 with no net bg3 loss.
+reset_all()
+remove_neurons(5,L5_rms1000)
+for h in [11,5,8]: remove_head(5,h)
+for l,js in silent.items(): remove_neurons(l,js)      # the 140 fully CLS-silent neurons (as in P3)
+remove_head(4,9)
+print(cost())
+R5=forward(items=items_order, model="edited", cls=True)
+pickle.dump(R5, open(WORK/"pass5.pkl","wb"))
+se5=np.asarray(R5['scores_edited']); report(se5)
+d5=se5-so; print("score diff mean %+.2f |diff| %.2f within-q std %.3f"%(d5.mean(), np.abs(d5).mean(), qcenter(d5[:,None]).std()))
+h5=bg3(se5,range(200)); print("P5 flips:", [(q,int(ho[q]),int(h5[q]),q in A) for q in range(200) if ho[q]!=h5[q]])
+Ce5=np.asarray(R5['cls_edited'],np.float32); print("CLS cos per state P5:", [round(float(cos(Ce5[:,l],C[:,l]).mean()),5) for l in range(7)])

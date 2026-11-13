@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "C:\code\qualiusp2026\experiments\exp04_astra_edit\kernel.py", line 26, in <module>
+    exec(compile(msg["code"], "<cell>", "exec"), ns)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<cell>", line 12, in <module>
+numpy._core._exceptions._UFuncOutputCastingError: Cannot cast ufunc 'add' output from dtype('O') to dtype('float64') with casting rule 'same_kind'

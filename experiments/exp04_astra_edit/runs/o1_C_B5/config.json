@@ -1,0 +1,15 @@
+{
+ "run": "o1_C_B5",
+ "track": "C",
+ "budget": 5,
+ "turn_cap": 40,
+ "editor": "claude",
+ "model_name": "claude-opus-5-5",
+ "effort": "xhigh",
+ "script": null,
+ "model_dir": "C:\\code\\qualiusp2026\\experiments\\exp04_astra_edit\\models\\a1",
+ "practice": "heldval",
+ "n": 200,
+ "prompt": "C:\\code\\qualiusp2026\\experiments\\exp04_astra_edit\\prompt_trackC.md",
+ "started": "2026-11-13 10:08:17"
+}

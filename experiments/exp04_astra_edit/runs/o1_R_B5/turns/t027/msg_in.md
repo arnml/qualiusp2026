@@ -1,0 +1,14 @@
+OUTPUT:
+```
+cov a=1: within-q sd(Δs)=0.154 vs sd(score)=3.897 | corr(Δs,score)=-0.31 | hard-minus-beating Δs: A 0.101 (frac>0 0.76) B 0.137 (frac>0 0.67)
+   within-q corr(Δs, feature): {'overlap': np.float64(-0.34), 'title_in_q': np.float64(0.14), 'has_ans': np.float64(-0.04), 'ntok': np.float64(0.08)}
+L5 h0h6 x2: within-q sd(Δs)=0.395 vs sd(score)=3.897 | corr(Δs,score)=0.46 | hard-minus-beating Δs: A -0.069 (frac>0 0.40) B -0.107 (frac>0 0.44)
+   within-q corr(Δs, feature): {'overlap': np.float64(0.05), 'title_in_q': np.float64(0.6), 'has_ans': np.float64(0.11), 'ntok': np.float64(-0.13)}
+k=1  A {'tok85': 819.39, 'tok90': 932.06, 'tok95': 1005.95, 'b3': 0.58, 'AUC': 0.724} | B {'tok85': 902.61, 'tok90': 964.67, 'tok95': 1044.93, 'b3': 0.51, 'AUC': 0.646}
+k=2  A {'tok85': 777.53, 'tok90': 923.25, 'tok95': 985.59, 'b3': 0.59, 'AUC': 0.728} | B {'tok85': 885.47, 'tok90': 972.02, 'tok95': 1047.02, 'b3': 0.52, 'AUC': 0.652}
+k=3  A {'tok85': 717.03, 'tok90': 880.8, 'tok95': 967.9, 'b3': 0.59, 'AUC': 0.731} | B {'tok85': 884.41, 'tok90': 978.38, 'tok95': 1047.57, 'b3': 0.54, 'AUC': 0.657}
+k=4  A {'tok85': 741.43, 'tok90': 867.21, 'tok95': 958.2, 'b3': 0.59, 'AUC': 0.734} | B {'tok85': 886.67, 'tok90': 982.12, 'tok95': 1050.79, 'b3': 0.53, 'AUC': 0.661}
+k=6  A {'tok85': 715.9, 'tok90': 793.2, 'tok95': 959.41, 'b3': 0.59, 'AUC': 0.741} | B {'tok85': 891.73, 'tok90': 960.07, 'tok95': 1048.87, 'b3': 0.54, 'AUC': 0.668}
+
+```
+Passes left: 1/5. Turn 26/40.

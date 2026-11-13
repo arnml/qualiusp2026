@@ -1,0 +1,14 @@
+OUTPUT:
+```
+edited(): {'track': 'R', 'heads_removed': [], 'neurons_removed': 0, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}}
+ minus beating distractor, score change): A +.10 (76% q>0), B +.14 (67%).
+- P5 cov alpha=3 (87 cols x-2): A tok90 +10+-63, AUC .716 | B tok90 +57.2+-35.3, AUC .636, b3 .52.
+  Targeted contrast B +.99 (78% q>0): strong dose-response on the mechanism, but net ranking worse (nonlinear, 10x score change).
+- P2 L5 h0/h6 x2: null (B tok90 -8.8+-14.5); score change tracks title match (.60) but slightly hurts hard-vs-beating.
+## Decision
+No edit's held-out gain exceeds its SE; alpha=3 is harmful. Final submission: reset_all() (original weights).
+Candidate tensors kept: edit_cov_a1.pt, edit_cov_a3.pt.
+
+
+```
+Passes left: 0/5. Turn 28/40. The forward-pass budget is used up. Code still runs (forward() is refused). Make sure your current removals are your final edit, then reply WITHOUT a code block with your final explanation (mechanism, changes, evidence).

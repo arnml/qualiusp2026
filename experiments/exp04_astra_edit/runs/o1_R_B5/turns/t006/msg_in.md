@@ -1,0 +1,14 @@
+OUTPUT:
+```
+
+                 overlap  title_in_q  has_ans     ntok
+type       gold                                       
+bridge     0       0.392       0.203    0.061  129.583
+           1       0.504       0.489    0.655   98.540
+comparison 0       0.394       0.185    0.229  112.127
+           1       0.440       0.944    0.449   88.500
+[forward] pass used; 4 left
+{'scores_original': (1994,), 'cls_original': (1994, 7, 384), 'mlp_original': (1994, 6, 1536), 'attn_original': (8, 6, 12, 256, 256), 'attn_tokens_original': (8, 256), 'passes_left': 4} | keys: ['scores_original', 'cls_original', 'mlp_original', 'attn_original', 'attn_tokens_original', 'passes_left']
+
+```
+Passes left: 4/5. Turn 5/40.

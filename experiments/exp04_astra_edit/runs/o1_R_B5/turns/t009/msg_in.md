@@ -1,0 +1,16 @@
+OUTPUT:
+```
+L4 overlap-dir: cos(r)=  -  corr(proj,score|distr,B)=0.61 corr(proj,ov|distr,B)=0.51  B gold-sep=0.91
+L5 overlap-dir: cos(r)=  -  corr(proj,score|distr,B)=0.92 corr(proj,ov|distr,B)=0.43  B gold-sep=1.34
+L6 overlap-dir: cos(r)=0.94 corr(proj,score|distr,B)=0.97 corr(proj,ov|distr,B)=0.41  B gold-sep=1.27
+corr(score, overlap | distractors) = 0.45
+L3 hard-dir (nA=50): B paired mean/sd=0.46, frac>0=0.67, corr(score)=0.13, corr(ov)=-0.07
+L4 hard-dir (nA=50): B paired mean/sd=0.95, frac>0=0.87, corr(score)=-0.54, corr(ov)=-0.54
+L5 hard-dir (nA=50): B paired mean/sd=1.03, frac>0=0.89, corr(score)=-0.95, corr(ov)=-0.59
+L6 hard-dir (nA=50): B paired mean/sd=0.91, frac>0=0.95, corr(score)=-0.98, corr(ov)=-0.59 | cos(r)=-0.94, orth-part B paired mean/sd=0.76 (frac>0 0.87)
+               has_ans  overlap  title_in_q    ntok
+hard_gold         0.71     0.41        0.46   96.15
+beating_distr     0.10     0.44        0.24  116.51
+
+```
+Passes left: 4/5. Turn 8/40.

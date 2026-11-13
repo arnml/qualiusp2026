@@ -1,0 +1,6 @@
+{0: 62, 1: 176, 2: 27, 3: 16} {'encoder_gflops_per_question': 34.6924032, 'encoder_params': 9366207, 'removed': {'heads': 6, 'neurons': 1281, 'layers': []}}
+[forward] pass used; 1 left
+A: orig 0.910 edited 0.900  lost 2 gained 1  mean within-q spearman 0.967
+B: orig 0.980 edited 0.980  lost 0 gained 0  mean within-q spearman 0.974
+score diff mean -0.25 |diff| 0.45 within-q std 0.550
+CLS cos per state P4: [1.0, 1.0, 0.99981, 0.9998, 0.99862, 0.99613, 0.99387]

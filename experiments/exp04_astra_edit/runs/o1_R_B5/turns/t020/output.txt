@@ -1,0 +1,5 @@
+A orig {'tok85': np.float64(829.9), 'tok90': np.float64(945.51), 'tok95': np.float64(1026.5), 'b3': np.float64(0.58), 'AUC': np.float64(0.72)} | h0h6x2 {'tok85': np.float64(809.04), 'tok90': np.float64(947.63), 'tok95': np.float64(1034.33), 'b3': np.float64(0.6), 'AUC': np.float64(0.724)} | tok90 Δ (np.float64(-5.0), np.float64(18.4))
+B orig {'tok85': np.float64(911.7), 'tok90': np.float64(963.06), 'tok95': np.float64(1044.46), 'b3': np.float64(0.51), 'AUC': np.float64(0.641)} | h0h6x2 {'tok85': np.float64(884.67), 'tok90': np.float64(965.58), 'tok95': np.float64(1041.38), 'b3': np.float64(0.51), 'AUC': np.float64(0.646)} | tok90 Δ (np.float64(-8.8), np.float64(14.5))
+L3 hard-vs-distr contrib total A 0.05 B 0.04 | corr(hdA,hdB)=0.91 | top-100 neg: A -0.05 B -0.04 easygold -0.05 | top-200 neg: A -0.06 B -0.05
+L4 hard-vs-distr contrib total A 1.12 B 0.71 | corr(hdA,hdB)=0.98 | top-100 neg: A -0.06 B -0.04 easygold -0.13 | top-200 neg: A -0.08 B -0.05
+L5 hard-vs-distr contrib total A 0.01 B 0.02 | corr(hdA,hdB)=0.99 | top-100 neg: A -0.06 B -0.03 easygold -0.08 | top-200 neg: A -0.06 B -0.04

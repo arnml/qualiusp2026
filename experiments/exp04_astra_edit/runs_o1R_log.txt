@@ -1,0 +1,87 @@
+Using the latest cached version of the dataset since hotpot_qa couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'distractor' at C:\Users\devar\.cache\huggingface\datasets\hotpot_qa\distractor\0.0.0\1908d6afbbead072334abe2965f91bd2709910ab (last modified on Thu Nov 12 10:18:07 2026).
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 1330.78it/s]
+turn 1: code=False passes_left=5 tools=[] 169.0s
+turn 2: code=True passes_left=5 tools=[] 20.1s
+turn 3: code=True passes_left=5 tools=[] 11.5s
+turn 4: code=True passes_left=5 tools=[] 15.8s
+turn 5: code=True passes_left=4 tools=[] 29.4s
+turn 6: code=True passes_left=4 tools=[] 37.2s
+turn 7: code=True passes_left=4 tools=[] 44.7s
+turn 8: code=True passes_left=4 tools=[] 48.2s
+turn 9: code=True passes_left=4 tools=[] 43.7s
+turn 10: code=True passes_left=4 tools=[] 53.2s
+turn 11: code=True passes_left=4 tools=[] 41.7s
+turn 12: code=True passes_left=4 tools=[] 40.0s
+turn 13: code=True passes_left=4 tools=[] 39.7s
+turn 14: code=True passes_left=4 tools=[] 46.2s
+turn 15: code=True passes_left=4 tools=[] 33.0s
+turn 16: code=True passes_left=4 tools=[] 45.8s
+turn 17: code=True passes_left=4 tools=[] 30.5s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  61%|██████    | 64/105 [00:00<00:00, 627.70it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 949.73it/s]
+turn 18: code=True passes_left=3 tools=[] 61.4s
+turn 19: code=True passes_left=3 tools=[] 41.9s
+turn 20: code=True passes_left=3 tools=[] 88.3s
+turn 21: code=True passes_left=3 tools=[] 82.5s
+turn 22: code=True passes_left=3 tools=[] 51.6s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:   8%|▊         | 8/105 [00:00<00:01, 73.02it/s]Loading weights:  17%|█▋        | 18/105 [00:00<00:00, 87.23it/s]Loading weights:  26%|██▌       | 27/105 [00:00<00:00, 79.36it/s]Loading weights:  72%|███████▏  | 76/105 [00:00<00:00, 214.93it/s]Loading weights:  93%|█████████▎| 98/105 [00:00<00:00, 191.79it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 172.78it/s]
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 42865)
+Traceback (most recent call last):
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\http\server.py", line 447, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\http\server.py", line 435, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "C:\code\qualiusp2026\experiments\exp04_astra_edit\harness.py", line 193, in do_POST
+    self.end_headers()
+    ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\http\server.py", line 549, in end_headers
+    self.flush_headers()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\http\server.py", line 553, in flush_headers
+    self.wfile.write(b"".join(self._headers_buffer))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\devar\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+----------------------------------------
+turn 23: code=True passes_left=2 tools=[] 60.0s
+turn 24: code=True passes_left=2 tools=[] 60.6s
+turn 25: code=True passes_left=1 tools=[] 45.3s
+turn 26: code=True passes_left=1 tools=[] 26.4s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 24/105 [00:00<00:00, 239.48it/s]Loading weights:  46%|████▌     | 48/105 [00:00<00:00, 221.81it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 434.79it/s]
+turn 27: code=True passes_left=0 tools=[] 31.5s
+turn 28: code=True passes_left=0 tools=[] 32.8s
+turn 29: code=False passes_left=0 tools=[] 27.4s
+{
+ "turns": 29,
+ "passes_used": 5,
+ "tool_violations": 0,
+ "hard_flags": 0,
+ "soft_flag_turns": 1,
+ "input_tokens": 1893483,
+ "output_tokens": 93011,
+ "editor_seconds": 1359.4,
+ "final_cost": {
+  "encoder_gflops_per_question": 39.2620032,
+  "encoder_params": 10646784,
+  "removed": {
+   "heads": 0,
+   "neurons": 0,
+   "layers": []
+  }
+ },
+ "finished": "2026-11-13 12:31:07"
+}

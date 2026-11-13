@@ -1,0 +1,19 @@
+OUTPUT:
+```
+state 0: cos mean 1.00000 min 1.0000
+state 1: cos mean 1.00000 min 1.0000
+state 2: cos mean 0.99999 min 1.0000
+state 3: cos mean 0.99993 min 0.9998
+state 4: cos mean 0.99966 min 0.9989
+state 5: cos mean 0.99912 min 0.9952
+state 6: cos mean 0.99771 min 0.9478
+L5 MLP (kept) act corr 0.9921, rel change ||d||/||a|| 0.127
+L0 MLP@CLS corr 1.00000
+L1 MLP@CLS corr 0.99991
+L2 MLP@CLS corr 0.99914
+L3 MLP@CLS corr 0.99781
+L4 MLP@CLS corr 0.99515
+score diff within-q std 0.252
+
+```
+Passes left: 2/5. Turn 19/40.
