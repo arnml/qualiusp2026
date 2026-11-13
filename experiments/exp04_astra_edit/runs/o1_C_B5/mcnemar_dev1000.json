@@ -1,0 +1,9 @@
+{
+ "run": "o1_C_B5",
+ "frac": 0.9337,
+ "editor": 0.956,
+ "wanda": 0.959,
+ "editor_only": 1,
+ "wanda_only": 4,
+ "mcnemar_exact_p": 0.375
+}

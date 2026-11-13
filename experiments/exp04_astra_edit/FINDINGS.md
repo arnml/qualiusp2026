@@ -62,6 +62,38 @@ We followed the harness of Takehi et al. (2026, Exp 8) and kept its seven-sectio
 - On 1,000 held-out questions, the rejected candidate has no effect. Its discovery-half gain was overfitting to 100 questions.
 - **Track R stopped at the pre-registered R1 gate.**
 
+### Second editor: Opus 5.5 replication (pre-registered 2026-11-13, added after closure)
+
+Identical harness, prompts, budgets and evaluation; `claude -p` with all tools off (see DESIGN.md).
+
+| | Astra stage 1 (`s1_C_B5`) | **Opus `o1_C_B5`** |
+|---|---|---|
+| Turns / passes / violations | 11 / 5 / 0 | 26 / 5 / 0 |
+| Edit | 3,584 MLP neurons | 700 L5 MLP neurons + L5 heads 5, 11 + 140 never-active early neurons |
+| GFLOPs | 29.9 (−24%) | **36.66 (−6.6%)** |
+| dev1000 both-gold@3 | — | **0.956** (A1 0.959) |
+| Wanda / Taylor / random at the same FLOPs | — | 0.959 / 0.959 / 0.948 |
+| McNemar vs Wanda | — | 1 vs 4 discordant, **p = 0.375** (tie) |
+
+**Pre-registered reading (cost at equal quality, 2 GF margin):**
+- Wanda reaches ≥ 0.956 at 33.22 GF (85% FLOPs, 0.959); the conservative curve point 34.35 GF (87.5%, 0.956) is also cheaper.
+- Opus needs 2.3–3.4 GF more, so it **loses** to Wanda on cost.
+
+**Track R (`o1_R_B5`, 29 turns, 5 passes, 0 violations, 1 soft-flag turn):** **no repair.**
+- Opus found layer-4 MLP output columns whose silencing raises the hard gold above the beating distractor (B: +0.14 at α = 1; +0.99 at α = 3, so causal).
+- Neither strength improved the metric (B tok@90 −5.5 ± 13.9 at α = 1; +57 at α = 3).
+- One pass was lost to a kernel timeout. It submitted **no edit**, so the model is A0 by construction (same category as R1; `evaluate_r.py` not needed for the verdict).
+
+**What replicates across editors:**
+- 0 tool violations
+- predeclared rules and rollbacks
+- the last-layer MLP being removable
+- a null A0 repair with the right mechanism-level diagnosis
+
+**What differs:** risk appetite. Opus made a 4× smaller cut and rejected −12% candidates that lost one practice question each.
+
+**Why the repair fails (from exp06):** A1's skill is low-rank and spread over L3–L4. The 108k largest entries of A1 − A0 recover only 3.5% of the gain, so a sparse ≤ 108k-entry edit is the wrong shape.
+
 ## What we can claim
 
 1. **LLM weight editing can compress, but not beat pruning.** With 5–50 forward passes, a frontier model produces a selector that is 13–27% cheaper at (near-)equal quality. A simple gradient-free baseline (Wanda) does the same.
@@ -75,7 +107,7 @@ We followed the harness of Takehi et al. (2026, Exp 8) and kept its seven-sectio
 
 ## Limitations
 
-- **One editor, one run per stage:** there is no seed variance, and the run-to-run spread of the editor is unknown.
+- **Two editors, one run per stage:** Astra and Opus 5.5 (stage-1 budget only for Opus). There is no seed variance, and the run-to-run spread of each editor is unknown. The analysis is written by the same model family as the second editor.
 - **Sample size:** dev1000 has ±0.7 points of noise. All "ties" are within it, and the Wanda curve is not monotone above 80% FLOPs.
 - **Isolation:** Windows has no OS sandbox. Rule compliance rests on the code audit and the logs (all committed under `runs/`).
 - **Track R was stopped at 5 passes:** more passes or a larger edit cap might behave differently. The probe prior and the null candidate make that unlikely, but it is untested.
@@ -89,6 +121,8 @@ We followed the harness of Takehi et al. (2026, Exp 8) and kept its seven-sectio
 | `s2_C_B10` | C | 10 | 15 | 2.50M | 9 min |
 | `s3_C_B50` | C | 50 | 23 | 5.85M | 14 min |
 | `r1_R_B5` | R | 5 | 16 | 2.78M | 9 min |
+| `o1_C_B5` (Opus) | C | 5 | 26 | 1.33M (Claude) | 17 min |
+| `o1_R_B5` (Opus) | R | 5 | 29 | 1.89M (Claude) | 23 min |
 
 ## References
 
