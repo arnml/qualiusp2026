@@ -1,0 +1,125 @@
+"""exp07 pre-registered follow-up: gpt-5.4-mini answer F1 on the 400 test questions.
+
+  uv run python generate_f1.py --limit 5     # pilot
+  uv run python generate_f1.py               # all conditions (resumable)
+  uv run python generate_f1.py --report
+
+Conditions come from results/test_selections.json (written by chain.py; thresholds tuned on dev):
+  adaptive_full_<target> (the winner on both targets) vs a1_thresh_<target>, for targets 0.9 and 0.95.
+Generator, prompt, normalisation and F1 are exp02's (`generate.py`, the BRACIS paper's setup), loaded by path.
+Answers are appended to results/generation/<condition>.jsonl. Requires OPENAI_API_KEY.
+"""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import json
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import numpy as np
+
+from data import _load, build_retrieval_prompt, paragraphs_of
+
+HERE = Path(__file__).resolve().parent
+spec = importlib.util.spec_from_file_location("exp02_generate", HERE.parent / "exp02_cross_encoder" / "generate.py")
+# exp02's generate.py imports its own `data` module; give it exp02's folder first on the path while loading.
+import sys  # noqa: E402
+
+sys.path.insert(0, str(HERE.parent / "exp02_cross_encoder"))
+_saved = sys.modules.pop("data", None)
+g2 = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(g2)
+sys.modules.pop("data", None)
+if _saved is not None:
+    sys.modules["data"] = _saved
+sys.path.pop(0)
+
+CONDS = ["adaptive_full_0.9", "a1_thresh_0.9", "adaptive_full_0.95", "a1_thresh_0.95"]
+GEN = HERE / "results" / "generation"
+
+
+def test_rows():
+    ids = json.loads((HERE / "split_ids.json").read_text())["test"]
+    by = {r["id"]: dict(r) for r in _load("validation") if r["id"] in set(ids)}
+    return [by[i] for i in ids]
+
+
+def report(rows):
+    gt = {r["id"]: str(r["answer"]) for r in rows}
+    out, per = {}, {}
+    for c in CONDS:
+        f = GEN / f"{c}.jsonl"
+        if not f.exists():
+            continue
+        recs = {j["id"]: j for j in map(json.loads, f.read_text(encoding="utf-8").splitlines()) if j}
+        per[c] = {q: g2.f1_em(recs[q]["answer"], gt[q])[0] for q in gt if q in recs}
+        out[c] = {"n": len(per[c]), "f1": round(float(np.mean(list(per[c].values()))), 4),
+                  "input_tokens": round(float(np.mean([recs[q]["input_tokens"] for q in per[c]])), 1),
+                  "cost_usd": round(sum(recs[q]["cost_usd"] for q in per[c]), 4)}
+    rng = np.random.default_rng(0)
+    for t in ("0.9", "0.95"):
+        a, b = per.get(f"adaptive_full_{t}"), per.get(f"a1_thresh_{t}")
+        if a and b and set(a) == set(b):
+            d = np.array([a[q] - b[q] for q in a])
+            bs = [d[rng.integers(0, len(d), len(d))].mean() for _ in range(5000)]
+            out[f"paired_f1_diff_{t}"] = {"mean": round(float(d.mean()), 4),
+                                         "ci95": [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)]}
+    (HERE / "results" / "f1_report.json").write_text(json.dumps(out, indent=1))
+    print(json.dumps(out, indent=1))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--report", action="store_true")
+    args = ap.parse_args()
+    rows = test_rows()
+    if args.report:
+        return report(rows)
+    from openai import OpenAI
+
+    client = OpenAI(max_retries=8, timeout=120)
+    sels = json.loads((HERE / "results" / "test_selections.json").read_text())
+    GEN.mkdir(parents=True, exist_ok=True)
+    todo_rows = rows[: args.limit] if args.limit else rows
+    for name in CONDS:
+        sel, path = sels[name], GEN / f"{name}.jsonl"
+        done = set()
+        if path.exists():
+            done = {json.loads(x)["id"] for x in path.read_text(encoding="utf-8").splitlines() if x.strip()}
+        todo = [r for r in todo_rows if r["id"] not in done]
+        print(f"{name}: {len(done)} done, {len(todo)} to run", flush=True)
+        lock = threading.Lock()
+
+        def run(r, name=name, sel=sel, path=path, lock=lock):
+            _, paras = paragraphs_of(r)
+            idx = sel[r["id"]]
+            prompt = build_retrieval_prompt(r["question"], [paras[i] for i in idx])
+            resp = client.chat.completions.create(model=g2.MODEL, messages=[{"role": "user", "content": prompt}])
+            u = resp.usage
+            rec = {"id": r["id"], "condition": name, "paragraphs": idx,
+                   "answer": (resp.choices[0].message.content or "").strip(),
+                   "input_tokens": u.prompt_tokens, "output_tokens": u.completion_tokens,
+                   "cost_usd": (u.prompt_tokens * g2.PRICE_IN + u.completion_tokens * g2.PRICE_OUT) / 1e6}
+            with lock, open(path, "a", encoding="utf-8") as fh:
+                fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+
+        failed = 0
+        with ThreadPoolExecutor(args.workers) as ex:
+            for r, fut in [(r, ex.submit(run, r)) for r in todo]:
+                try:
+                    fut.result()
+                except Exception as e:  # noqa: BLE001 - keep going; a rerun fills gaps
+                    failed += 1
+                    print(f"  FAILED {name} {r['id']}: {type(e).__name__}: {str(e)[:120]}", flush=True)
+        if failed:
+            print(f"{name}: {failed} failed -> rerun to retry only those", flush=True)
+    report(rows)
+
+
+if __name__ == "__main__":
+    main()

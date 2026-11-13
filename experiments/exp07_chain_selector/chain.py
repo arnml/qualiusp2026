@@ -63,7 +63,7 @@ def contains(text, s):
 
 
 def load_split(split, rows):
-    z = np.load(CACHE / f"a1_{split}.npz")
+    z = dict(np.load(CACHE / f"a1_{split}.npz"))  # load once (NpzFile re-decompresses on every access)
     out = []
     for k, qid in enumerate(z["ids"]):
         r = rows[str(qid)]
@@ -167,6 +167,7 @@ def evaluate(data, P):
             r[f"top{k}"] = (full(x, order[:k]), sel_tokens(x, order[:k]))
         for name in ("best_pair", "pair_plus1", "top4"):
             r[name] = (full(x, pol[name]), sel_tokens(x, pol[name]))
+            r[name + "_idx"] = [int(i) for i in pol[name]]
         res.append(r)
     return res
 
@@ -222,10 +223,14 @@ def main():
     lr = LogisticRegression(max_iter=2000, C=1.0).fit(sc_t.transform(Ttr), Ytr)
     Xtr, Xva = np.hstack([Ttr, Vtr]), np.hstack([Tva, Vva])
     sc_f = StandardScaler().fit(Xtr)
+    # exploratory ablation (added after the pre-registered run): A1 scores and ranks only (txt cols 0-4)
+    lr_a = LogisticRegression(max_iter=2000, C=1.0).fit(sc_t.transform(Ttr)[:, :5], Ytr)
     mlp, info = fit_mlp(sc_f.transform(Xtr).astype(np.float32), Ytr, sc_f.transform(Xva).astype(np.float32), Yva)
 
     def probs(model, T, V, Q, n):
-        if model == "text":
+        if model == "a1only":
+            p = lr_a.predict_proba(sc_t.transform(T)[:, :5])[:, 1]
+        elif model == "text":
             p = lr.predict_proba(sc_t.transform(T))[:, 1]
         else:
             with torch.no_grad():
@@ -235,7 +240,7 @@ def main():
     report = {"train_questions": len(tr), "val_questions": len(va), "mlp": info}
     for split, data, T, V, Q in (("dev", dev, Tdv, Vdv, Qdv), ("test", test, Tte, Vte, Qte)):
         rep = {}
-        for model in ("text", "full"):
+        for model in ("text", "full", "a1only"):
             res = evaluate(data, probs(model, T, V, Q, len(data)))
             rep[model] = {"bg2_pair_best": float(np.mean([r["best_pair"][0] for r in res])),
                           "bg2_a1_top2": float(np.mean([r["top2"][0] for r in res])),
@@ -254,17 +259,18 @@ def main():
         te = [c for c in report["test"]["a1_curve"] if c[0] <= t[0]]
         tt = max(te, key=lambda c: c[0]) if te else report["test"]["a1_curve"][-1]
         row["a1_thresh"] = {"dev": t, "test_recall": tt[1], "test_tokens": tt[2]}
-        for model in ("text", "full"):
+        for model in ("text", "full", "a1only"):
             b = best_adaptive(report["dev"][model]["_res"], target)
             rec, tok, size = adaptive(report["test"][model]["_res"], b[3], b[4])
             row[f"adaptive_{model}"] = {"dev": b, "test_recall": rec, "test_tokens": tok, "test_mean_size": size}
         # oracle-on-test frontier (same procedure for both): tokens at the target on test itself
         row["frontier_test"] = {"a1_thresh": best_thresh(report["test"]["a1_curve"], target),
-                                **{f"adaptive_{m}": best_adaptive(report["test"][m]["_res"], target) for m in ("text", "full")}}
+                                **{f"adaptive_{m}": best_adaptive(report["test"][m]["_res"], target) for m in ("text", "full", "a1only")}}
         final[f"recall_{target:g}"] = row
     # paired statistics on test (dev-tuned thresholds): bootstrap over questions + McNemar for bg2
     from math import comb
     rng_b = np.random.default_rng(1)
+    sels = {}
     for target in (0.90, 0.95):
         row = final[f"recall_{target:g}"]
         t = row["a1_thresh"]["dev"][0]
@@ -273,12 +279,14 @@ def main():
             keep = np.where(x["s"] >= t)[0]
             keep = keep if len(keep) else np.argsort(-x["s"])[:1]
             a1.append((full(x, keep), sel_tokens(x, keep)))
-        for model in ("text", "full"):
+            sels.setdefault(f"a1_thresh_{target:g}", {})[x["id"]] = [int(i) for i in keep[np.argsort(-x["s"][keep])]]
+        for model in ("text", "full", "a1only"):
             d = row[f"adaptive_{model}"]["dev"]
             ad = []
             for r in report["test"][model]["_res"]:
                 key = "best_pair" if r["p_best"] >= d[3] else ("pair_plus1" if r["p_best"] >= d[4] else "top4")
                 ad.append(r[key])
+                sels.setdefault(f"adaptive_{model}_{target:g}", {})[test[len(ad) - 1]["id"]] = r[key + "_idx"]
             dt = np.array([a[1] - b[1] for a, b in zip(ad, a1)], float)
             dr = np.array([float(a[0]) - float(b[0]) for a, b in zip(ad, a1)])
             bs_t = [dt[rng_b.integers(0, len(dt), len(dt))].mean() for _ in range(2000)]
@@ -286,15 +294,17 @@ def main():
             row[f"adaptive_{model}"]["paired_vs_a1_thresh"] = {
                 "tokens_diff_mean": float(dt.mean()), "tokens_diff_ci95": [float(np.percentile(bs_t, 2.5)), float(np.percentile(bs_t, 97.5))],
                 "recall_diff_mean": float(dr.mean()), "recall_diff_ci95": [float(np.percentile(bs_r, 2.5)), float(np.percentile(bs_r, 97.5))]}
-    for model in ("text", "full"):
+    for model in ("text", "full", "a1only"):
         b_, c_ = report["test"][model]["pair_best_only"], report["test"][model]["a1_top2_only"]
         n_ = b_ + c_
         report["test"][model]["bg2_mcnemar_p"] = min(1.0, 2 * sum(comb(n_, i) for i in range(min(b_, c_) + 1)) / 2 ** n_) if n_ else 1.0
     for split in ("dev", "test"):
-        for model in ("text", "full"):
+        for model in ("text", "full", "a1only"):
             report[split][model].pop("_res")
         report[split].pop("a1_curve")
     report["policies"] = final
+    (HERE / "results").mkdir(exist_ok=True)
+    (HERE / "results" / "test_selections.json").write_text(json.dumps(sels))
     (HERE / "results").mkdir(exist_ok=True)
     (HERE / "results" / "chain_results.json").write_text(json.dumps(report, indent=1, default=float))
     print(json.dumps(report, indent=1, default=float))
