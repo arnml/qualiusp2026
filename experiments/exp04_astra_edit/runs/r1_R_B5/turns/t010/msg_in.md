@@ -1,0 +1,8 @@
+OUTPUT:
+```
+Bootstrap helper ready; it recalibrates both thresholds in every paired resample.
+Half-strength report: {'both@3': 0.55, 'tokens@90': 913.2, 'top3_gain_pp': 0.0, 'paired_top3_se_pp': 0.0, 'wins': 0, 'losses': 0, 'weak_gold_vs_second_distractor_margin_change': 0.03865785151720047}
+Half-strength uncertainty: {'token_saving_se': 15.501461837404987, 'token_saving_95pct_interval': [-4.360750000000013, 51.789999999999964], 'top3_gain_se_pp': 0.0, 'top3_gain_95pct_interval_pp': [0.0, 0.0]}
+
+```
+Passes left: 3/5. Turn 9/40.

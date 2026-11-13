@@ -122,3 +122,9 @@ Run this **after stage 3 is finished and evaluated**:
 - **Verdict:** lossless, but a TIE with Wanda (~1.2 GF gap, under the 2 GF margin). `final_eval.py` does physical pruning plus latency.
 - **gpt-5.4-mini F1 on stage 3:** not run yet (pre-registered; ~1,200 calls). Low value given the tie; ask the PI.
 - **Next:** the queued A0 / Track R experiment (see above). `C:\work` still needs deleting by the PI (blocked for Claude).
+
+## Update 2026-11-13: Track R stage R1 DONE (no repair)
+
+- `runs/r1_R_B5`: Astra on A0, B = 5, 16 turns, 0 violations. It submitted an **empty edit** (its layer-4 candidate failed its own confirmation). Pre-registered verdict: no repair; the R1 gate is not met.
+- Exploratory: the rejected candidate on dev1000 has no effect (1,097 vs 1,089 tok@90). `evaluate_r.py` works (`--refs`, `--run`, `--test`).
+- **Decision pending (PI):** stop Track R as pre-registered, or run R2 (B = 10) as a recorded deviation.

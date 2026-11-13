@@ -1,0 +1,43 @@
+Using the latest cached version of the dataset since hotpot_qa couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'distractor' at C:\Users\devar\.cache\huggingface\datasets\hotpot_qa\distractor\0.0.0\1908d6afbbead072334abe2965f91bd2709910ab (last modified on Thu Nov 12 10:18:07 2026).
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 2354.59it/s]
+turn 1: code=True passes_left=4 tools=[] 46.7s
+turn 2: code=True passes_left=4 tools=[] 53.9s
+turn 3: code=True passes_left=4 tools=[] 11.9s
+turn 4: code=True passes_left=4 tools=[] 71.6s
+turn 5: code=False passes_left=4 tools=[] 15.8s
+turn 6: code=True passes_left=4 tools=[] 15.6s
+turn 7: code=True passes_left=4 tools=[] 55.1s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 2327.78it/s]
+turn 8: code=True passes_left=3 tools=[] 25.4s
+turn 9: code=True passes_left=3 tools=[] 30.0s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 2818.28it/s]
+turn 10: code=True passes_left=2 tools=[] 19.9s
+turn 11: code=True passes_left=2 tools=[] 77.0s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 3019.22it/s]
+turn 12: code=True passes_left=1 tools=[] 42.8s
+turn 13: code=True passes_left=1 tools=[] 18.9s
+Loading weights:   0%|          | 0/105 [00:00<?, ?it/s]Loading weights: 100%|██████████| 105/105 [00:00<00:00, 3009.36it/s]
+turn 14: code=True passes_left=0 tools=[] 22.7s
+turn 15: code=True passes_left=0 tools=[] 29.6s
+turn 16: code=False passes_left=0 tools=[] 21.2s
+{
+ "turns": 16,
+ "passes_used": 5,
+ "tool_violations": 0,
+ "hard_flags": 0,
+ "soft_flag_turns": 0,
+ "input_tokens": 2781509,
+ "output_tokens": 133983,
+ "editor_seconds": 558.1,
+ "final_cost": {
+  "encoder_gflops_per_question": 39.2620032,
+  "encoder_params": 10646784,
+  "removed": {
+   "heads": 0,
+   "neurons": 0,
+   "layers": []
+  }
+ },
+ "finished": "2026-11-13 08:49:37"
+}

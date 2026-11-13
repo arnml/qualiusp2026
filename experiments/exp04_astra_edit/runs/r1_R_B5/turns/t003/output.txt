@@ -1,0 +1,38 @@
+Discovery baseline: {'both@3': 0.55, 'tokens@90': 950.47, 'retention': 0.9, 'cutoff': -6.597182750701904}
+Mean paragraph tokens: 116.9
+Within-question score correlations: {'word overlap': 0.599, 'title overlap': 0.383, 'length': -0.301, 'gold': 0.573}
+Weak gold / second distractor means: {'score': (0.208, -0.207), 'overlap': (0.429, 0.449), 'title_overlap': (0.117, 0.094)}
+
+Q 19 bridge The only athlete to compete for Montserrat at the 2002 Commonwealth Games was born in what year?
+GOLD -10.94 Gavin Lee. Gavin Lee (born 15 October 1971) is an English actor who has appeared on the stage in musical theatre, notably in the musical "Mary Poppins", in both the West End and on Broadway.
+DISTRACTOR 1.11 Scotland at the 2006 Commonwealth Games. The Commonwealth Games Council for Scotland announced on 3 November 2005 that Scotland would be sending 166 athletes (104 men and 62 women) to compete in the 2006 Commonwealth Games in Melbourne, Australia, supported by 70 officials. This is a smaller team than the country fielded at the 2002 Commonwealth Games in Manchester, England, when Scotland sent 207 athletes and 85 officials, wi
+
+Q 51 bridge what team does the former 2012-13 FC Sion player now manage?
+GOLD -8.41 Gennaro Gattuso. Gennaro Ivan "Rino" Gattuso, (] ; born 9 January 1978) is an Italian football manager in charge of A.C. Milan Primavera and a former footballer.
+DISTRACTOR 3.3 Sébastien Fournier. Sébastien Fournier (born 27 June 1971) is a Swiss football manager, most recently for FC Sion, and former football player.
+
+Q 16 bridge Goodwood Baseball Club has a home stadium in which city?
+GOLD -10.52 Colonel Light Gardens, South Australia. Colonel Light Gardens is a suburb located within the City of Mitcham in the greater Adelaide region. The area is 1.58 km². It is known for featuring wide, tree-lined streets, presentable postwar bungalow homes, rounded street corners, and lots of manicured, well maintained open space.
+DISTRACTOR -0.48 Foothills Stadium. Foothills Stadium, formerly Burns Stadium, is a stadium in Calgary, Alberta. It is primarily used for baseball, and was formerly home to the Calgary Cannons AAA baseball club until September 2002, when the team relocated to Albuquerque, New Mexico, USA. It was later the home field of the Calgary Vipers baseball team of the North American League. It originally opened in 1966. The most notable early team to pl
+
+Q 97 bridge Where is the firm based that bought the Motel 6 chain from Accor Hotels ?
+GOLD -7.72 The Blackstone Group. The Blackstone Group L.P. is an American multinational private equity, alternative asset management and financial services firm based in New York City. As the largest alternative investment firm in the world, Blackstone specializes in private equity, credit and hedge fund investment strategies.
+DISTRACTOR 1.86 Hotel Formule 1. Hotel Formule 1, or hotelF1 in France, is an international chain of "super low budget" or "no frills" hotels owned by AccorHotels. As of August 2012, the Hotel Formule 1 brand has begun rebranding into the Accor Hotels ibis Styles and ibis Budget brands. In France, some Hotel Formule 1 properties are re-branded into a new, France-only brand called hotelF1. However, in India the hotels are still branded as Hote
+
+Q 43 bridge William Harris, D.D., was an English dissenting minister and historian who wrote a series of historically significant biographies of 17th-century Britain kings, of the House of Stuart, of the European royal house that originated in which country?
+GOLD -6.6 House of Stuart. The House of Stuart, originally Stewart and, in Gaelic, Stiùbhart , was a European royal house that originated in Scotland. The dynasty's patrilineal Breton ancestors had held the office of High Steward of Scotland since the 12th century, after arriving by way of Norman England. The royal Stewart line was founded by Robert II, and they were Kings and Queens of Scots from the late 14th century until the union w
+DISTRACTOR 1.7 William Eastmead. William Eastmead (died 1847?) was an English dissenting minister.
+
+Q 117 bridge What 5th century British people originally used the Bishop of Ramsbury title?
+GOLD -5.08 Anglo-Saxons. The Anglo-Saxons were a people who inhabited Great Britain from the 5th century. They comprise people from Germanic tribes who migrated to the island from continental Europe, their descendants, and indigenous British groups who adopted some aspects of Anglo-Saxon culture and language. Historically, the Anglo-Saxon period denotes the period in Britain between about 450 and 1066, after their initial settlement and 
+DISTRACTOR 2.25 Bishop of Thetford. The Bishop of Thetford is an episcopal title which takes its name after the market town of Thetford in Norfolk, England. The title was originally used by the Normans in the 11th century, and is now used by a Church of England suffragan bishop.
+
+Q 130 bridge What is the nationality of the actress who narrated The Runaway Bunny in a GPRecords recording?
+GOLD -6.7 Catherine Zeta-Jones. Catherine Zeta-Jones, CBE ( ; born 25 September 1969) is a Welsh actress. Born and raised in Swansea, Zeta-Jones aspired to be an actress from a young age. As a child, she played roles in the West End productions of the musicals "Annie" and "Bugsy Malone". She studied musical theatre at the Arts Educational Schools, London, and made her stage breakthrough with a leading role in a 1987 production of "42nd 
+DISTRACTOR 0.36 The Runaway Bunny. The Runaway Bunny is a 1942 picture book written by Margaret Wise Brown and illustrated by Clement Hurd. The plot deals with a small rabbit, who wants to run away. His mother, however, tells him that "if you run away, I will run after you."
+Layer 0 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(1345, 0.075, 0.047, 0.029, 0.235), (336, 0.095, 0.065, 0.056, 0.095), (1288, 0.06, 0.033, 0.047, 0.294), (1263, 0.134, 0.041, 0.05, 0.09), (778, 0.077, 0.02, 0.004, 0.264), (366, 0.136, 0.032, 0.07, 0.091)]
+Layer 1 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(232, 0.069, 0.072, -0.015, 0.391), (1242, 0.134, 0.053, -0.016, 0.17), (379, 0.128, 0.055, 0.003, 0.122), (249, 0.035, 0.095, -0.03, 0.242), (45, 0.039, 0.055, -0.026, 0.33), (223, 0.087, 0.092, 0.02, 0.085)]
+Layer 2 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(1151, 0.355, 0.299, 0.132, 0.424), (900, 0.215, 0.249, -0.012, 0.688), (1215, 0.213, 0.228, 0.038, 0.621), (795, 0.3, 0.255, 0.14, 0.372), (4, 0.284, 0.269, 0.116, 0.325), (659, 0.262, 0.28, 0.078, 0.326)]
+Layer 3 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(16, 0.616, 0.602, 0.279, 0.427), (956, 0.523, 0.486, 0.231, 0.54), (972, 0.564, 0.513, 0.269, 0.472), (72, 0.572, 0.555, 0.266, 0.419), (764, 0.557, 0.489, 0.241, 0.474), (769, 0.575, 0.489, 0.283, 0.407)]
+Layer 4 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(1238, 0.549, 0.475, 0.129, 0.853), (120, 0.7, 0.569, 0.297, 0.497), (1337, 0.526, 0.574, 0.208, 0.521), (1490, 0.775, 0.516, 0.374, 0.387), (425, 0.732, 0.59, 0.337, 0.343), (1113, 0.565, 0.522, 0.202, 0.487)]
+Layer 5 candidate neurons (index, score r, overlap r, gold r, distractor contrast): [(199, 0.561, 0.374, 0.237, 0.31), (882, 0.483, 0.314, 0.151, 0.393), (792, 0.498, 0.344, 0.164, 0.279), (305, 0.346, 0.24, 0.054, 0.47), (396, 0.379, 0.214, 0.084, 0.472), (1189, 0.433, 0.217, 0.115, 0.404)]

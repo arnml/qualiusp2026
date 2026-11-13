@@ -1,0 +1,9 @@
+OUTPUT:
+```
+[forward] pass used; 1 left
+Strength 1.0: {'both@3': 0.55, 'tokens@90': 911.52, 'top3_gain_pp': 0.0, 'paired_top3_se_pp': 0.0, 'wins': 0, 'losses': 0, 'weak_gold_vs_second_distractor_margin_change': 0.06897977739572525}
+Paired uncertainty: {'token_saving_se': 23.656418653501415, 'token_saving_95pct_interval': [-10.651999999999978, 74.39924999999974], 'top3_gain_se_pp': 0.0, 'top3_gain_95pct_interval_pp': [0.0, 0.0]}
+Discovery comparison: {0.5: {'both@3': 0.55, 'tokens@90': 913.2}, 1.0: {'both@3': 0.55, 'tokens@90': 911.52}, 2.0: {'both@3': 0.55, 'tokens@90': 920.19}}
+
+```
+Passes left: 1/5. Turn 12/40.

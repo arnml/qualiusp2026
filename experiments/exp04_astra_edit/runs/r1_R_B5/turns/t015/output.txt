@@ -1,0 +1,4 @@
+Restored the original weights because the confirmation criterion was not met.
+Final changed entries: 0
+Final edited(): {'track': 'R', 'heads_removed': [], 'neurons_removed': 0, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}}
+Notes and reproducibility artifacts are saved in WORK.

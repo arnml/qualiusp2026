@@ -1,0 +1,5 @@
+{
+ "track": "R",
+ "model_dir": "models/a0",
+ "note": "EXPLORATORY: Astra's rejected R1 candidate (alpha=1), rebuilt from runs/r1_R_B5/work/confirmation_candidate.pt; not a submitted edit"
+}

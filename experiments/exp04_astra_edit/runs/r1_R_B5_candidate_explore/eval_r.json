@@ -1,0 +1,57 @@
+{
+ "dev1000": {
+  "A0": {
+   "bg3": 0.593,
+   "tok90": 1089.396,
+   "full_recall": 0.9,
+   "threshold": -6.48828125
+  },
+  "A2_n200": {
+   "bg3": 0.769,
+   "tok90": 698.056,
+   "full_recall": 0.9,
+   "threshold": -4.46484375
+  },
+  "A1": {
+   "bg3": 0.96,
+   "tok90": 385.455,
+   "full_recall": 0.9,
+   "threshold": -2.443359375
+  },
+  "edit": {
+   "bg3": 0.594,
+   "tok90": 1097.386,
+   "full_recall": 0.9,
+   "threshold": -6.391972541809082
+  }
+ },
+ "test400": {},
+ "run": "r1_R_B5_candidate_explore",
+ "valid": true,
+ "errors": [],
+ "changed_entries": 36864,
+ "paired_dev1000": {
+  "A0": {
+   "bg3_mcnemar_edit_vs_ref": {
+    "a_only": 4,
+    "b_only": 3,
+    "p": 1.0
+   },
+   "tok90_diff_ci95_edit_minus_ref": [
+    -9.785100000000103,
+    17.048675000000017
+   ]
+  },
+  "A2_n200": {
+   "bg3_mcnemar_edit_vs_ref": {
+    "a_only": 22,
+    "b_only": 197,
+    "p": 2.4627344434035355e-36
+   },
+   "tok90_diff_ci95_edit_minus_ref": [
+    348.2477749999999,
+    445.26405000000005
+   ]
+  }
+ }
+}

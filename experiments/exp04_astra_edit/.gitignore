@@ -5,3 +5,7 @@ models/
 .venv/
 __pycache__/
 results_*_log.txt
+
+# Track R: tensor copies that are rebuildable from the kept candidate
+runs/r1_R_B5/work/candidate_alpha_*.pt
+runs/*_explore/work/edited/raw.safetensors

@@ -1,0 +1,5 @@
+[forward] pass used; 3 left
+Strength 0.5: {'both@3': 0.55, 'tokens@90': 913.2, 'top3_gain_pp': 0.0, 'paired_top3_se_pp': 0.0, 'wins': 0, 'losses': 0, 'weak_gold_vs_second_distractor_margin_change': 0.03865785151720047}
+Paired baseline agreement: 4.76837158203125e-07
+Selected columns: [188, 1202, 75, 373, 869, 1503, 1481, 1270, 425, 299, 981, 314, 1106, 635, 511, 389, 120, 380, 281, 25, 1238, 1368, 691, 1291, 1357, 525, 1429, 698, 1278, 212, 358, 767, 1109, 1279, 1318, 319, 1426, 110, 440, 408, 1425, 1329, 135, 1331, 280, 752, 1366, 1170, 567, 890, 911, 529, 1310, 201, 805, 292, 22, 1379, 327, 770, 564, 1224, 460, 1113, 976, 1251, 720, 435, 1086, 960, 1499, 610, 994, 395, 1466, 3, 260, 1234, 1286, 1356, 1369, 747, 798, 63, 335, 750, 1084, 1519, 1073, 1028, 422, 924, 613, 279, 49, 1022]
+Edit status: {'track': 'R', 'heads_removed': [], 'neurons_removed': 0, 'layers_removed': [], 'scalings': 0, 'cost': {'encoder_gflops_per_question': 39.2620032, 'encoder_params': 10646784, 'removed': {'heads': 0, 'neurons': 0, 'layers': []}}, 'raw_changed_entries': {'bert.encoder.layer.4.output.dense.weight': 36864}}

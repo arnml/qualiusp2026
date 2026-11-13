@@ -1,0 +1,8 @@
+OUTPUT:
+```
+Freeze the strength with lowest discovery tokens@90 (ties favor smaller strength), then evaluate it once on confirmation questions. Keep only if confirmation token saving exceeds twice its paired bootstrap standard error, its 95% bootstrap interval excludes zero, and both-gold@3 does not show a deterioration exceeding twice its paired standard error. Otherwise restore the original tensor.
+Confirmation metadata prepared: 100 questions; 994 paragraphs.
+Token counts use the supplied tokenizer and exclude prompt wrappers; they are a retention-cost proxy.
+
+```
+Passes left: 1/5. Turn 13/40.

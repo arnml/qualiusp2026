@@ -235,3 +235,37 @@ The curve is not monotone above 80%: the differences there are within noise (±0
   - It found that the last layer's MLP can go entirely while its attention must stay.
   - It audits its own cuts with paired tests on held-out practice questions.
 - **For the thesis:** an honest negative-to-neutral result on "LLM weight editing beats classical pruning", with a positive engineering result (a cheaper selector at the same quality) and an interpretable mechanism finding.
+
+## Track R, stage R1 (`runs/r1_R_B5`, 2026-11-13): Astra edits A0, B = 5
+
+Pre-registered in `25bc080` (DESIGN.md, "Track R pre-registration"). The start model is A0, the off-the-shelf encoder; practice = A2's 200 training questions.
+
+**Run:** 16 turns, 5/5 passes, **0 tool violations, 0 refused code**, 2.78M Codex input tokens, 9 min of editor time.
+
+**Astra's process (from its notes):**
+1. **Fixed split:** 100 discovery / 100 confirmation questions (seed 20261113). Confirmation was kept unexamined until the candidate was frozen.
+2. **Mechanism candidate:** layer-4 MLP neurons that favour lexically overlapping distractors over weak gold paragraphs. Screened with within-question activation correlations, distractor-minus-gold means and output-weight alignment, all descriptive statistics.
+3. **Intervention:** `W[:, S] = (1 − α) W_orig[:, S]` on 96 columns of `bert.encoder.layer.4.output.dense.weight` (36,864 entries), at α = 0.5 / 1.0 / 2.0 on discovery.
+   - Tokens@90: 950 → 913 / 912 / 920.
+   - bg3 unchanged.
+   - Astra noted that the effect is not monotone in strength.
+4. **Predeclared confirmation rule:** keep only if the token saving exceeds 2 SE and its 95% CI excludes 0. On confirmation, α = 1 gave 963 → 937 tokens (CI −18 to +49) and bg3 54% → 55%.
+5. **The rule failed, so the edit was reverted. The submitted edit is empty (0 changed weights).**
+
+**Pre-registered verdict: no repair.** The submitted model is A0, so dev1000 = A0 (0.593 bg3, 1,089 tok@90). The R1 gate ("dev1000 shows any change") is not met.
+
+**Exploratory check, not pre-registered** (`runs/r1_R_B5_candidate_explore`): Astra's rejected α = 1 candidate, rebuilt from `work/confirmation_candidate.pt` and scored on dev1000.
+
+| Model | dev1000 bg3 | dev1000 tok@90 |
+|---|---|---|
+| A0 | 0.593 | 1,089 |
+| Rejected candidate | 0.594 | 1,097 (diff vs A0: +8, 95% CI −10 to +17) |
+| A2 (same 200 questions, fine-tuned) | 0.769 | 698 |
+
+McNemar vs A0: 4 vs 3, p = 1.0. **The candidate has no effect on held-out questions, so Astra's rejection was correct.** Its discovery-half gain (−38 tokens) was overfitting to 100 questions.
+
+**Readout:**
+- This matches the prior from the exp03 probe: A0 lacks the skill, and a 1% weight edit found by analysis does not add it.
+- **The editor behaved like a careful experimenter:**
+  - a predeclared split and rule
+  - an honest null submission, rather than shipping an unconfirmed gain

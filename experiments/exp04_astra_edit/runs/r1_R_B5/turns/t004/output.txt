@@ -1,0 +1,4 @@
+Diagnostic state: {'drows': True, 'dscores': True, 'dgold': True, 'dlength': True, 'doverlap': True, 'groups_d': True, 'base_d': True, 'weak_gold': True, 'neuron_stats': True}
+Baseline score range: -11.230633735656738 10.093833923339844
+Discovery baseline: {'both@3': 0.55, 'tokens@90': 950.47, 'retention': 0.9, 'cutoff': -6.597182750701904}
+Completed layer summaries: 6

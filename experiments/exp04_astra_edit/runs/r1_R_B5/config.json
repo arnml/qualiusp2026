@@ -1,0 +1,15 @@
+{
+ "run": "r1_R_B5",
+ "track": "R",
+ "budget": 5,
+ "turn_cap": 40,
+ "editor": "astra",
+ "model_name": "gpt-6-astra",
+ "effort": "xhigh",
+ "script": null,
+ "model_dir": "models/a0",
+ "practice": "train",
+ "n": 200,
+ "prompt": "prompt_trackR.md",
+ "started": "2026-11-13 08:34:12"
+}
