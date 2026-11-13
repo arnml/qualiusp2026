@@ -282,6 +282,64 @@ class AstraEditor:
         return "\n\n".join(texts), meta
 
 
+CLAUDE_BIN = __import__("shutil").which("claude") or "claude"
+# All built-in tools off (--tools ""), no MCP servers, no settings/hooks/CLAUDE.md sources, no skills.
+CLAUDE_OFF = ["--tools", "", "--strict-mcp-config", "--setting-sources", "", "--disable-slash-commands"]
+
+
+class ClaudeEditor:
+    """Second editor: Claude Code in print mode (claude -p), one call per turn, --resume for the next."""
+
+    def __init__(self, run: Path, model: str, effort: str):
+        self.run, self.model, self.effort = run, model, effort
+        self.thread = None
+        # Empty folder OUTSIDE the git repo: Claude Code would otherwise add git status and recent
+        # commit messages (which contain our results) to the editor's context. No CLAUDE.md there.
+        import tempfile
+        self.cwd = Path(tempfile.gettempdir()) / "qualiusp_editor_cwd" / run.name
+        self.cwd.mkdir(parents=True, exist_ok=True)
+        (run / "editor_cwd.txt").write_text(str(self.cwd), encoding="utf-8")
+
+    def new_thread(self):
+        self.thread = None
+
+    def send(self, msg: str, turn_dir: Path) -> tuple[str, dict]:
+        cmd = [CLAUDE_BIN, "-p", "--model", self.model, "--effort", self.effort, *CLAUDE_OFF,
+               "--output-format", "stream-json", "--verbose"]
+        if self.thread:
+            cmd += ["--resume", self.thread]
+        t0 = time.time()
+        p = subprocess.run(cmd, input=msg, capture_output=True, text=True, encoding="utf-8",
+                           cwd=str(self.cwd))
+        (turn_dir / "events.jsonl").write_text(p.stdout, encoding="utf-8")
+        (turn_dir / "stderr.txt").write_text(p.stderr, encoding="utf-8")
+        reply, usage, bad, cost = "", {}, [], None
+        for line in p.stdout.splitlines():
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("type") == "system" and ev.get("subtype") == "init":
+                self.thread = ev.get("session_id", self.thread)
+                if ev.get("tools") or ev.get("mcp_servers"):
+                    bad.append(f"init_tools:{ev.get('tools')}|mcp:{ev.get('mcp_servers')}")
+            if ev.get("type") == "assistant":
+                for block in ev.get("message", {}).get("content", []):
+                    if block.get("type") not in ("text", "thinking", "redacted_thinking"):
+                        bad.append(block.get("type"))
+            if ev.get("type") == "result":
+                reply = ev.get("result") or ""
+                u = ev.get("usage", {})
+                usage = {"input_tokens": u.get("input_tokens", 0) + u.get("cache_read_input_tokens", 0)
+                         + u.get("cache_creation_input_tokens", 0),
+                         "output_tokens": u.get("output_tokens", 0), "raw": u}
+                cost = ev.get("total_cost_usd")
+                self.thread = ev.get("session_id", self.thread)
+        meta = {"usage": usage, "seconds": round(time.time() - t0, 1), "tool_items": bad,
+                "returncode": p.returncode, "thread": self.thread, "cost_usd_estimate": cost}
+        return reply, meta
+
+
 class DummyEditor:
     def __init__(self, script: Path):
         self.replies = json.loads(Path(script).read_text(encoding="utf-8"))
@@ -312,7 +370,7 @@ def main():
     ap.add_argument("--track", choices=["C", "R"], required=True)
     ap.add_argument("--budget", type=int, required=True)
     ap.add_argument("--turn-cap", type=int, required=True)
-    ap.add_argument("--editor", choices=["astra", "dummy"], required=True)
+    ap.add_argument("--editor", choices=["astra", "claude", "dummy"], required=True)
     ap.add_argument("--model-name", default="gpt-6-astra")
     ap.add_argument("--effort", default="xhigh")
     ap.add_argument("--script", help="dummy editor replies (JSON list)")
@@ -348,8 +406,12 @@ def main():
     json.dump(vars(args) | {"started": time.strftime("%Y-%m-%d %H:%M:%S")},
               (run / "config.json").open("w"), indent=1)
 
-    editor = (AstraEditor(run, args.model_name, args.effort) if args.editor == "astra"
-              else DummyEditor(args.script))
+    if args.editor == "astra":
+        editor = AstraEditor(run, args.model_name, args.effort)
+    elif args.editor == "claude":
+        editor = ClaudeEditor(run, args.model_name, args.effort)
+    else:
+        editor = DummyEditor(args.script)
     msg, records, after_budget, since_handoff = prompt, [], 0, 0
     for turn in range(1, args.turn_cap + 1):
         td = run / "turns" / f"t{turn:03d}"
