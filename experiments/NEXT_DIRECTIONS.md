@@ -95,7 +95,7 @@ H1 and H2 are cheap and decide whether more Astra repair runs are worth it:
 
 **Context for exp04's value:** the weight-space programming results we follow are recent, unreviewed, and partly disputed by an audit (Ahmed 2026). A careful, baseline-matched replication on a new model type is a real contribution even when the answer is "ties classical pruning".
 
-## Suggested order (smallest step, biggest information first)
+## Suggested order (superseded by the merged plan at the end)
 
 1. **exp06 step 1:** grafting + non-linear probe. CPU only, a few hours. Decides the Astra-repair question.
 2. **exp05:** adaptive cascade. CPU plus existing models; strong practical story for the qualification.
@@ -111,3 +111,69 @@ H1 and H2 are cheap and decide whether more Astra repair runs are worth it:
 - Wu et al., *ReFT: Representation Finetuning for Language Models*, NeurIPS 2024: <https://arxiv.org/abs/2404.03592>
 - Weight-space programming (Takehi et al. 2026, unreviewed) and its audit: `bibli.bib` (takehi2026weightspace, ahmed2026weightspaceaudit); press summary <https://analyticsindiamag.com/ai-news/mit-researchers-show-llms-can-read-and-edit-neural-network-weights-without-retraining>
 - Already in `bibli.bib`: MDR (xiong2021mdr), Beam Retrieval (zhang2024beamretrieval), SetR (lee2025setr), adaptive-k (taguchi2025adaptivek), Noise-Gate (lavado2027noisegate).
+
+---
+
+## Update: review of a second LLM's roadmap (2026-11-13)
+
+The PI shared a roadmap from another LLM. Its three big questions match the PI's own. Below: what we checked, what we agree with, what we correct, and the merged plan.
+
+### Checked against our data: does the evidence actually matter for the answer?
+
+The concern: A1's selections reach the same F1 as all 10 paragraphs although they sometimes miss a gold paragraph. Maybe the reader answers without the full evidence chain (HotpotQA has known reasoning shortcuts).
+
+Check: `exp02_cross_encoder/evidence_sensitivity.py`, on the existing exp02 answers, with no new LLM calls.
+
+| A1 selection (test, 400) | Both gold kept | F1 | One gold missing | F1 | Same questions, all 10 paragraphs |
+|---|---|---|---|---|---|
+| top 2 | 351 | 0.822 | 49 | **0.478** | 0.779 |
+| threshold t = 0.02 | 387 | 0.806 | 13 | **0.481** | 0.789 |
+
+**Readout:**
+- **Evidence matters:** when a gold paragraph is missing, F1 falls by ~0.3 (0.48 vs 0.78 on the same questions).
+- **Why the aggregate F1 still matches all 10:** the misses are rare (13 of 400 with the threshold), and all 10 paragraphs hurt elsewhere through distraction.
+- **Shortcuts exist, but only partly:** ~half of the answers survive a missing paragraph. So both-gold recall stays the right primary metric, and answer F1 is the check.
+
+### Citations checked
+
+| Cited | Status |
+|---|---|
+| Weight-space programming (Takehi et al., MIT CSAIL, Nov 2026) | real; blog/technical report, unreviewed |
+| "Replicating Weight-Space Programming" (Turing Institute) | **not found**; not used |
+| MICE (Vast et al.) | real, arXiv 2602.16299 (Feb 2026); EMNLP acceptance **not confirmed**. About 4x lower latency than cross-encoders by masking query-document interactions; ColBERT-like |
+| FrugalRAG (Java et al.) | real, ICLR 2026. RL-trained adaptive search depth, roughly halving retrieval cost on HotpotQA |
+| PHLoRA (Vasani et al.) | real, IJCNLP-AACL 2025 Findings. Truncated SVD of the fine-tuning weight delta, data- and gradient-free |
+| Task Arithmetic (Ilharco et al. 2023), Adaptive-k, MuSiQue | real and well known |
+
+### Agree, adopted
+
+- **Repair A1's failures, not A0's missing behaviour.** This is closer to where weight-space programming has worked: removing a concentrated failure mode (Qwen looping), not creating a skill.
+- **Give Astra the A0 -> A1 weight delta** (Path B), with SVD / PHLoRA / random allocation as controls. This merges with our grafting idea (H1): sparse grafting and low-rank grafting are two views of "how small is the learned skill?"
+- **Honest caveat (theirs, correct):** compressing the delta does not cut inference FLOPs. It's a science result about where the skill lives. Savings need pruning or a smaller backbone on top.
+- **Pair-completeness on cached A1 features** (Path A): score the 6 pairs of the top 4 with a tiny network on A1's [CLS] vectors, not 6 more cross-encoder passes. This is cheaper than our pair cross-encoder.
+- **Adaptive budget 2/3/4 paragraphs**, compared at matched total cost. Individual scores are not chain completeness, which links Paths A and D.
+- **Pre-specified non-inferiority margins** for "equal": already our practice since stage 2 (the 2 GF margin, McNemar).
+
+### Corrections and cautions
+
+- **Power for "repair A1's failures":** A1 misses only ~40 of 1,000 dev questions, so a fix of 5-10 questions is invisible on dev1000. We need a bigger diagnostic set (~5,000 unused HotpotQA validation questions) plus MuSiQue / 2Wiki, where pointwise selection fails more.
+- **Path E (interaction surgery, MICE-style)** is promising for real latency but needs retraining; it's the largest project. Later.
+- **"Top-3 recall 0.94"** is for test with top-3; with the dev-tuned threshold, A1 keeps both gold for 96.75% of test questions.
+
+### Merged plan (smallest step, biggest information first)
+
+| # | Experiment | Question | Cost |
+|---|---|---|---|
+| 1 | **exp05 failure anatomy** | Why does A1 miss gold? Bridge vs comparison, distractor type, annotation issues, on a large unused validation pool | CPU, no LLM |
+| 2 | **exp06 how small is the skill?** | Sparse and low-rank (SVD / PHLoRA) grafts of A1 - A0 into A0 at 1% / 0.1% / 0.01% and rank 1-16; then Astra-directed allocation vs controls | CPU, then Astra |
+| 3 | **exp07 pair completeness + adaptive budget** | A tiny pair scorer on A1 features for the top 4, deciding 2/3/4 paragraphs; matched-cost comparison vs top-k and thresholds | CPU + Colab |
+| 4 | **Opus replication** | Does a second editor behave like Astra (stage 1, R1)? | ~1 h CPU + Claude usage |
+| 5 | **exp08 interaction surgery** | MICE-style masks proposed by Astra vs MICE / layer-drop / ColBERT | Colab, larger |
+
+### Open question for the PI
+
+**Is "no gradients" part of the research question, or only exp04's test condition?**
+- **Claude's view:** the thesis constraint is cheap *inference*, not gradient-free *development*. The ban was there to test pure weight-space programming, and that test is done.
+- **If gradients are allowed, hybrids become possible:** Astra chooses where and what to edit, and a tiny gradient fit sets the values (LoFiT). The fair comparison is then against LoFiT and LoRA at equal parameters.
+
+Sources: [MICE](https://arxiv.org/abs/2602.16299) · [FrugalRAG](https://proceedings.iclr.cc/paper_files/paper/2026/hash/ede6f43d254731152970009c172d5561-Abstract-Conference.html) · [PHLoRA](https://arxiv.org/html/2509.10971v1) · [weight-space programming coverage](https://www.datacamp.com/blog/weight-space-programming)
