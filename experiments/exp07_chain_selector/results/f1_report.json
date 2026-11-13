@@ -1,0 +1,40 @@
+{
+ "adaptive_full_0.9": {
+  "n": 400,
+  "f1": 0.7722,
+  "input_tokens": 332.2,
+  "cost_usd": 0.0288
+ },
+ "a1_thresh_0.9": {
+  "n": 400,
+  "f1": 0.792,
+  "input_tokens": 389.1,
+  "cost_usd": 0.0333
+ },
+ "adaptive_full_0.95": {
+  "n": 400,
+  "f1": 0.7892,
+  "input_tokens": 372.5,
+  "cost_usd": 0.0319
+ },
+ "a1_thresh_0.95": {
+  "n": 400,
+  "f1": 0.7953,
+  "input_tokens": 443.7,
+  "cost_usd": 0.0376
+ },
+ "paired_f1_diff_0.9": {
+  "mean": -0.0198,
+  "ci95": [
+   -0.0446,
+   0.0046
+  ]
+ },
+ "paired_f1_diff_0.95": {
+  "mean": -0.0061,
+  "ci95": [
+   -0.0273,
+   0.0152
+  ]
+ }
+}

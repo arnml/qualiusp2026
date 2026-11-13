@@ -47,3 +47,17 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
 **Are gradients allowed from now on?**
 - **Claude's view:** yes. The thesis constraint is cheap *inference*, not gradient-free development, and exp04 already tested the pure, gradient-free version.
 - **What it enables:** Astra chooses where and what to edit, and a tiny gradient fit sets the values (LoFiT-style). This is compared with LoFiT and LoRA at equal parameter counts.
+
+## Update (2026-11-13, evening): candidates 1–4 are done
+
+| # | Result | Consequence |
+|---|---|---|
+| 1 exp06 | **Low-rank, not sparse:** rank 4 recovers 80%; a 108k sparse cap recovers 3.5%; the skill sits in L3–L4 | Astra's R1 null is explained by the edit *shape*. "Small fix in A0" exists only as a low-rank, dense change, which saves no inference |
+| 2 exp07 | Adaptive 2–4 paragraphs: **−16% tokens at recall 0.95**, F1 unchanged (n.s.) | A practical, cheap add-on to A1. Pair features help mostly at high recall |
+| 3 exp05 | Misses are unnamed bridge paragraphs, half at rank 4 | Explains where exp07 helps; title links alone are not enough |
+| 4 Opus | Same picture as Astra: ties Wanda, no A0 repair, 0 violations | The exp04 findings are not specific to one editor |
+
+**Suggested next steps (for the PI to choose):**
+- **a. exp07 on MuSiQue / 2Wiki:** the real test of chain awareness, and the practical thesis line.
+- **b. Astra repair v2:** a rank-≤ 4 budget in L3–L4. Needs the gradients decision.
+- **c. Interaction surgery** (candidate 5) for real latency.

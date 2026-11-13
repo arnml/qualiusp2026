@@ -57,7 +57,29 @@
 
 ### 4. Follow-up (triggered by 1): gpt-5.4-mini answer F1
 
-(running; `results/f1_report.json`)
+Data: `results/f1_report.json`; answers in `results/generation/`. 1,600 calls, $0.13, 0 failures.
+
+| Target | Condition | Input tokens | F1 | Paired ΔF1 vs A1 threshold (95% CI) |
+|---|---|---|---|---|
+| 0.90 | A1 threshold | 389 | 0.792 | |
+| 0.90 | adaptive, full | 332 | 0.772 | −0.020 [−0.045, +0.005] |
+| 0.95 | A1 threshold | 444 | 0.795 | |
+| 0.95 | adaptive, full | 373 | 0.789 | −0.006 [−0.027, +0.015] |
+
+**Context from exp02** (the same 400 questions and generator, run earlier):
+
+| Condition | F1 | Tokens |
+|---|---|---|
+| all 10 paragraphs | 0.782 | 1,448 |
+| A1 top-2 | 0.780 | 330 |
+| gold pair only | 0.822 | 329 |
+
+**Reading:**
+- **0.95 is the operating point:** the adaptive selector cuts 16% of input tokens with no detectable F1 change (−0.6 points, CI ±2).
+- **At 0.90**, the point estimate is −2 F1 points, not significant but not negligible.
+- **The generator is robust to missing evidence on average.** Every A1-based condition sits at 0.77–0.80 F1, within noise of using all 10 paragraphs (0.78), so a fixed A1 top-2 is already a strong cheap baseline.
+  - The remaining F1 headroom is the gold pair (0.82), not more recall.
+  - The practical gain of exp07 over a fixed top-2 is therefore **reliability** (recall 0.94 vs 0.88 at about +40 tokens), not average F1.
 
 ## Limitations
 

@@ -134,3 +134,16 @@ Run this **after stage 3 is finished and evaluated**:
 - Write-up: `experiments/exp04_astra_edit/FINDINGS.md` (question, method, Track C and R results, claims, limitations, run index).
 - Track R stopped after R1, as pre-registered. Not run: R2/R3, and gpt-5.4-mini F1 for stage 3 (judged low value given the tie).
 - Still open for the PI: delete `C:\work`. Thesis next steps: options in `research_direction.md` (e.g. CPU latency story, sentence-level selection, transfer to 2Wiki/MuSiQue).
+
+## Update 2026-11-13, evening: exp05, exp06, exp07 and the Opus replication done
+
+| Experiment | Result | Where |
+|---|---|---|
+| exp04, second editor (Opus 5.5) | Compression: −6.6% FLOPs, ties Wanda at equal FLOPs (p = 0.375), loses on cost by 2.3–3.4 GF. A0 repair: no edit (null replicates). 0 violations in both | `exp04_astra_edit/FINDINGS.md` |
+| exp06 skill size | A1 − A0 is **low-rank, not sparse**: rank 4 recovers 80% of the tok@90 gain; Astra's 108k-entry cap 3.5%. The skill sits in L3–L4 | `exp06_skill_size/README.md` |
+| exp05 failure anatomy | A1 misses = unnamed bridge paragraphs, half at rank 4; the title-link feature does not separate them | `exp05_failure_anatomy/README.md` |
+| exp07 adaptive selector | **Primary succeeds:** −57/−71 tokens at recall 0.90/0.95 on test. F1 n.s. (−0.006 at 0.95). Pair-vs-top-2 n.s. | `exp07_chain_selector/README.md` |
+
+**Open for the PI:**
+1. Are gradients allowed? This unblocks "Astra repair v2" with a rank budget in L3–L4.
+2. Is the thesis contribution exp07 (the practical, cheap adaptive selector) to be tested on MuSiQue/2Wiki next?
