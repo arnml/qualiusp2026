@@ -114,3 +114,44 @@ PI framing: **"similar score with fewer neurons or FLOPs is good; it is the same
 2. **Lossless check:** the final edit's dev1000 ≥ 0.954 (A1 0.959 − 0.5).
 3. **Paired McNemar** vs Wanda at Astra's FLOPs (dev1000). Encoder params of both.
 4. **Test, only once, at the end:** 400 test questions both-gold@3, and gpt-5.4-mini F1 with top-3 contexts for A1, Astra's edit and Wanda at the same FLOPs (`exp02_cross_encoder/generate.py` pattern, ~1,200 calls). CPU latency after physical pruning.
+
+## Track R pre-registration (2026-11-13, before any Track R run)
+
+**PI decision (2026-11-12):** after Track C, run Astra on the **non-fine-tuned encoder A0** (`cross-encoder/ms-marco-MiniLM-L6-v2`; local copy `models/a0`, sha256 prefix `a6e1fd85181a93a5`, reproduces the exp02 zero-shot scores to 5e-6). This is exp03's repair task, run with the exp04 harness.
+
+**Setup:**
+- **Editor and harness:** the same as Track C (`gpt-6-astra`, xhigh, all Codex tools off, code audit, forward server).
+- **Prompt:** `prompt_trackR.md`, the exp03 template in the Track C wording.
+- **Practice:** `--practice train`, 200 questions, **exactly A2's training set** (`load_train(200, seed=0)`).
+- **Edits:** raw `save_edit` in `bert.encoder.layer.*` and `bert.pooler.dense.*`, at most 108,000 changed entries (~1%). Whole-tensor rescales, embeddings and classifier are refused (checked in the dry run `runs/dryR`).
+
+**Reference points** (`evaluate_r.py --refs --test` → `results/trackR_refs.json`):
+
+| Model | dev1000 bg3 | dev1000 tok@90 | test400 bg3 | test400 tok@90 (dev threshold) |
+|---|---|---|---|---|
+| A0 (start) | 0.593 | 1,089 | 0.6025 | 1,110 |
+| A2 (A0 fine-tuned on the same 200 questions) | 0.769 | 698 | 0.7825 | 715 |
+| A1 (full fine-tune, 90k questions) | 0.960 | 385 | 0.940 | 383 |
+
+**Metrics** (`evaluate_r.py`):
+- **Primary:** tok@90, the mean prompt tokens when a score threshold keeps both gold for 90% of questions. Exact sweep on raw scores, so it is invariant to rescaling.
+  - *Stages 1–2:* threshold set on dev1000 itself, the same procedure for every model.
+  - *Stage 3:* set on dev, applied once to test400.
+- **Secondary:** both-gold@3.
+- **Paired statistics on dev1000:** bootstrap 95% CI of the tok@90 difference (2,000 resamples, thresholds re-set in each), and exact McNemar on bg3. Each is computed vs A0 and vs A2.
+
+**Schedule and gates:**
+
+| Stage | B | Turn cap | Gate to the next stage |
+|---|---|---|---|
+| R1 | 5 | 40 | The edit is valid, the harness works, and dev1000 shows any change |
+| R2 | 10 | 80 | Better than A0 on dev1000: tok@90 CI entirely below 0, **or** McNemar p < 0.05 in the edit's favour. Otherwise stop and report |
+| R3 | 50 | 200 | Final: test400 with the dev threshold, plus gpt-5.4-mini F1 for A0, the edit and A2 |
+
+**Outcome categories** (fixed now):
+- **No repair:** not better than A0 (CI includes 0 and McNemar p ≥ 0.05).
+- **Partial repair:** better than A0 but worse than A2 (tok@90 CI vs A2 entirely above 0).
+- **Matches learning:** neither better nor worse than A2 (CI vs A2 includes 0).
+- **Beats learning:** tok@90 CI vs A2 entirely below 0.
+
+**Prior, stated before running:** the exp03 probe found no linear [CLS] direction in A0 separating gold from distractors (no-go). We therefore expect **no repair or a small partial repair**. A positive result would mean the editor found a non-linear or attention-level route the probe cannot see. A2 sees the same 200 questions with gradients, so "matches learning" would be a strong result.

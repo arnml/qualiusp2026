@@ -1,0 +1,9 @@
+[
+  "Hypothesis: check the Track R kernel API.\n```python\nimport numpy as np, torch\nprint(len(NAMES), len(practice), practice[0]['type'], WORK, NOTES)\nprint(edited())\n```",
+  "Hypothesis: out-of-scope and whole-tensor-rescale edits are refused.\n```python\nfor name, f in [('classifier.weight', lambda t: t + 0.1), ('bert.pooler.dense.weight', lambda t: t * 1.5)]:\n    try:\n        save_edit(name, f(load_original(name)))\n        print('ACCEPTED (bad):', name)\n    except Exception as e:\n        print('refused:', name, str(e)[:120])\nprint(edited())\n```",
+  "Hypothesis: an over-cap edit is refused, a small one is accepted.\n```python\nw = load_original('bert.encoder.layer.5.intermediate.dense.weight')\ntry:\n    w2 = w.clone(); w2[:300] += 0.01\n    save_edit('bert.encoder.layer.5.intermediate.dense.weight', w2); print('ACCEPTED (bad) over cap')\nexcept Exception as e:\n    print('refused over cap:', str(e)[:120])\np = load_original('bert.pooler.dense.weight').clone(); p[:10] += 0.01\nsave_edit('bert.pooler.dense.weight', p)\nprint(edited())\n```",
+  "Hypothesis: one pass compares edited vs original on 300 items.\n```python\nitems=[(q,p) for q in range(30) for p in range(len(practice[q]['paragraphs']))]\nr=forward(items=items, model='both')\nprint(r['passes_left'], float(np.abs(r['scores_edited']-r['scores_original']).max()))\n(WORK/'note.txt').write_text('ok'); NOTES.write_text('dry run notes')\n```",
+  "Hypothesis: the second pass uses up the budget.\n```python\nr=forward(items=items[:20], model='edited')\nprint(r['passes_left'])\n```",
+  "Hypothesis: forward is refused after the budget.\n```python\ntry:\n    forward(items=items[:10])\nexcept Exception as e:\n    print('refused:', str(e)[:100])\nprint(edited())\n```",
+  "Final: pooler.dense rows 0-9 +0.01 (3,840 entries). Dry run only."
+]
