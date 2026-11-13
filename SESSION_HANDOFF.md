@@ -128,3 +128,9 @@ Run this **after stage 3 is finished and evaluated**:
 - `runs/r1_R_B5`: Astra on A0, B = 5, 16 turns, 0 violations. It submitted an **empty edit** (its layer-4 candidate failed its own confirmation). Pre-registered verdict: no repair; the R1 gate is not met.
 - Exploratory: the rejected candidate on dev1000 has no effect (1,097 vs 1,089 tok@90). `evaluate_r.py` works (`--refs`, `--run`, `--test`).
 - **Decision pending (PI):** stop Track R as pre-registered, or run R2 (B = 10) as a recorded deviation.
+
+## Update 2026-11-13: exp04 CLOSED (PI: "stop and write up")
+
+- Write-up: `experiments/exp04_astra_edit/FINDINGS.md` (question, method, Track C and R results, claims, limitations, run index).
+- Track R stopped after R1, as pre-registered. Not run: R2/R3, and gpt-5.4-mini F1 for stage 3 (judged low value given the tie).
+- Still open for the PI: delete `C:\work`. Thesis next steps: options in `research_direction.md` (e.g. CPU latency story, sentence-level selection, transfer to 2Wiki/MuSiQue).

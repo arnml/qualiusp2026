@@ -2,6 +2,8 @@
 
 Design and rationale: [DESIGN.md](DESIGN.md). The editor's prompt (Track C): [prompt_trackC.md](prompt_trackC.md).
 
+Summary of results and claims: [FINDINGS.md](FINDINGS.md). Status: **closed** (Track C stages 1–3; Track R stopped after R1).
+
 ## Files
 
 | File | Role |

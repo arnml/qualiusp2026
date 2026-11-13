@@ -1,6 +1,6 @@
 # exp04 design: Astra edits the selector (compress, then repair), in stages
 
-Status: **design for review, not run.** Supersedes running exp03 as pre-registered (see "Deviation" below).
+Status: **closed 2026-11-13; results in [FINDINGS.md](FINDINGS.md).** Supersedes running exp03 as pre-registered (see "Deviation" below).
 
 ## Why exp04 exists (deviation from exp03's no-go)
 
