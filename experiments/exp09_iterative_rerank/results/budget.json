@@ -1,6 +1,15 @@
-{"smoke_sec_per_step": {"iter_2000q": 10.65, "step0_2000q": 9.69},
- "projected_training_h_2000q": {"iter": 6.69, "step0": 2.81},
+{
+ "smoke_sec_per_step": {
+  "iter_2000q": 10.65,
+  "step0_2000q": 9.69
+ },
+ "projected_training_h_2000q": {
+  "iter": 6.69,
+  "step0": 2.81
+ },
  "projected_inference_h": "about 2.5 (74 passes/question x 700 questions per iterative arm, x2 iterative arms)",
  "projected_total_h": 12.0,
  "rule": "PROTOCOL.md: > 10 h -> train on the first 1,000 of the 2,000 train ids",
- "decision": "n_questions = 1000"}
+ "decision": "n_questions = 1000, a seeded random subset (rng 9) of the 2,000 train ids",
+ "deviation_1": "PROTOCOL says 'the first 1,000 of the 2,000 train ids'. The ids are sorted, and MuSiQue ids start with '2hop__'/'3hop'/'4hop', so the first 1,000 are all 2-hop (1000/1000). Noticed at the start of M1 training (pos = 2000 exactly), before any model was finished or evaluated; replaced by a seeded random 1,000 (rng 9) keeping the hop mix of the 2,000."
+}

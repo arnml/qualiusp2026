@@ -53,7 +53,9 @@ def main():
     args = ap.parse_args()
     torch.manual_seed(0)
 
-    rows = load("train")[: args.n_questions]
+    rows = load("train")
+    # seeded random subset (deviation 1 in results/budget.json: the train ids are sorted, so "first N" = 2-hop only)
+    rows = [rows[i] for i in sorted(np.random.default_rng(9).permutation(len(rows))[: args.n_questions])]
     pairs = examples(rows, args.mode)
     out = HERE / "models" / args.tag
     out.mkdir(parents=True, exist_ok=True)
