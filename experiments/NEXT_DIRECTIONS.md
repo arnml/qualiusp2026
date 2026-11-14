@@ -72,3 +72,14 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
 - **a. Iterative / query-updated reranking:** re-score the remaining paragraphs with the question + selected paragraphs (A1 or a small fine-tune on MuSiQue train). This is the direct fix for the 4-hop recall collapse, and the natural PhD line.
 - **b. Fine-tune A1 on MuSiQue train** (a cheap upper bound on what one-shot ranking can do there), then rerun exp08 unchanged with k ≤ 10.
 - **c. Astra repair v2** and **interaction surgery** as before.
+
+## Update (2026-11-14): exp09 iterative reranking done
+
+- **Iteration works when trained:** recall@5 0.750 vs 0.682 one-shot on the same data (p = 0.0067), and 4-hop 0.58 vs 0.36. At recall 0.90 it needs 1,425 tokens vs 1,533 (one-shot) vs 1,957 (A1).
+- **The bigger lever is in-domain training** (A1 → M1: −424 tokens at 0.90). Iteration costs 3.7× the passes and loses at 0.95 (greedy 4 steps; weak tail).
+
+**Suggested next steps:**
+- **a. Combine exp07 + exp09:** adaptive stopping on top of the iterative ranker. The stop decision is natural after each greedy step ("is the chain complete?"); it should cut both tokens and passes.
+- **b. Fix the tail:** merge one-shot and iterative scores, or beam 2; and a pair-matched M1 control (the threat noted in exp09).
+- **c. F1 with gpt-5.4-mini** on M1-iter vs M1 vs A1 at recall 0.90 (≈ 1,200 calls, < $0.20).
+- **d. 2WikiMultiHopQA** as a third dataset for the thesis.

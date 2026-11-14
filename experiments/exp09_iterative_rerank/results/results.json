@@ -1,0 +1,239 @@
+{
+ "arms": [
+  "A1",
+  "A1-iter",
+  "M1",
+  "M1-iter"
+ ],
+ "recall_at_k_test": {
+  "A1": {
+   "2": 0.105,
+   "3": 0.205,
+   "4": 0.273,
+   "5": 0.355,
+   "6": 0.425,
+   "8": 0.54,
+   "10": 0.67,
+   "15": 0.875
+  },
+  "A1-iter": {
+   "2": 0.018,
+   "3": 0.045,
+   "4": 0.08,
+   "5": 0.12,
+   "6": 0.147,
+   "8": 0.25,
+   "10": 0.323,
+   "15": 0.642
+  },
+  "M1": {
+   "2": 0.273,
+   "3": 0.492,
+   "4": 0.6,
+   "5": 0.682,
+   "6": 0.735,
+   "8": 0.823,
+   "10": 0.897,
+   "15": 0.983
+  },
+  "M1-iter": {
+   "2": 0.31,
+   "3": 0.53,
+   "4": 0.672,
+   "5": 0.75,
+   "6": 0.785,
+   "8": 0.85,
+   "10": 0.897,
+   "15": 0.97
+  }
+ },
+ "passes_per_question_test": {
+  "A1": 19.99,
+  "A1-iter": 73.96,
+  "M1": 19.99,
+  "M1-iter": 73.96
+ },
+ "recall_at_5_by_hops": {
+  "2": {
+   "A1": 0.493,
+   "A1-iter": 0.197,
+   "M1": 0.783,
+   "M1-iter": 0.837
+  },
+  "3": {
+   "A1": 0.271,
+   "A1-iter": 0.053,
+   "M1": 0.684,
+   "M1-iter": 0.699
+  },
+  "4": {
+   "A1": 0.094,
+   "A1-iter": 0.016,
+   "M1": 0.359,
+   "M1-iter": 0.578
+  }
+ },
+ "recall@5_tests": {
+  "M1-iter_vs_M1_recall@5": {
+   "role": "primary",
+   "x": 0.75,
+   "y": 0.6825,
+   "x_only": 60,
+   "y_only": 33,
+   "p": 0.006695018134217244,
+   "success": true
+  },
+  "M1-iter_vs_A1_recall@5": {
+   "role": "secondary_a",
+   "x": 0.75,
+   "y": 0.355,
+   "x_only": 173,
+   "y_only": 15,
+   "p": 3.112369787591057e-35,
+   "success": true
+  },
+  "A1-iter_vs_A1_recall@5": {
+   "role": "descriptive",
+   "x": 0.12,
+   "y": 0.355,
+   "x_only": 10,
+   "y_only": 104,
+   "p": 7.235208524476166e-21,
+   "success": false
+  },
+  "M1_vs_A1_recall@5": {
+   "role": "descriptive",
+   "x": 0.6825,
+   "y": 0.355,
+   "x_only": 141,
+   "y_only": 10,
+   "p": 9.434809339170137e-31,
+   "success": true
+  }
+ },
+ "tokens_at_target": {
+  "recall_0.9": {
+   "A1": {
+    "k": 16,
+    "test_recall": 0.905,
+    "test_tokens": 1957.4
+   },
+   "A1-iter": {
+    "k": 19,
+    "test_recall": 0.9425,
+    "test_tokens": 2350.7
+   },
+   "M1": {
+    "k": 11,
+    "test_recall": 0.92,
+    "test_tokens": 1533.4
+   },
+   "M1-iter": {
+    "k": 10,
+    "test_recall": 0.8975,
+    "test_tokens": 1425.1
+   },
+   "M1-iter_minus_M1": {
+    "tokens": -108.3,
+    "tokens_ci95": [
+     -125.1126,
+     -92.1399
+    ],
+    "recall": -0.0225,
+    "recall_ci95": [
+     -0.0575,
+     0.0125
+    ],
+    "success": true
+   },
+   "M1-iter_minus_A1": {
+    "tokens": -532.3,
+    "tokens_ci95": [
+     -554.3575,
+     -510.6073
+    ],
+    "recall": -0.0075,
+    "recall_ci95": [
+     -0.0475,
+     0.0325
+    ],
+    "success": true
+   },
+   "M1_minus_A1": {
+    "tokens": -424.0,
+    "tokens_ci95": [
+     -441.9801,
+     -405.8722
+    ],
+    "recall": 0.015,
+    "recall_ci95": [
+     -0.015,
+     0.0475
+    ],
+    "success": true
+   }
+  },
+  "recall_0.95": {
+   "A1": {
+    "k": 18,
+    "test_recall": 0.96,
+    "test_tokens": 2242.6
+   },
+   "A1-iter": {
+    "k": 20,
+    "test_recall": 1.0,
+    "test_tokens": 2534.9
+   },
+   "M1": {
+    "k": 13,
+    "test_recall": 0.95,
+    "test_tokens": 1773.8
+   },
+   "M1-iter": {
+    "k": 14,
+    "test_recall": 0.9625,
+    "test_tokens": 1881.9
+   },
+   "M1-iter_minus_M1": {
+    "tokens": 108.2,
+    "tokens_ci95": [
+     92.154,
+     124.5868
+    ],
+    "recall": 0.0125,
+    "recall_ci95": [
+     -0.015,
+     0.04
+    ],
+    "success": false
+   },
+   "M1-iter_minus_A1": {
+    "tokens": -360.7,
+    "tokens_ci95": [
+     -377.9178,
+     -344.2212
+    ],
+    "recall": 0.0025,
+    "recall_ci95": [
+     -0.025,
+     0.03
+    ],
+    "success": true
+   },
+   "M1_minus_A1": {
+    "tokens": -468.8,
+    "tokens_ci95": [
+     -485.905,
+     -451.511
+    ],
+    "recall": -0.01,
+    "recall_ci95": [
+     -0.035,
+     0.0175
+    ],
+    "success": true
+   }
+  }
+ },
+ "primary_success": true
+}

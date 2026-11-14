@@ -156,3 +156,14 @@ Run this **after stage 3 is finished and evaluated**:
 | Exploratory k ≤ 20: adaptive_full −62 / −100 tok vs A1 threshold at 0.90 / 0.95 (recall n.s.); text = a1only; A0 top-10 0.51 | `results/results_kmax20.json`, `results/a0_vs_a1_topk_test.json` |
 
 **Open for the PI:** next direction: iterative reranking on MuSiQue (a), MuSiQue-fine-tuned A1 (b), or Astra repair v2 (needs the gradients decision).
+
+## Update 2026-11-14: exp09 (iterative reranking on MuSiQue) done
+
+| Result | Where |
+|---|---|
+| **Primary succeeds:** M1-iter vs M1 recall@5 0.750 vs 0.682, p = 0.0067; 4-hop 0.58 vs 0.36 | `experiments/exp09_iterative_rerank/README.md` |
+| Tokens at recall 0.90: 1,425 (M1-iter) / 1,533 (M1) / 1,957 (A1); at 0.95 iteration +108 | `results/results.json` |
+| Zero-shot A1-iter collapses (0.12); cost 74 vs 20 passes/question; M1-iter training 5.2 h CPU | same |
+
+**Gotcha:** Windows sleep paused CPU runs twice; keep the charger in and sleep off for long runs. Background `&` jobs survive the Bash tool; check with `Get-CimInstance Win32_Process`, not `ps`.
+**Open for the PI:** next: exp07 + exp09 (adaptive stopping on the iterative ranker), the tail fix, F1, or 2Wiki.

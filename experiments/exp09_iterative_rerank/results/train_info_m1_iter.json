@@ -1,0 +1,14 @@
+{
+ "mode": "iter",
+ "tag": "m1_iter",
+ "n_questions": 1000,
+ "batch": 16,
+ "lr": 2e-05,
+ "max_len": 512,
+ "save_every": 500,
+ "smoke": 0,
+ "questions": 1000,
+ "pairs": 18101,
+ "steps": 1132,
+ "train_minutes": 310.5
+}

@@ -1,0 +1,14 @@
+{
+ "mode": "step0",
+ "tag": "m1",
+ "n_questions": 1000,
+ "batch": 16,
+ "lr": 2e-05,
+ "max_len": 512,
+ "save_every": 500,
+ "smoke": 0,
+ "questions": 1000,
+ "pairs": 8338,
+ "steps": 522,
+ "train_minutes": 43.2
+}
