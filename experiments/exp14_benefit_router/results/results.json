@@ -1,0 +1,152 @@
+{
+ "model_sha16": {
+  "m1_iter_s0": "e59ee318a01233f3",
+  "m1_ctrl": "13649d115fc6c397"
+ },
+ "models_registered": false,
+ "router": {
+  "tau": 0.05686061291073317,
+  "b_tune_recall5": 0.875,
+  "tau_boot_q05_q50_q95": [
+   0.0296,
+   0.0537,
+   0.0697
+  ],
+  "routed_frac_boot_q05_q50_q95": [
+   0.24,
+   0.301,
+   0.4
+  ]
+ },
+ "b_eval": {
+  "n": 2000,
+  "oneshot_recall5": 0.8445,
+  "iterative_recall5": 0.8665,
+  "iterative_gain": 0.022,
+  "iterative_gain_ci95": [
+   0.004,
+   0.04001249999999982
+  ],
+  "benefit_auc": 0.5981,
+  "benefit": {
+   "recall5": 0.8715,
+   "passes": 40.8,
+   "routed": 0.281,
+   "recall_at_k": {
+    "2": 0.5175,
+    "3": 0.7265,
+    "4": 0.8205,
+    "5": 0.8715,
+    "10": 0.9645,
+    "15": 0.992
+   },
+   "by_hops_recall5": {
+    "2": 0.912,
+    "3": 0.771,
+    "4": 0.556
+   }
+  },
+  "hop_exp13": {
+   "recall5": 0.8425,
+   "passes": 28.7,
+   "routed": 0.118,
+   "recall_at_k": {
+    "2": 0.47,
+    "3": 0.6835,
+    "4": 0.7815,
+    "5": 0.8425,
+    "10": 0.959,
+    "15": 0.992
+   },
+   "by_hops_recall5": {
+    "2": 0.882,
+    "3": 0.757,
+    "4": 0.426
+   }
+  },
+  "oracle_benefit": {
+   "recall5": 0.9395,
+   "passes": 27.0,
+   "routed": 0.095,
+   "recall_at_k": {
+    "2": 0.5065,
+    "3": 0.748,
+    "4": 0.8675,
+    "5": 0.9395,
+    "10": 0.9805,
+    "15": 0.9975
+   },
+   "by_hops_recall5": {
+    "2": 0.965,
+    "3": 0.884,
+    "4": 0.667
+   }
+  },
+  "two_by_two_recall5": {
+   "iter_iter": 0.8665,
+   "ctrl_oneshot": 0.8445,
+   "iter_oneshot": 0.8095,
+   "ctrl_iter": 0.5455
+  },
+  "primary_diff_by_truncation": {
+   "iter_query_ge_512": {
+    "n": 282,
+    "diff": -0.0106
+   },
+   "below_512": {
+    "n": 1718,
+    "diff": 0.0332
+   }
+  },
+  "text_only_auc": 0.5508
+ },
+ "primary": {
+  "gate_iterative_gain_ge_0.02": true,
+  "diff": 0.027,
+  "diff_ci95": [
+   0.0155,
+   0.0385
+  ],
+  "only_x": 96,
+  "only_y": 42,
+  "p": 4.937339874544326e-06,
+  "passes": 40.8,
+  "success": true,
+  "status": "holds"
+ },
+ "secondary": {
+  "benefit_vs_hop_router": {
+   "diff": 0.029,
+   "diff_ci95": [
+    0.016,
+    0.042
+   ],
+   "only_x": 116,
+   "only_y": 58,
+   "p": 1.305194857418483e-05
+  },
+  "benefit_vs_iterative": {
+   "diff": 0.005,
+   "diff_ci95": [
+    -0.0085,
+    0.019
+   ],
+   "one_sided_95_lower": -0.0065
+  },
+  "beats_hop_router": true,
+  "noninferior_to_iterative": true,
+  "label": "exploratory (secondary; no multiplicity correction)"
+ },
+ "dev_fresh_reuse": {
+  "oneshot": 0.6932,
+  "iterative": 0.7453,
+  "benefit_cascade": 0.7188,
+  "passes": 42.2,
+  "routed": 0.301,
+  "cascade_vs_oneshot": {
+   "only_x": 61,
+   "only_y": 35,
+   "p": 0.010345913082728777
+  }
+ }
+}

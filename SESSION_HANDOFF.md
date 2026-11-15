@@ -203,3 +203,13 @@ Run this **after stage 3 is finished and evaluated**:
 - The first account's free GPU quota is exhausted; the user signed in with a second Google account. Open notebooks with `?authuser=1` appended to the `colab.research.google.com/github/arnml/qualiusp2026/blob/<commit>/...` URL.
 - The second account's Drive is the one synced to this PC's `G:` drive; A1 is at `MyDrive/qualiusp2026/exp12_inputs/a1` (sha checked). exp16 outputs: `MyDrive/qualiusp2026/exp16_353fcd8`.
 - The exp12 models and exp13 results (needed by exp14) are on the first account's Drive only.
+
+## Update 2026-11-15, late night: exp14 done; bibliography and citation check
+
+| Result | Where |
+|---|---|
+| exp14 primary ✅: benefit cascade +0.027 [+0.016, +0.039] vs one-shot at 40.8 passes (models re-trained; behaviour identical on exp12 test) | `experiments/exp14_benefit_router/README.md` |
+| Bibliography moved to published versions (35 entries); 10 overstated citation claims fixed | `experiments/reviews/BIB_PUBLISHED_VERSIONS.md`, `experiments/reviews/citation_check_2026-11-15.md` |
+
+- The re-trained exp12 models now also live on the second account's Drive: `MyDrive/qualiusp2026/exp14_1742d41/models`.
+- The Colab workflow on the second account: the Drive-permission popup cancels the *Run all* queue, so run all again after approving it. Results sync to this PC's `G:` drive, so a local watcher can wait for them.

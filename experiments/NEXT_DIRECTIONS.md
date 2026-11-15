@@ -118,3 +118,8 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
   2. **Train a rank-2 LoRA directly** (W1): is the functional rank also the trainable rank?
   3. **Geometry with noise baselines** (W4): do the three datasets' rank-2 directions align?
   4. **Transplant** the rank-2 change across datasets or rerankers.
+
+## Update (2026-11-15, late night): exp14 done
+
+- **Confirmed:** a router trained on iteration benefit beats one-shot (+0.027) at 55% of iteration's passes and beats the hop router; its AUC is only 0.60, and the oracle reaches 0.94 at 27 passes, so a better benefit predictor has large headroom.
+- **Next candidates:** (1) train the rank-2 adapter directly as a LoRA (W1); (2) a better benefit predictor, e.g. features from a cheap first iterative step; (3) geometry of the three datasets' rank-2 directions (W4); (4) pin scikit-learn in future protocols.

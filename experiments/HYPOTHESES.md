@@ -24,6 +24,7 @@
 | H6-4hop | On ≥ 4-hop chains, conditioning-trained iteration beats matched one-shot | exp13 | **C** (+0.055 [+0.007, +0.102], p = 0.035, n = 566; strata +0.139 / +0.020) | 3 seeds positive | heterogeneous; 3-hop gain on fresh dev is E |
 | H11 | A 4-hop router on one-shot features makes a useful cascade | exp13 | **N** (vs one-shot +0.009 n.s.; vs iterative −0.043) | – | the router predicts hop count, not iteration benefit |
 | H14 | The pure conditioning change is rank 2 on other datasets (2WikiMultiHopQA, HotpotQA) | exp16 | **C** (2Wiki 97.1% [94.1, 100]; HotpotQA 92.1% [81.6, 102.8]; random 3% / 22%, noise −3%) | 3 datasets with exp12 | one model family; one control draw on tuning data |
+| H12 | A router trained on iteration benefit gives a useful cascade (beats one-shot at ≤ 50 passes) | exp14 | **C** (+0.027 [+0.016, +0.039], p = 5e-6, 40.8 of 74 passes; local re-run +0.023, p = 1e-4) | router refit in 2 environments | models re-trained (behaviour identical on exp12 test); train-distribution sample, mostly 2-hop; non-inferiority to always-iterative is fragile (−0.0065 vs −0.0105) |
 | H13 | The long-chain recall gain reaches the answers (F1, ≥ 3-hop, order-controlled) | exp15 | **C** (+0.076 [+0.041, +0.112]) | 2 reader draws | subgroup chosen from exp13 recall on the same set |
 
 **Multiplicity:** about 12 confirmatory primaries so far, and every one was a declared single primary per experiment. No correction has been applied. For the thesis, the headline claims (at most 3) will be re-confirmed on a locked set.

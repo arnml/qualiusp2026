@@ -22,7 +22,7 @@
 | exp12 | Pair-matched control; pure conditioning change is rank 2 | Ch. 5.5 | primary N, secondary C | +0.040 n.s.; rank 2 → 86.8% |
 | exp13 | Fresh 4-hop confirmation; 4-hop cascade | Ch. 5.6 | C (4-hop); N (cascade) | +0.055 [+0.007, +0.102] |
 | exp15 | Answer F1 on ≥ 3-hop (order-controlled) | Ch. 5.7 | C | +0.076 F1 [+0.041, +0.112]; top 5 beats all paragraphs with 69% fewer tokens |
-| exp14 | Benefit router | Ch. 6 (plan) | pre-registered, waiting for GPU | — |
+| exp14 | Benefit-router cascade | Ch. 5.6 | C (primary); secondary b fragile | +0.027 recall@5 vs one-shot at 41 of 74 passes |
 | exp16 | Rank-2 replication on 2Wiki + HotpotQA | Ch. 5.8 | C (replicates) | rank 2 → 97.1% (2Wiki), 92.1% (HotpotQA); random ≤ 22% |
 
 ## Kept outside the text (for later)
@@ -38,7 +38,7 @@
 
 - **exp15:** answer F1 → Ch. 5.7 (done).
 - **exp16:** rank-2 replication → Ch. 5.8 (done).
-- **exp14:** benefit router → Ch. 6.
+- **exp14:** benefit router → Ch. 5.6 (done).
 - **Planned:**
   - rank-2 LoRA trained directly
   - transplant to another reranker
