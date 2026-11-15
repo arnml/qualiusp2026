@@ -1,0 +1,230 @@
+{
+ "policies": {
+  "recall_0.9": {
+   "adaptive_M1": {
+    "dev": [
+     0.9302986853067252,
+     0.9,
+     1225.7333333333333
+    ],
+    "test_recall": 0.8675,
+    "test_tokens": 1221.8,
+    "mean_k": 8.29,
+    "passes": 20.0,
+    "frontier_test": [
+     0.9535626491300161,
+     0.9,
+     1357.0375
+    ]
+   },
+   "adaptive_M1-iter": {
+    "dev": [
+     0.9560111425928057,
+     0.9,
+     1371.7
+    ],
+    "test_recall": 0.9225,
+    "test_tokens": 1382.5,
+    "mean_k": 9.53,
+    "passes": 73.5,
+    "frontier_test": [
+     0.9352495914260756,
+     0.9,
+     1231.8925
+    ]
+   },
+   "fixed_M1-iter": {
+    "k": 10,
+    "test_recall": 0.8975,
+    "test_tokens": 1425.1,
+    "passes": 74.0
+   },
+   "adaptive_M1-iter_vs_fixed_M1-iter": {
+    "role": "primary",
+    "tokens": -42.6,
+    "tokens_ci95": [
+     -94.9539,
+     8.7878
+    ],
+    "recall": 0.025,
+    "recall_ci95": [
+     -0.0025,
+     0.0525
+    ],
+    "success": false
+   },
+   "adaptive_M1-iter_vs_adaptive_M1": {
+    "role": "secondary",
+    "tokens": 160.7,
+    "tokens_ci95": [
+     117.592,
+     203.1864
+    ],
+    "recall": 0.055,
+    "recall_ci95": [
+     0.0175,
+     0.0925
+    ],
+    "success": false
+   },
+   "by_hops": {
+    "2": {
+     "adaptive_M1": {
+      "recall": 0.936,
+      "tokens": 1154
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.966,
+      "tokens": 1260
+     },
+     "fixed_M1-iter": {
+      "recall": 0.931,
+      "tokens": 1354
+     }
+    },
+    "3": {
+     "adaptive_M1": {
+      "recall": 0.85,
+      "tokens": 1281
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.925,
+      "tokens": 1567
+     },
+     "fixed_M1-iter": {
+      "recall": 0.895,
+      "tokens": 1515
+     }
+    },
+    "4": {
+     "adaptive_M1": {
+      "recall": 0.688,
+      "tokens": 1313
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.781,
+      "tokens": 1390
+     },
+     "fixed_M1-iter": {
+      "recall": 0.797,
+      "tokens": 1464
+     }
+    }
+   }
+  },
+  "recall_0.95": {
+   "adaptive_M1": {
+    "dev": [
+     0.9743764399039728,
+     0.95,
+     1558.3566666666666
+    ],
+    "test_recall": 0.9475,
+    "test_tokens": 1553.5,
+    "mean_k": 10.98,
+    "passes": 20.0,
+    "frontier_test": [
+     0.9800416979909431,
+     0.95,
+     1630.575
+    ]
+   },
+   "adaptive_M1-iter": {
+    "dev": [
+     0.9767504379432921,
+     0.95,
+     1634.4666666666667
+    ],
+    "test_recall": 0.9475,
+    "test_tokens": 1637.8,
+    "mean_k": 11.72,
+    "passes": 73.9,
+    "frontier_test": [
+     0.9789606904255178,
+     0.95,
+     1677.515
+    ]
+   },
+   "fixed_M1-iter": {
+    "k": 14,
+    "test_recall": 0.9625,
+    "test_tokens": 1881.9,
+    "passes": 74.0
+   },
+   "adaptive_M1-iter_vs_fixed_M1-iter": {
+    "role": "primary",
+    "tokens": -244.1,
+    "tokens_ci95": [
+     -295.8179,
+     -191.8537
+    ],
+    "recall": -0.015,
+    "recall_ci95": [
+     -0.0325,
+     0.0025
+    ],
+    "success": true
+   },
+   "adaptive_M1-iter_vs_adaptive_M1": {
+    "role": "secondary",
+    "tokens": 84.3,
+    "tokens_ci95": [
+     38.6073,
+     128.9549
+    ],
+    "recall": 0.0,
+    "recall_ci95": [
+     -0.0275,
+     0.0275
+    ],
+    "success": false
+   },
+   "by_hops": {
+    "2": {
+     "adaptive_M1": {
+      "recall": 0.98,
+      "tokens": 1462
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.98,
+      "tokens": 1501
+     },
+     "fixed_M1-iter": {
+      "recall": 0.975,
+      "tokens": 1789
+     }
+    },
+    "3": {
+     "adaptive_M1": {
+      "recall": 0.94,
+      "tokens": 1630
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.94,
+      "tokens": 1830
+     },
+     "fixed_M1-iter": {
+      "recall": 0.97,
+      "tokens": 1988
+     }
+    },
+    "4": {
+     "adaptive_M1": {
+      "recall": 0.859,
+      "tokens": 1683
+     },
+     "adaptive_M1-iter": {
+      "recall": 0.859,
+      "tokens": 1671
+     },
+     "fixed_M1-iter": {
+      "recall": 0.906,
+      "tokens": 1956
+     }
+    }
+   }
+  }
+ },
+ "primary_success": true,
+ "secondary_success": false
+}

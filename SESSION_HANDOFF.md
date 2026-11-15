@@ -167,3 +167,12 @@ Run this **after stage 3 is finished and evaluated**:
 
 **Gotcha:** Windows sleep paused CPU runs twice; keep the charger in and sleep off for long runs. Background `&` jobs survive the Bash tool; check with `Get-CimInstance Win32_Process`, not `ps`.
 **Open for the PI:** next: exp07 + exp09 (adaptive stopping on the iterative ranker), the tail fix, F1, or 2Wiki.
+
+## Update 2026-11-15: exp10 done, exp11 pre-registered
+
+| Result | Where |
+|---|---|
+| exp10 primary ✅ at 0.95 (adaptive M1-iter −244 tok vs fixed k = 14), ✗ at 0.90; secondary ✗ (adaptive M1 cheaper, +84 tok for iter) | `experiments/exp10_adaptive_iterative/README.md` |
+| exp11 (iteration skill: low-rank? L3–L4?) pre-registered, run in progress | `experiments/exp11_iteration_skill/PROTOCOL.md` |
+
+**Gotcha:** on battery the CPU is ~5× slower (24 vs 4.6 s per question); check `(Get-CimInstance Win32_Battery).BatteryStatus` (2 = AC).

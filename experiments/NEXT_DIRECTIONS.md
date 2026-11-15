@@ -83,3 +83,9 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
 - **b. Fix the tail:** merge one-shot and iterative scores, or beam 2; and a pair-matched M1 control (the threat noted in exp09).
 - **c. F1 with gpt-5.4-mini** on M1-iter vs M1 vs A1 at recall 0.90 (≈ 1,200 calls, < $0.20).
 - **d. 2WikiMultiHopQA** as a third dataset for the thesis.
+
+## Update (2026-11-15): exp10 done; exp11 pre-registered
+
+- **exp10:** adaptive stopping saves −244 tokens over fixed k at recall 0.95 on M1-iter, but **one-shot M1 + adaptive is cheaper still** (1,554 tok, 20 passes). The iterative "anything left?" score is not a better stop signal. Practical line: **in-domain one-shot ranker + adaptive stop**.
+- **Research line chosen (user: "explore research value"):** **exp11**: is the change that turns M1 into M1-iter (the iteration skill) low-rank and in L3–L4, like the HotpotQA skill (exp06)? The domain skill (A1 → M1) is the contrast.
+- **Still open:** the tail fix (merge one-shot + iterative scores), the F1 check, 2Wiki.
