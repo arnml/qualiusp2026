@@ -89,3 +89,13 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
 - **exp10:** adaptive stopping saves −244 tokens over fixed k at recall 0.95 on M1-iter, but **one-shot M1 + adaptive is cheaper still** (1,554 tok, 20 passes). The iterative "anything left?" score is not a better stop signal. Practical line: **in-domain one-shot ranker + adaptive stop**.
 - **Research line chosen (user: "explore research value"):** **exp11**: is the change that turns M1 into M1-iter (the iteration skill) low-rank and in L3–L4, like the HotpotQA skill (exp06)? The domain skill (A1 → M1) is the contrast.
 - **Still open:** the tail fix (merge one-shot + iterative scores), the F1 check, 2Wiki.
+
+## Update (2026-11-15, afternoon): exp11 + exp12 done
+
+- **Practical line:** in-domain one-shot ranker + adaptive stop. Iteration buys only +0.03 recall@5 at matched data (n.s.) for 3.7× the passes.
+- **Research line, sharpened:** the *ability to use a conditioned query* is a separable rank-2 change (86.8% recovery, de-confounded). Its value appears on 4-hop chains (+0.19, exploratory).
+- **Candidate next experiments (ranked):**
+  1. **Cascade / switchable rank-2 adapter:** one-shot by default, the rank-2 conditioning adapter only for long or hard questions. Pre-register the 4-hop effect as a confirmatory test on a new question set (MuSiQue train holdout), plus tokens, passes and F1 vs Adaptive-k.
+  2. **Geometry with noise baselines (no training):** spectra, stable rank, principal angles across the 3 seed deltas (exp12) and D_it / D_dom / A1−A0; α-scaling.
+  3. **Transplant:** graft the rank-2 conditioning delta onto other one-shot rerankers (A1-HotpotQA, ms-marco MiniLM, the seed-1/2 ctrl models).
+  4. **Train LoRA rank 1–2 directly** (Colab) vs post-hoc SVD: functional vs trained rank (TinyLoRA contrast).

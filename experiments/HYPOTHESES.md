@@ -16,10 +16,10 @@
 | H3 | The A1 − A0 delta is low-rank (rank 4 recovers 80%), not sparse; it sits in L3–L4 | exp06 | C, mostly K | no | magnitude-sparse is a weak baseline; one model |
 | H4 | A learned adaptive stop saves tokens vs a threshold (HotpotQA) | exp07 | C, K | no | Adaptive-k: weak in BRACIS (cosine, F1 0.627) and on our cross-encoder scores (exp10 addendum, E) |
 | H5 | On MuSiQue the one-shot ranker is the bottleneck | exp08 | E (primary not testable) | – | – |
-| H6 | An iterative ranker beats one-shot at recall@5 (0.750 vs 0.682) | exp09 | **C?** | no | **2.2× more training pairs (exp12)**; one seed |
+| H6 | An iterative ranker beats one-shot at recall@5 (0.750 vs 0.682) | exp09, exp12 | **N at matched data** (exp12: +0.040 [−0.005, +0.085], p = 0.11; +0.03 in all 3 seeds) | 3 seeds | 4-hop +0.19 (p = 0.036) is E, needs re-test |
 | H7 | Adaptive stopping beats fixed k on M1-iter at recall 0.95 | exp10 | C at 0.95, N at 0.90 | no | dev300 τ is noisy |
 | H8 | The iterative score is a better stop signal than one-shot | exp10 | **N** | – | – |
-| H9 | The iteration change (M1 → M1-iter) is low-rank (r* ≤ 8) | exp11 | **C?** (rank 2: 84.7% [74, 96] on test) | no | confounded like H6 (exp12 secondary); one seed |
+| H9 | The iteration change is low-rank (r* ≤ 8) | exp11, exp12 | **C** (D_it rank 2: 84.7% [74, 96]; pure conditioning D rank 2: 86.8% [78, 96]) | 2 deltas | one seed per delta; spectral and noise baselines owed |
 | H10 | The iteration change sits in L3–L4 like H3 | exp11 | C (dev300 rule), flatter profile | no | keep-only grafts overlap (sum ≈ 180%) |
 
 **Multiplicity:** about 12 confirmatory primaries so far, and every one was a declared single primary per experiment. No correction has been applied. For the thesis, the headline claims (at most 3) will be re-confirmed on a locked set.
