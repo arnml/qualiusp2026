@@ -109,3 +109,12 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
   2. **Pre-registered pooled test** of "iteration helps ≥ 3-hop, not 2-hop" on a new fresh sample (unused train questions).
   3. **Geometry with noise baselines** (no training): seed deltas from exp12, spectra, principal angles.
   4. **Answer F1** (gpt-5.4-mini) on ≥ 3-hop questions: does +0.05 to +0.14 recall@5 translate into answers?
+
+## Update (2026-11-15, late night): exp16 done
+
+- **Confirmed and replicated:** the pure conditioning change is rank 2 on MuSiQue (0.868), 2WikiMultiHopQA (0.971) and HotpotQA (0.921), with random and seed-noise controls far below. This is now the headline research claim.
+- **Next candidates:**
+  1. **Benefit router (exp14)**, needs the first account's Drive models or a re-run on the second account.
+  2. **Train a rank-2 LoRA directly** (W1): is the functional rank also the trainable rank?
+  3. **Geometry with noise baselines** (W4): do the three datasets' rank-2 directions align?
+  4. **Transplant** the rank-2 change across datasets or rerankers.

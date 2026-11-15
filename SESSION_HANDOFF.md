@@ -192,3 +192,14 @@ Run this **after stage 3 is finished and evaluated**:
 - The Drive-mount popup needs the user's own click. Keep a single runtime; a new URL means a new runtime and a new Drive prompt.
 - Results come back by printing compact JSON in a cell and reading it with page JS.
 - On the T4, a training run takes 3–5 min (vs 310 min on CPU).
+
+## Update 2026-11-15, late night: exp16 done; second Google account for Colab
+
+| Result | Where |
+|---|---|
+| exp16 replicates: rank-2 recovery 2Wiki 0.971 [0.941, 1.0], HotpotQA 0.921 [0.816, 1.028]; controls ≤ 0.22 | `experiments/exp16_rank2_replication/README.md` |
+
+**Colab on the second account:**
+- The first account's free GPU quota is exhausted; the user signed in with a second Google account. Open notebooks with `?authuser=1` appended to the `colab.research.google.com/github/arnml/qualiusp2026/blob/<commit>/...` URL.
+- The second account's Drive is the one synced to this PC's `G:` drive; A1 is at `MyDrive/qualiusp2026/exp12_inputs/a1` (sha checked). exp16 outputs: `MyDrive/qualiusp2026/exp16_353fcd8`.
+- The exp12 models and exp13 results (needed by exp14) are on the first account's Drive only.
