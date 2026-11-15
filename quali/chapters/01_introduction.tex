@@ -36,7 +36,7 @@ The central hypothesis is that \textbf{chain-following in a small reranker can b
 \begin{enumerate}
   \item An evaluation of a 22.7M-parameter cross-encoder as an evidence selector: token accounting at fixed recall targets and answer quality with an LLM reader on HotpotQA and MuSiQue.
   \item Evidence that, on MuSiQue, the one-shot ranker rather than the stopping rule limits cost, and a pair-matched control showing that part of the apparent benefit of iterative reranking came from additional training data.
-  \item Evidence that the weight change behind the ability to use a conditioned query is functionally approximated at rank 2 (about 85\% of its effect recovered, random controls 7--9\%), and pre-registered tests showing that conditioning-trained iteration helps long chains, in evidence recall and in answer F1.
+  \item Evidence that the weight change behind the ability to use a conditioned query is functionally approximated at rank 2 (about 85\% of its effect recovered, random controls 7--9\%), replicated on 2WikiMultiHopQA and HotpotQA, and pre-registered tests showing that conditioning-trained iteration helps long chains, in evidence recall and in answer F1.
   \item A research protocol for an AI-assisted project: pre-registration of every decision rule in version control, paired statistics, adversarial review of each protocol before running it, and a claim ledger that records null results (Section~\ref{sec:protocol}).
 \end{enumerate}
 

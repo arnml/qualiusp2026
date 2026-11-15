@@ -26,14 +26,14 @@ The adapter saves memory and deployment complexity, not passes: activating it st
   \item[W2. Router trained on benefit.] The hop-count router failed (Section~\ref{sec:res_long}). A router trained to predict, per question, whether iteration improves the top five is pre-registered and waiting for GPU time.
   \item[W3. Answer quality.] Repeat the answer-quality test with the chain adapter and the router, and with a second reader model.
   \item[W4. Geometry with noise baselines.] Singular-value energy, stable rank and principal angles of the conditioning change, compared with seed-to-seed differences and random matrices \cite{altaf2026noisebaseline}, to separate functional rank from spectral structure.
-  \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and evaluate on 2WikiMultiHopQA \cite{ho2020twowiki}. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
+  \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and across datasets. The rank-2 structure already replicates on 2WikiMultiHopQA \cite{ho2020twowiki} and HotpotQA (Section~\ref{sec:res_replication}); whether one dataset's adapter works on another is open. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
 \end{description}
 
 \section{Threats to validity}
 
 \begin{itemize}
   \item \textbf{Effect size.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources.
-  \item \textbf{Single architecture and data source.} All selectors are MiniLM-L6 and all evaluation questions come from MuSiQue (and HotpotQA for the first results). W5 addresses this.
+  \item \textbf{Single architecture and data source.} All selectors are MiniLM-L6. The rank-2 result holds on three datasets, but the benefit of iteration was measured on MuSiQue only. W5 addresses the architecture.
   \item \textbf{Evaluation sets.} MuSiQue test labels are not public; evaluation uses disjoint subsets of the development split, and one fresh set has been used twice (with the second use declared in advance).
   \item \textbf{Multiplicity.} Each experiment has a single primary test; across experiments no correction is applied. The headline claims will be re-tested on a locked set before the defence.
 \end{itemize}
@@ -54,7 +54,7 @@ RQ & Evidence so far & Remaining \\
 RQ1 & 68--77\% fewer tokens on HotpotQA; top-5 selection beats sending all paragraphs on MuSiQue answers with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
 RQ2 & Ranking quality limits cost on MuSiQue (Section~\ref{sec:res_bottleneck}) & --- \\
 RQ3 & Small overall effect, not significant; confirmed gains on long chains in recall and answer F1 (Sections~\ref{sec:res_matched}, \ref{sec:res_long}, \ref{sec:res_f1}) & W2 \\
-RQ4 & Functionally rank 2 (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}) & W1, W4, W5 \\
+RQ4 & Functionally rank 2 on three datasets (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}, \ref{sec:res_replication}) & W1, W4, W5 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -86,7 +86,7 @@ Activity & Months \\
 W1 adapter trained directly; W3 answer quality & 1--2 \\
 W2 benefit router and cascade & 1--3 \\
 W4 geometry with noise baselines & 3--4 \\
-W5 transfer across rerankers and to 2WikiMultiHopQA & 4--7 \\
+W5 transfer across rerankers and datasets & 4--7 \\
 Locked-set confirmation of the headline claims & 7--8 \\
 Paper submission & 8 \\
 Dissertation writing & 7--11 \\

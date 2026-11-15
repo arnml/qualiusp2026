@@ -12,7 +12,9 @@ This chapter specifies the controlled comparisons needed to separate three effec
   \item a 400-question test set and a 300-question tuning set (\texttt{dev300}), used up to the matched-control experiment;
   \item a \emph{fresh} set of all 1,017 development questions not used before (529, 322 and 166 two-, three- and four-hop), used for the confirmation experiment.
 \end{itemize}
-Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. Every split was written to a file and committed before any model was scored on it.
+Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. \textbf{2WikiMultiHopQA} \cite{ho2020twowiki} and HotpotQA are also used to replicate the rank analysis. For each, 1,000 training questions are sampled from the training split, and a 300-question tuning set and a 1,000-question test set from the development split; the HotpotQA sets exclude every question used in the earlier HotpotQA experiments. Both datasets have ten candidate paragraphs per question, with two supporting paragraphs (HotpotQA) or two to four (2WikiMultiHopQA).
+
+Every split was written to a file and committed before any model was scored on it.
 
 \section{Models}
 
