@@ -76,3 +76,24 @@ The same pattern as exp09: iteration helps at moderate recall, where the top of 
 - `rank_scores.py`, `run_rank.sh`: re-ranking with scores → `results/rank_<arm>_<split>.jsonl`
 - `select_stop.py`: stop scorers, τ tuning, tests → `results/results.json`
 - Logs: `rank_log.txt`, `analysis_log.txt` (git-ignored)
+
+## Exploratory addendum (2026-11-15): the Adaptive-k gap rule on our scores
+
+Not pre-registered. Asked for by the literature review, which names Adaptive-k as the must-beat baseline.
+- **Earlier result:** the BRACIS paper (Noise-Gate) already found Adaptive-k weak on HotpotQA with cosine scores: F1 0.627 vs 0.651 / 0.716 / 0.792 for fixed k = 3 / 5 / 10. The largest gap falls inside the BM25 distractor cluster.
+- **Here:** k* = argmax(s_i − s_{i+1}) over the selection scores, on test (400). k* = 1 is counted as k = 2, which slightly overstates recall.
+
+| Policy | Full recall | Tokens | Mean k |
+|---|---|---|---|
+| Adaptive-k, M1 | 0.503 | 672 | 3.7 |
+| Adaptive-k + 5 buffer, M1 | 0.815 | 1,227 | 8.4 |
+| Adaptive-k, M1-iter | 0.520 | 532 | 2.9 |
+| Adaptive-k + 5 buffer, M1-iter | 0.850 | 1,151 | 7.8 |
+| our adaptive M1 (target 0.90) | 0.868 | 1,222 | 8.3 |
+| our adaptive M1-iter (target 0.90) | 0.923 | 1,383 | 9.5 |
+
+**Reading:**
+- The gap rule also cuts too early on cross-encoder scores.
+- With the buffer, it spends the same tokens as adaptive M1 but recovers fewer full chains (0.815 vs 0.868).
+- It has no way to aim at a recall target.
+- This is consistent with the BRACIS failure and extends it from cosine to cross-encoder scores. It is descriptive only, with no test.
