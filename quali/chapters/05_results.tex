@@ -62,6 +62,8 @@ An exploratory reading of the matched control suggested that the gain was concen
 
 A cascade that runs the one-shot ranker for every question and the iterative one only for questions predicted to be four-hop did not help: it routed 29\% of questions, reached 0.702 recall@5 with 41.5 passes, against 0.693 for one-shot (20 passes) and 0.745 for always-iterative (74 passes), and failed both pre-registered tests. The router predicted hop count reasonably (four-hop recall 0.76, precision 0.43), but not the questions where iteration actually helps.
 
+A second cascade, pre-registered after this failure, trained its router directly on benefit: on 4,000 unused training questions, a gradient-boosted regressor learned to predict, from the question text and the one-shot model's scores, whether the iterative ranking would improve the top five. The models of the earlier experiments were stored on a cloud account that was no longer accessible, so the two models were re-trained with the same code, data and seed; their weights differ slightly, but they reproduced the earlier test results question by question (no change in hit@5 on any of the 400 test questions). On 2,000 further unused training questions (natural hop mix, mostly two-hop), the benefit cascade sent 28\% of the questions to the iterative ranker and reached 0.872 recall@5 with 40.8 passes, against 0.845 for one-shot (20 passes) and 0.867 for always-iterative (74 passes). The pre-registered primary, the gain over one-shot, was $+0.027$ (CI $[0.016, 0.039]$, $p<0.001$), and the cascade also beat the hop-count router ($+0.029$, exploratory). The router predicted benefit only weakly (AUC 0.60), and an oracle router would reach 0.94 with 27 passes, so better predictors have room to improve. The router fit was not bit-reproducible across software environments: a re-run gave $+0.023$ ($p<0.001$), but turned the exploratory non-inferiority to always-iterative ranking (margin 0.01) from a pass into a narrow failure, so the cascade is best described as matching always-iterative within about 0.01.
+
 \section{Answer quality}
 \label{sec:res_f1}
 
@@ -109,7 +111,7 @@ Both datasets passed (Table~\ref{tab:replication}). Recovery stayed high at reca
 
 \section{Summary}
 
-Table~\ref{tab:claims} lists the claims and their status. The main result is that the weight change behind chain-following in a small selector is functionally approximated at rank 2, on three multi-hop datasets. Conditioning-trained iteration improved the registered four-hop outcome and the reader's answers on questions with three or more hops; exploratory analyses suggest no gain on two-hop questions, and simple routing does not yet capture the benefit. On the cost side, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the lowest cost found so far.
+Table~\ref{tab:claims} lists the claims and their status. The main result is that the weight change behind chain-following in a small selector is functionally approximated at rank 2, on three multi-hop datasets. Conditioning-trained iteration improved the registered four-hop outcome and the reader's answers on questions with three or more hops; exploratory analyses suggest no gain on two-hop questions, a hop-count router does not capture the benefit, but a router trained on benefit recovers iteration's gain with 55\% of its passes. On the cost side, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the lowest cost found so far.
 
 \begin{table}[htbp]
 \centering
@@ -129,6 +131,7 @@ Iteration helps four-hop chains & C ($+0.055$, heterogeneous) & \ref{sec:res_lon
 Iteration helps three-hop chains, not two-hop & E & \ref{sec:res_long} \\
 The long-chain recall gain improves answer F1 & C ($+0.076$) & \ref{sec:res_f1} \\
 A hop-count router gives a useful cascade & N & \ref{sec:res_long} \\
+A router trained on benefit gives a useful cascade & C ($+0.027$, 41 of 74 passes) & \ref{sec:res_long} \\
 \bottomrule
 \end{tabularx}
 \end{table}
