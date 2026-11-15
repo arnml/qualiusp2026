@@ -1,0 +1,1036 @@
+OpenAI Codex v0.157.1
+--------
+workdir: C:\code\qualiusp2026
+model: gpt-6-luna
+provider: openai
+approval: on-request
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a1df8e-4dd4-7bf1-8d2d-8ec665dd9853
+--------
+user
+Adversarial pre-run review. Read-only; do not modify files or run anything long. Read experiments/exp13_cascade/PROTOCOL.md, rank.py, analyze.py, make_notebook.py, data.py, split_ids.json (and experiments/exp12_matched_control/README.md for context).
+Your role: argue for the NULL. Assume the experiment is designed (consciously or not) to confirm its authors' hopes. Find:
+1. Any way the control is not actually matched (data, order, steps, schedule, truncation, tokenization lengths, hardware), or any leak/bug in the code that would bias the primary or secondary.
+2. Statistical problems in the decision rules (power, gates, recovery-ratio CI, multiplicity, r* selection).
+3. Alternative explanations that a positive result would not rule out, and what extra cheap check would rule them out.
+4. Concrete changes to make BEFORE running (ranked, with exact edits where possible).
+Max ~80 lines, condensed, specific file:line references.
+
+2026-11-15T14:13:29.998513Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when AuthRequired(AuthRequiredError { www_authenticate_header: "Bearer resource_metadata=\"https://mcp.context7.com/.well-known/oauth-protected-resource/mcp\"" })
+codex
+I’ll read the requested protocol, implementation, split IDs, and prior control notes, then trace the decision rules and likely confounds. I’ll keep this read-only and won’t execute experiment code.
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command 'Get-Content experiments/exp13_cascade/PROTOCOL.md; Get-Content experiments/exp13_cascade/rank.py; Get-Content experiments/exp13_cascade/analyze.py; Get-Content experiments/exp13_cascade/make_notebook.py; Get-Content experiments/exp13_cascade/data.py; Get-Content experiments/exp13_cascade/split_ids.json; Get-Content experiments/exp12_matched_control/README.md' in C:\code\qualiusp2026
+ succeeded in 1129ms:
+# exp13 protocol: 4-hop confirmation and a one-shot â†’ iterative cascade (pre-registered 2026-11-15)
+
+## Why
+
+exp12 (matched training pairs) found:
+- **Overall:** iteration adds only +0.04 recall@5 (n.s.).
+- **4-hop chains (exploratory):** 0.578 vs 0.391 (p = 0.036, n = 64), and almost nothing on 2â€“3 hops.
+
+An effect seen exploratorily must be re-tested on fresh data before anyone claims it (`HYPOTHESES.md`). If it holds, the practical design is a **cascade**: cheap one-shot ranking by default, and the conditioning-trained ranker only where it helps.
+
+## Models (frozen, from exp12; Colab Drive `exp12_975371a/models`)
+
+- **M1-iter** = `m1_iter_s0` (iterative inference). **M1-ctrl** = `m1_ctrl` (one-shot). Both were trained on identical pairs.
+- **Seeds 1â€“2** (`*_s1`, `*_s2`) are run for the primary only (descriptive).
+- Inference is exp09/exp12's. Passes = cross-encoder forward passes per question.
+
+## Data (`split_ids.json`, fixed before any scoring; seed 13)
+
+| Split | n | What | Use |
+|---|---|---|---|
+| `f4_dev` | 166 | all **unused** MuSiQue-Ans dev 4-hop questions (not in exp08/exp09 splits) | primary, stratum 1 |
+| `f4_train` | 400 | seeded sample of the 789 unused MuSiQue-Ans train 4-hop questions | primary, stratum 2 |
+| `router_train` | 1,000 | exp10's holdout (unused exp09 train ids, natural hop mix) | fit the router only |
+| `dev_fresh` | 1,017 | all unused dev questions (529 / 322 / 166 two/three/four-hop) | cascade evaluation |
+
+No question here has been used to train or select anything before. `f4_dev` âŠ‚ `dev_fresh` by construction. `f4_train` and `router_train` are disjoint. Training-split questions are unseen by the models, which trained on exp09's 1,000 `train` ids only.
+
+## Pre-registered tests
+
+1. **Primary (H6-4hop):** on the 566 fresh 4-hop questions (`f4_dev` âˆª `f4_train`), recall@5 of M1-iter (iterative) vs M1-ctrl (one-shot), McNemar exact, two-sided Î± = 0.05.
+   - **Success** = M1-iter higher and p < 0.05.
+   - **Also reported:**
+     - each stratum separately ("both positive" is a consistency check, not a test)
+     - a paired-bootstrap CI of the difference
+     - the seed 1/2 differences
+   - **Power:** exp12's 4-hop discordance rate was 0.44, so about 250 discordant questions are expected. The minimum detectable effect at 80% power is about **+0.08** (exp12 observed +0.19, which is likely inflated because it was selected after the fact).
+2. **Router (fixed before seeing any exp13 result):** logistic regression for "is 4-hop".
+   - Fit on `router_train`.
+   - **Features:** question length in words, comma count, and the sorted top-10 scores of the one-shot model (M1-ctrl). All are available after the one-shot pass, at no extra cost.
+   - **Class-balanced weights** (`class_weight="balanced"`), because only 6.3% of `router_train` is 4-hop vs 16% of dev. **Threshold 0.5, with no tuning.**
+3. **Secondary (cascade, `dev_fresh`):** the cascade = M1-ctrl one-shot for every question, then M1-iter iterative for routed questions. A routed question pays both: about 20 + 74 passes.
+   - **a. Cascade vs one-shot:** recall@5, McNemar. "Beats" = higher and p < 0.05.
+   - **b. Cascade vs always-iterative:** non-inferiority. The lower bound of the 95% paired-bootstrap CI of (cascade âˆ’ iterative) must be **> âˆ’0.01**.
+   - **Mean passes are reported for all policies.**
+4. **Descriptive:**
+   - an **oracle cascade** (route exactly the 4-hop questions), as an upper bound for routing
+   - the router's 4-hop recall and precision
+   - recall@k for k = 2 â€¦ 15, by hops
+
+**Claim ledger:** the primary is confirmatory for "H6-4hop". Secondaries 3a and 3b are confirmatory for the cascade. Error rates are per claim.
+
+## Analysis
+
+`analyze.py`, written before any exp13 ranking. Bootstrap: 5,000 resamples, seed 0.
+
+## Compute
+
+- **Colab T4** (`exp13_colab.ipynb` from `make_notebook.py`, pinned to the registration commit). Rankings take minutes.
+- **Inputs:**
+  - A1 tokenizer from the Colab Drive (`exp02_results/full/model`, sha-checked)
+  - MuSiQue from the official release (dev sha `15fa63â€¦bf3b`; the train subset of the 1,400 `router_train` âˆª `f4_train` rows, LF, sha `c47ce5â€¦65fe`)
+  - exp12 models from the Colab Drive
+
+## Honest priors
+
+- **Primary:** likely positive, but the true 4-hop effect is probably smaller than +0.19, since that was the most favorable stratum chosen after the fact. A null is informative: it would mean exp12's 4-hop effect was noise.
+- **Cascade vs one-shot:** probably a small gain overall, because only about 16% of questions are 4-hop.
+- **Cascade vs iterative:** non-inferiority is plausible, since iteration helps little on 2â€“3 hops. Routing errors may break it.
+- **Cost:** routing everything costs more than always-iterative (20 + 74), so the cascade saves passes only when the router routes fewer than about 75% of questions.
+"""exp13 ranking (PROTOCOL.md): exp12's frozen GPU models, one-shot and iterative inference, on the fresh splits.
+
+  python rank.py --split f4_dev --only iter_iter ctrl_oneshot
+Writes RESULTS_DIR/rank_<split>.jsonl: one line per config with per-question orders, one-shot scores (top 10) and passes.
+Resumable per config.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import time
+from pathlib import Path
+
+import torch
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+from data import encode, load, paragraphs_of, query
+
+HERE = Path(__file__).resolve().parent
+MODELS = Path(os.environ.get("MODELS_DIR", HERE / "models"))  # exp12 models (Colab Drive)
+A1 = Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1"))  # tokenizer only
+DEV = "cuda" if torch.cuda.is_available() else "cpu"
+STEPS = 4
+CONFIGS = {"iter_iter": ("m1_iter_s0", True), "ctrl_oneshot": ("m1_ctrl", False),
+           "iter_iter_s1": ("m1_iter_s1", True), "ctrl_oneshot_s1": ("m1_ctrl_s1", False),
+           "iter_iter_s2": ("m1_iter_s2", True), "ctrl_oneshot_s2": ("m1_ctrl_s2", False)}
+
+
+@torch.no_grad()
+def rank_all(model, tok, rows, iterative):
+    """exp09 inference: one-shot sort, or 4 greedy steps with the tail ordered by the step-3 scores."""
+    def score(q, ps):
+        return model(**encode(tok, [q] * len(ps), ps).to(DEV)).logits.float().cpu().squeeze(-1).reshape(-1).tolist()
+
+    out = []
+    for r in rows:
+        _, paras = paragraphs_of(r)
+        rest, order, passes, top = list(range(len(paras))), [], 0, None
+        for _ in range(STEPS if iterative else 1):
+            s = score(query(r["question"], [paras[i] for i in order]), [paras[i] for i in rest])
+            passes += len(rest)
+            ranked = sorted(zip(s, rest), key=lambda z: -z[0])
+            if not iterative:
+                order, top = [i for _, i in ranked], [round(v, 4) for v, _ in ranked[:10]]
+                break
+            order.append(ranked[0][1]); rest = [i for _, i in ranked[1:]]
+        out.append({"order": order + (rest if iterative else []), "passes": passes, "top10": top})
+    return out
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--split", required=True)
+    ap.add_argument("--only", nargs="*", default=list(CONFIGS))
+    args = ap.parse_args()
+    tok = AutoTokenizer.from_pretrained(str(A1))
+    rows = load(args.split)
+    out = Path(os.environ.get("RESULTS_DIR", HERE / "results")) / f"rank_{args.split}.jsonl"
+    done = {json.loads(x)["config"] for x in out.read_text().splitlines()} if out.exists() else set()
+    for name in args.only:
+        if name in done:
+            continue
+        tag, iterative = CONFIGS[name]
+        t0 = time.time()
+        model = AutoModelForSequenceClassification.from_pretrained(str(MODELS / tag / "model")).eval().to(DEV)
+        res = rank_all(model, tok, rows, iterative)
+        with out.open("a") as fh:
+            fh.write(json.dumps({"config": name, "model": tag, "iterative": iterative, "ids": [r["id"] for r in rows],
+                                 "orders": [x["order"] for x in res], "passes": [x["passes"] for x in res],
+                                 "top10": [x["top10"] for x in res]}) + "\n")
+        print(args.split, name, round(time.time() - t0), "s", flush=True)
+
+
+if __name__ == "__main__":
+    main()
+"""exp13 pre-registered analysis (PROTOCOL.md). Written before any exp13 ranking was run.
+
+  python analyze.py        # RESULTS_DIR must hold rank_{f4_dev,f4_train,router_train,dev_fresh}.jsonl -> results.json
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+
+import numpy as np
+from scipy.stats import binomtest
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
+from data import gold_mask, hops, load
+
+HERE = Path(__file__).resolve().parent
+RES = Path(os.environ.get("RESULTS_DIR", HERE / "results"))
+B, KS = 5000, (2, 3, 4, 5, 6, 8, 10, 15)
+
+
+def ranks(split):
+    rows = load(split)
+    out = {}
+    for line in (RES / f"rank_{split}.jsonl").read_text().splitlines():
+        j = json.loads(line)
+        assert j["ids"] == [r["id"] for r in rows], f"ids differ: {split} {j['config']}"
+        out[j["config"]] = j
+    return rows, out
+
+
+def hits(rows, orders, k=5):
+    return np.array([int(np.array(gold_mask(r), bool)[o[:k]].sum() == sum(gold_mask(r))) for r, o in zip(rows, orders)])
+
+
+def mcnemar(x, y):
+    b, c = int(((x == 1) & (y == 0)).sum()), int(((x == 0) & (y == 1)).sum())
+    return {"only_x": b, "only_y": c, "p": float(binomtest(b, b + c, 0.5).pvalue) if b + c else 1.0}
+
+
+def boot(d, rng):
+    n = len(d); bs = [d[rng.integers(0, n, n)].mean() for _ in range(B)]
+    return [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)]
+
+
+def feats(rows, oneshot):
+    """Router features (PROTOCOL): question length in words, commas, and the one-shot model's sorted top-10 scores."""
+    return np.array([[len(r["question"].split()), r["question"].count(",")] + t for r, t in zip(rows, oneshot["top10"])], float)
+
+
+def main():
+    rng, rep = np.random.default_rng(0), {}
+    # 1. Primary: 4-hop, iterative M1-iter vs one-shot M1-ctrl (seed 0), pooled over f4_dev + f4_train
+    X, Y, strata, seeds = [], [], {}, {s: ([], []) for s in ("", "_s1", "_s2")}
+    for sp in ("f4_dev", "f4_train"):
+        rows, R = ranks(sp)
+        assert all(hops(r) == 4 for r in rows)
+        x, y = hits(rows, R["iter_iter"]["orders"]), hits(rows, R["ctrl_oneshot"]["orders"])
+        X.append(x); Y.append(y)
+        strata[sp] = {"n": len(x), "iter": round(float(x.mean()), 4), "ctrl": round(float(y.mean()), 4),
+                      "diff": round(float((x - y).mean()), 4), **mcnemar(x, y)}
+        for s in seeds:
+            if f"iter_iter{s}" in R and f"ctrl_oneshot{s}" in R:
+                seeds[s][0].append(hits(rows, R[f"iter_iter{s}"]["orders"])); seeds[s][1].append(hits(rows, R[f"ctrl_oneshot{s}"]["orders"]))
+    x, y = np.concatenate(X), np.concatenate(Y)
+    p = {"n": len(x), "iter": round(float(x.mean()), 4), "ctrl": round(float(y.mean()), 4),
+         "diff": round(float((x - y).mean()), 4), "diff_ci95": boot(x - y, rng), **mcnemar(x, y), "strata": strata}
+    p["success"] = bool(x.mean() > y.mean() and p["p"] < 0.05)
+    p["both_strata_positive"] = all(v["diff"] > 0 for v in strata.values())
+    p["seed_diffs"] = {s or "_s0": round(float((np.concatenate(a) - np.concatenate(b)).mean()), 4) for s, (a, b) in seeds.items() if a}
+    rep["primary_4hop"] = p
+
+    # 2. Router: logistic regression for "4-hop", fit on router_train (one-shot features), threshold 0.5
+    rt_rows, rt = ranks("router_train")
+    Ft, yt = feats(rt_rows, rt["ctrl_oneshot"]), np.array([int(hops(r) == 4) for r in rt_rows])
+    sc = StandardScaler().fit(Ft); lr = LogisticRegression(max_iter=5000, class_weight="balanced").fit(sc.transform(Ft), yt)  # 4-hop is 6.3% of router_train
+
+    # 3. Cascade on dev_fresh (natural hop mix)
+    rows, R = ranks("dev_fresh")
+    hp = np.array([hops(r) for r in rows]); oneshot, itr = R["ctrl_oneshot"], R["iter_iter"]
+    route = lr.predict_proba(sc.transform(feats(rows, oneshot)))[:, 1] >= 0.5
+    pol = {"oneshot": np.zeros(len(rows), bool), "iterative": np.ones(len(rows), bool), "cascade": route, "oracle_cascade": hp == 4}
+    po, pi = np.array(oneshot["passes"]), np.array(itr["passes"])
+    H = {}
+    for name, m in pol.items():
+        orders = [itr["orders"][i] if m[i] else oneshot["orders"][i] for i in range(len(rows))]
+        passes = np.where(m, (po + pi) if name in ("cascade", "oracle_cascade") else pi, po)  # a routed question pays one-shot + iterative
+        H[name] = hits(rows, orders)
+        rep.setdefault("cascade", {})[name] = {
+            "recall_at_k": {k: round(float(hits(rows, orders, k).mean()), 4) for k in KS},
+            "passes": round(float(passes.mean()), 1), "routed": round(float(m.mean()), 3),
+            "by_hops_recall5": {int(h): round(float(H[name][hp == h].mean()), 3) for h in (2, 3, 4)}}
+    rep["router"] = {"train_4hop_rate": round(float(yt.mean()), 3), "dev_fresh_routed_4hop_recall": round(float(route[hp == 4].mean()), 3),
+                     "dev_fresh_routed_precision": round(float((hp[route] == 4).mean()), 3) if route.any() else None}
+    # Secondary (PROTOCOL): cascade vs one-shot, recall@5 McNemar; cascade vs iterative, non-inferiority margin 0.01
+    c, o, i = H["cascade"], H["oneshot"], H["iterative"]
+    rep["secondary"] = {"cascade_vs_oneshot": {"diff": round(float((c - o).mean()), 4), "diff_ci95": boot(c - o, rng), **mcnemar(c, o)},
+                        "cascade_vs_iterative": {"diff": round(float((c - i).mean()), 4), "diff_ci95": boot(c - i, rng)}}
+    s = rep["secondary"]
+    s["cascade_beats_oneshot"] = bool(c.mean() > o.mean() and s["cascade_vs_oneshot"]["p"] < 0.05)
+    s["cascade_noninferior_to_iterative"] = bool(s["cascade_vs_iterative"]["diff_ci95"][0] > -0.01)
+    (RES / "results.json").write_text(json.dumps(rep, indent=1))
+    print(json.dumps(rep, indent=1))
+
+
+if __name__ == "__main__":
+    main()
+"""Writes exp13_colab.ipynb (edit this file, not the notebook).  python make_notebook.py <pinned commit>"""
+import json
+import sys
+
+PIN = sys.argv[1]
+
+cells = [
+("markdown", """# exp13: 4-hop confirmation and cascade (Colab GPU)
+
+Runtime â†’ Change runtime type â†’ **T4 GPU**, then *Run all*. A1 is read from Drive (`MyDrive/qualiusp2026/exp02_results/full/model`); MuSiQue is downloaded from the official release; both are hash-checked.
+Models and results are written to Drive (`MyDrive/qualiusp2026/exp12_<commit>`). Training checkpoints every 500 steps, so after a
+disconnect just *Run all* again: finished models and evaluation configs are skipped. Code comes from the public repo (PROTOCOL.md). Models: exp12's frozen GPU models on Drive."""),
+("code", """from google.colab import drive
+drive.mount('/content/drive')
+import os, pathlib, subprocess
+PIN = '__PIN__'  # registration commit (PROTOCOL: pinned code, fresh output folder)
+OUT = f'/content/drive/MyDrive/qualiusp2026/exp13_{PIN[:7]}'
+M12 = '/content/drive/MyDrive/qualiusp2026/exp12_975371a/models'  # frozen exp12 models
+A1 = '/content/drive/MyDrive/qualiusp2026/exp02_results/full/model'  # exp02's A1 (sha256 checked below)
+pathlib.Path(OUT, 'models').mkdir(parents=True, exist_ok=True); pathlib.Path(OUT, 'results').mkdir(exist_ok=True)
+if not os.path.exists('/content/qualiusp2026'):
+    !git clone -q https://github.com/arnml/qualiusp2026.git /content/qualiusp2026
+!cd /content/qualiusp2026 && git fetch -q && git checkout -q {PIN} && git log --oneline -1
+assert subprocess.check_output(['git', '-C', '/content/qualiusp2026', 'rev-parse', 'HEAD']).decode().strip() == PIN
+# Inputs (deviation 1): A1 from exp02's Drive folder; MuSiQue from the official release (StonyBrookNLP/musique).
+# Both are checked against sha256 hashes of the local files used in exp08-exp11.
+import hashlib, json
+def sha(path): return hashlib.sha256(open(path, 'rb').read()).hexdigest()
+assert sha(f'{A1}/model.safetensors') == '605c986eb9a9a82b10ac43c43c77b2a0f976c04c7ed40f21cc66f2a5b19d950d'
+D = '/content/qualiusp2026/experiments/exp08_musique/data'
+if os.path.islink(D): os.unlink(D)  # left by the first attempt (Drive inputs from another account)
+if not os.path.exists(f'{D}/musique_ans_v1.0_dev.jsonl'):
+    !pip -q install gdown && cd /content && gdown -q 1tGdADlNjWFaHLeZZGShh2IRcpO6Lv24h -O musique.zip && unzip -q -o musique.zip -d musique_raw
+    os.makedirs(D, exist_ok=True)
+    src = subprocess.check_output('find /content/musique_raw -name musique_ans_v1.0_dev.jsonl', shell=True).decode().split()[0].rsplit('/', 1)[0]
+    !cp {src}/musique_ans_v1.0_dev.jsonl {D}/
+    ids = json.load(open('/content/qualiusp2026/experiments/exp13_cascade/split_ids.json'))
+    ids = set(ids['router_train']) | set(ids['f4_train'])
+    with open(f'{src}/musique_ans_v1.0_train.jsonl') as f, open(f'{D}/musique_ans_v1.0_train.jsonl', 'w') as g:
+        for line in f:
+            if json.loads(line)['id'] in ids: g.write(line)
+assert sha(f'{D}/musique_ans_v1.0_dev.jsonl') == '15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b', 'dev file differs'
+assert sha(f'{D}/musique_ans_v1.0_train.jsonl') == 'c47ce51185d2447ebede240dc31acdd6acc8822219cbaab4d540f6f2dd1e65fe', 'train subset differs'
+print('inputs verified')
+os.environ.update(A1_DIR=A1, MODELS_DIR=M12, RESULTS_DIR=f'{OUT}/results', TOKENIZERS_PARALLELISM='false')
+os.chdir('/content/qualiusp2026/experiments/exp13_cascade')
+for t in ('m1_iter_s0', 'm1_ctrl', 'm1_iter_s1', 'm1_ctrl_s1', 'm1_iter_s2', 'm1_ctrl_s2'):
+    print(t, sha(f'{M12}/{t}/model/model.safetensors')[:16])
+!nvidia-smi --query-gpu=name,memory.total --format=csv
+!pip -q install tiktoken
+!git rev-parse HEAD > {OUT}/results/commit.txt"""),
+("markdown", "## Rank (frozen exp12 models), then the pre-registered analysis"),
+("code", """!python rank.py --split f4_dev 2>&1 | grep -v -e Warning -e Loading
+!python rank.py --split f4_train 2>&1 | grep -v -e Warning -e Loading
+!python rank.py --split router_train --only ctrl_oneshot 2>&1 | grep -v -e Warning -e Loading
+!python rank.py --split dev_fresh --only ctrl_oneshot iter_iter 2>&1 | grep -v -e Warning -e Loading
+!python analyze.py"""),
+]
+nb = {"cells": [{"cell_type": t, "metadata": {}, "source": s.splitlines(True), **({"outputs": [], "execution_count": None} if t == "code" else {})}
+                for t, s in cells],
+      "metadata": {"accelerator": "GPU", "colab": {"gpuType": "T4"}, "kernelspec": {"name": "python3", "display_name": "Python 3"}},
+      "nbformat": 4, "nbformat_minor": 5}
+txt = json.dumps(nb, indent=1).replace("__PIN__", PIN)
+open("exp13_colab.ipynb", "w").write(txt)
+"""MuSiQue-Ans loading, paragraph format and prompt (copied from exp08; data files read from ../exp08_musique/data)."""
+
+from __future__ import annotations
+
+import json
+from functools import lru_cache
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+FILES = {"dev": "musique_ans_v1.0_dev.jsonl", "pool": "musique_ans_v1.0_train.jsonl"}
+SPLITS = {"dev_fresh": "dev", "f4_dev": "dev", "f4_train": "pool", "router_train": "pool", "dev300": "dev"}  # split -> source file
+
+
+@lru_cache(maxsize=None)
+def _file(src: str) -> dict:
+    with open(HERE.parent / "exp08_musique" / "data" / FILES[src], encoding="utf-8") as fh:
+        return {r["id"]: r for r in map(json.loads, fh)}
+
+
+def load(split: str) -> list[dict]:
+    ids = json.loads((HERE / "split_ids.json").read_text())[split]
+    rows = _file(SPLITS[split])
+    return [rows[i] for i in ids]
+
+
+def paragraphs_of(row: dict) -> tuple[list[str], list[str]]:
+    """'<title>. <text>' as in exp02."""
+    ps = sorted(row["paragraphs"], key=lambda p: p["idx"])
+    titles = [p["title"].strip() for p in ps]
+    return titles, [f"{t}. {p['paragraph_text'].strip()}" for t, p in zip(titles, ps)]
+
+
+def gold_mask(row: dict) -> list[int]:
+    return [int(p["is_supporting"]) for p in sorted(row["paragraphs"], key=lambda p: p["idx"])]
+
+
+def hops(row: dict) -> int:
+    return len(row["question_decomposition"])
+
+
+def build_retrieval_prompt(question: str, paragraphs: list[str]) -> str:
+    """exp02/BRACIS prompt; only change: 'the HotpotQA question' -> 'the question'."""
+    context_str = "\n\n".join([f"[{i + 1}] {p}" for i, p in enumerate(paragraphs)])
+    return f"""Answer the question using only the provided context.
+
+Rules:
+- Output only the final answer.
+- If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.
+- Otherwise output a short span or entity name only.
+- Do not include any explanation.
+- Do not repeat the question.
+- If multiple positions/titles are mentioned, output only the one that
+  directly answers the question.
+
+Context:
+{context_str}
+
+Question: {question}
+
+Answer:"""
+
+
+_ENC = None
+
+
+def n_tokens(text: str) -> int:
+    global _ENC
+    if _ENC is None:
+        import tiktoken
+
+        _ENC = tiktoken.get_encoding("o200k_base")
+    return len(_ENC.encode(text))
+
+
+def chain(row: dict) -> list[int]:
+    """Gold paragraph positions (in paragraphs_of order) in decomposition (hop) order."""
+    pos = {p["idx"]: i for i, p in enumerate(sorted(row["paragraphs"], key=lambda p: p["idx"]))}
+    return [pos[d["paragraph_support_idx"]] for d in row["question_decomposition"]]
+
+
+def query(question: str, selected: list[str]) -> str:
+    """Question + selected paragraphs, most recent first (truncation cuts the oldest)."""
+    return " [SEP] ".join([question, *reversed(selected)])
+
+
+def encode(tok, qs, ps, max_length=512):
+    """Truncate the query side only (PROTOCOL); if a paragraph alone exceeds max_length, fall back to longest_first."""
+    try:
+        return tok(qs, ps, truncation="only_first", max_length=max_length, padding=True, return_tensors="pt")
+    except Exception:  # noqa: BLE001 - tokenizers raises a bare Exception for this case
+        return tok(qs, ps, truncation="longest_first", max_length=max_length, padding=True, return_tensors="pt")
+{"dev_fresh": ["2hop__10114_599630", "2hop__10122_18974", "2hop__104095_40502", "2hop__10515_21567", "2hop__10620_79092", "2hop__106864_80460", "2hop__107548_124896", "2hop__108336_772156", "2hop__10900_21567", "2hop__115515_779396", "2hop__119423_779396", "2hop__12039_11957", "2hop__123104_77615", "2hop__123145_80420", "2hop__123148_5385", "2hop__123509_5385", "2hop__124592_402641", "2hop__124933_653666", "2hop__125412_544665", "2hop__126299_396277", "2hop__126306_396277", "2hop__128342_375952", "2hop__128945_47686", "2hop__129499_85379", "2hop__130404_59180", "2hop__130508_32379", "2hop__130867_54221", "2hop__131455_11960", "2hop__131818_161450", "2hop__132909_33564", "2hop__132929_120537", "2hop__132929_684936", "2hop__132969_417697", "2hop__133102_417697", "2hop__133116_533882", "2hop__13353_17738", "2hop__135652_669373", "2hop__135653_669373", "2hop__135668_561444", "2hop__13574_13498", "2hop__135822_46621", "2hop__13592_49388", "2hop__135963_486257", "2hop__135993_160249", "2hop__137061_45752", "2hop__13986_161674", "2hop__14078_49084", "2hop__14121_15463", "2hop__142443_768138", "2hop__142842_68489", "2hop__143915_68489", "2hop__144150_82341", "2hop__144303_483189", "2hop__144658_599630", "2hop__144763_599630", "2hop__144784_623159", "2hop__145082_35034", "2hop__145203_34088", "2hop__14_59409", "2hop__151455_120171", "2hop__151750_141308", "2hop__15258_54866", "2hop__152700_141308", "2hop__153573_109006", "2hop__153573_45901", "2hop__15368_17873", "2hop__156044_57816", "2hop__156702_51769", "2hop__158275_35739", "2hop__159816_37168", "2hop__160092_80144", "2hop__160223_58067", "2hop__161872_21567", "2hop__16267_25719", "2hop__16446_58556", "2hop__16581_16525", "2hop__16581_16569", "2hop__16632_110014", "2hop__1667_40502", "2hop__166824_185403", "2hop__16844_20510", "2hop__168816_144857", "2hop__176712_8311", "2hop__176_51164", "2hop__17827_54024", "2hop__17854_17873", "2hop__178922_5385", "2hop__194469_83289", "2hop__197470_271394", "2hop__198650_84856", "2hop__199216_33564", "2hop__199513_13732", "2hop__199513_801817", "2hop__20059_236755", "2hop__20268_42004", "2hop__20268_42014", "2hop__203437_152093", "2hop__203985_524737", "2hop__20433_157939", "2hop__204493_69048", "2hop__20536_96912", "2hop__20685_712629", "2hop__207476_625987", "2hop__207597_63853", "2hop__208602_11402", "2hop__21075_5028", "2hop__21103_16335", "2hop__21104_16335", "2hop__2150_78851", "2hop__216256_141338", "2hop__216535_370666", "2hop__217011_80026", "2hop__219456_87295", "2hop__223655_463572", "2hop__226204_69048", "2hop__227031_144857", "2hop__22885_160040", "2hop__22885_36240", "2hop__230022_68489", "2hop__231805_514393", "2hop__231890_595414", "2hop__23459_35124", "2hop__238499_431914", "2hop__244193_461106", "2hop__24661_66233", "2hop__247353_55227", "2hop__24973_5674", "2hop__24976_161105", "2hop__24976_25002", "2hop__253612_110882", "2hop__256336_714772", "2hop__256778_131879", "2hop__259228_793698", "2hop__263638_69048", "2hop__267938_92763", "2hop__2682_577502", "2hop__2683_577502", "2hop__269766_43945", "2hop__272714_113442", "2hop__273020_57594", "2hop__275891_55984", "2hop__278022_71701", "2hop__279729_20057", "2hop__283298_22402", "2hop__283_574195", "2hop__284789_52835", "2hop__286621_84856", "2hop__289517_139339", "2hop__29339_40482", "2hop__29349_92763", "2hop__29606_600504", "2hop__29893_29905", "2hop__299142_347613", "2hop__30032_46621", "2hop__301011_820181", "2hop__301587_233146", "2hop__30384_30351", "2hop__30390_92972", "2hop__307719_121900", "2hop__30905_189318", "2hop__30905_213732", "2hop__310456_846599", "2hop__31085_23241", "2hop__31124_31093", "2hop__31124_31122", "2hop__31326_31270", "2hop__315246_88622", "2hop__315267_277284", "2hop__31585_61048", "2hop__31995_8583", "2hop__32254_84601", "2hop__323534_810083", "2hop__32441_178460", "2hop__326140_9237", "2hop__327688_56873", "2hop__32887_235620", "2hop__329676_119915", "2hop__332453_139339", "2hop__33288_157788", "2hop__337223_56873", "2hop__341305_332933", "2hop__342746_679190", "2hop__34594_160249", "2hop__34595_160249", "2hop__345_59409", "2hop__347686_127399", "2hop__347_59409", "2hop__351275_75487", "2hop__35136_35117", "2hop__35137_22896", "2hop__35137_22940", "2hop__35137_22943", "2hop__35209_17335", "2hop__353836_80026", "2hop__35445_22458", "2hop__354635_174222", "2hop__35566_17873", "2hop__35686_58556", "2hop__358270_108549", "2hop__362912_97805", "2hop__364489_861485", "2hop__365236_19320", "2hop__370564_71701", "2hop__370911_589237", "2hop__37097_53663", "2hop__37097_86208", "2hop__373544_80420", "2hop__3737_13529", "2hop__37656_160040", "2hop__37765_85990", "2hop__38030_23241", "2hop__384238_74735", "2hop__386236_350892", "2hop__388467_110882", "2hop__389778_78303", "2hop__39063_212301", "2hop__394720_120259", "2hop__398344_439882", "2hop__39954_80303", "2hop__39954_80940", "2hop__401710_456439", "2hop__403060_92763", "2hop__403580_37168", "2hop__403712_793210", "2hop__40485_40501", "2hop__40697_46621", "2hop__409166_152023", "2hop__40970_90367", "2hop__411091_625230", "2hop__414193_176917", "2hop__415518_616002", "2hop__418360_67370", "2hop__421324_97805", "2hop__423045_570226", "2hop__423874_128023", "2hop__424294_19033", "2hop__42578_55840", "2hop__42747_83837", "2hop__434218_29898", "2hop__435184_67370", "2hop__435184_84856", "2hop__43579_289940", "2hop__442175_56873", "2hop__44259_747874", "2hop__444265_82341", "2hop__44522_58556", "2hop__445963_6063", "2hop__45126_807969", "2hop__451574_120065", "2hop__45296_83837", "2hop__458672_20057", "2hop__46065_417697", "2hop__460946_294723", "2hop__462179_643013", "2hop__463353_80420", "2hop__46376_158105", "2hop__46550_85990", "2hop__468778_88165", "2hop__472486_97805", "2hop__475808_71302", "2hop__475808_74481", "2hop__477492_240386", "2hop__48033_90973", "2hop__481809_184805", "2hop__48784_70131", "2hop__488811_30113", "2hop__491195_265959", "2hop__496792_392646", "2hop__496961_554601", "2hop__499003_853511", "2hop__499577_617190", "2hop__500379_126537", "2hop__502852_75487", "2hop__503085_110222", "2hop__506099_20057", "2hop__50910_177869", "2hop__510679_57816", "2hop__51074_75184", "2hop__510860_22402", "2hop__511176_22458", "2hop__511296_577502", "2hop__5190_64006", "2hop__51965_165532", "2hop__52283_75184", "2hop__525581_161450", "2hop__530579_13529", "2hop__53147_7298", "2hop__53433_59035", "2hop__536283_67465", "2hop__538412_126089", "2hop__538735_3299", "2hop__539184_119915", "2hop__540035_113442", "2hop__542569_87295", "2hop__544760_35739", "2hop__55032_786853", "2hop__55129_80460", "2hop__552546_70131", "2hop__552607_126089", "2hop__554167_451128", "2hop__55463_19033", "2hop__557411_652060", "2hop__557496_57594", "2hop__557743_92763", "2hop__559273_152023", "2hop__55966_162341", "2hop__560534_91104", "2hop__563476_61845", "2hop__564984_139312", "2hop__57209_67668", "2hop__575188_342798", "2hop__575282_114648", "2hop__576118_25719", "2hop__57638_72467", "2hop__57638_90991", "2hop__580458_139390", "2hop__58111_7298", "2hop__58939_213732", "2hop__590631_110882", "2hop__59133_512508", "2hop__593397_224832", "2hop__593633_82341", "2hop__59612_42429", "2hop__60229_1783", "2hop__60229_38663", "2hop__603365_120259", "2hop__60336_169233", "2hop__603598_25719", "2hop__605207_135019", "2hop__606439_127399", "2hop__611178_131968", "2hop__61143_165532", "2hop__611538_152907", "2hop__613959_135844", "2hop__61664_786853", "2hop__61714_42553", "2hop__61714_53995", "2hop__61924_712629", "2hop__619265_45326", "2hop__620853_22458", "2hop__622637_120171", "2hop__62311_62279", "2hop__628752_538661", "2hop__62951_64006", "2hop__63002_461854", "2hop__631024_18974", "2hop__631139_75487", "2hop__632234_122868", "2hop__632870_22402", "2hop__63483_786853", "2hop__635187_861533", "2hop__639445_567836", "2hop__63982_768138", "2hop__642686_7292", "2hop__644898_64046", "2hop__64537_482364", "2hop__646493_5385", "2hop__648648_173389", "2hop__650138_22402", "2hop__65202_712629", "2hop__65576_80026", "2hop__66167_615257", "2hop__66167_72467", "2hop__661847_288421", "2hop__665660_135481", "2hop__668407_683671", "2hop__669837_31270", "2hop__671664_646310", "2hop__673655_316668", "2hop__6736_6733", "2hop__6744_6731", "2hop__6745_6731", "2hop__676045_7292", "2hop__67660_67223", "2hop__67660_81007", "2hop__677160_110882", "2hop__681463_402641", "2hop__68158_189357", "2hop__6827_55848", "2hop__6827_75783", "2hop__6827_79845", "2hop__6827_88924", "2hop__68322_510545", "2hop__684287_78303", "2hop__684839_139312", "2hop__685045_19320", "2hop__685280_510757", "2hop__68590_27619", "2hop__68590_27628", "2hop__6870_16335", "2hop__690412_526810", "2hop__69765_43945", "2hop__697729_576069", "2hop__698577_851686", "2hop__699172_141338", "2hop__700093_455653", "2hop__702496_430061", "2hop__70338_36240", "2hop__703767_37168", "2hop__70490_21567", "2hop__705035_152093", "2hop__71016_75184", "2hop__71034_343058", "2hop__71165_807969", "2hop__71755_463572", "2hop__71871_494136", "2hop__719184_55227", "2hop__723101_150107", "2hop__723404_58556", "2hop__725233_150107", "2hop__72660_319330", "2hop__729651_631003", "2hop__73069_88165", "2hop__731584_700117", "2hop__734057_88628", "2hop__734582_71302", "2hop__73615_16848", "2hop__73760_712629", "2hop__74084_75184", "2hop__742831_156034", "2hop__744371_78851", "2hop__747306_72813", "2hop__75207_365216", "2hop__75207_46837", "2hop__75207_53316", "2hop__75207_7363", "2hop__752214_639679", "2hop__753715_51329", "2hop__754682_730690", "2hop__754753_57816", "2hop__754826_7292", "2hop__75714_148696", "2hop__75714_21969", "2hop__757497_78606", "2hop__763380_74735", "2hop__768312_814677", "2hop__77134_88165", "2hop__771727_93362", "2hop__77263_84616", "2hop__776637_87295", "2hop__77775_162341", "2hop__779424_75487", "2hop__780652_93362", "2hop__785711_73244", "2hop__787538_31270", "2hop__78756_198548", "2hop__788306_131879", "2hop__78873_461854", "2hop__789398_74735", "2hop__7906_78851", "2hop__796221_18803", "2hop__799936_20273", "2hop__80070_89752", "2hop__803903_78606", "2hop__804417_126089", "2hop__80637_19033", "2hop__80673_510545", "2hop__806869_56873", "2hop__80834_148696", "2hop__809096_491515", "2hop__809785_606637", "2hop__80_59409", "2hop__813461_31270", "2hop__81379_84616", "2hop__814408_155922", "2hop__81659_52835", "2hop__818692_113442", "2hop__821197_368148", "2hop__821368_14251", "2hop__822113_91104", "2hop__82270_177869", "2hop__826864_17335", "2hop__82713_84616", "2hop__827940_277334", "2hop__829358_754719", "2hop__829474_123956", "2hop__83405_158262", "2hop__8347_8311", "2hop__839126_472799", "2hop__840174_78851", "2hop__84103_345851", "2hop__846388_19320", "2hop__846415_88165", "2hop__847433_11402", "2hop__84847_21969", "2hop__84937_148696", "2hop__853227_68633", "2hop__85325_88165", "2hop__85463_33311", "2hop__85463_54688", "2hop__85463_66122", "2hop__85596_807969", "2hop__857493_17335", "2hop__85931_108632", "2hop__85993_512508", "2hop__860241_766393", "2hop__862994_69048", "2hop__864201_80026", "2hop__87953_17335", "2hop__88372_83837", "2hop__88906_55840", "2hop__88953_64006", "2hop__89403_122023", "2hop__89991_58067", "2hop__91021_19033", "2hop__91248_84207", "2hop__91626_96912", "2hop__91667_81007", "2hop__9285_42311", "2hop__92900_512508", "2hop__93230_319887", "2hop__94507_654855", "2hop__9512_36630", "2hop__95172_152907", "2hop__95673_121319", "2hop__95673_62765", "2hop__95687_577502", "2hop__95773_51329", "2hop__95794_55227", "2hop__95878_88628", "2hop__95970_456836", "2hop__96062_159673", "2hop__96096_78606", "2hop__96137_121319", "2hop__96137_62765", "2hop__96177_121319", "2hop__96177_62765", "2hop__96411_47902", "2hop__96812_130869", "3hop1__102087_214799_259594", "3hop1__103180_214799_259594", "3hop1__103197_214799_259594", "3hop1__103440_443779_52195", "3hop1__103662_443779_52195", "3hop1__104237_214799_259594", "3hop1__105837_160713_77246", "3hop1__106042_64399_59680", "3hop1__106042_64399_62676", "3hop1__106239_650651_7262", "3hop1__106313_443779_52195", "3hop1__106688_160713_77246", "3hop1__106845_5188_86687", "3hop1__106847_160713_77246", "3hop1__106900_443779_52195", "3hop1__108062_720914_27537", "3hop1__108833_720914_27537", "3hop1__108881_720914_27537", "3hop1__108881_720914_41132", "3hop1__120881_2053_52946", "3hop1__127821_157828_162309", "3hop1__129499_33897_81096", "3hop1__131783_131926_13165", "3hop1__131783_131926_89261", "3hop1__131820_59747_43101", "3hop1__132795_40769_64047", "3hop1__132968_40769_64047", "3hop1__133292_40769_64047", "3hop1__135392_87694_124169", "3hop1__135793_87694_64412", "3hop1__136016_87694_64412", "3hop1__136129_87694_64412", "3hop1__139787_88110_77129", "3hop1__140554_2053_52946", "3hop1__140786_2053_52946", "3hop1__140855_2053_52946", "3hop1__141138_2053_5289", "3hop1__145194_160545_34754", "3hop1__145212_443779_52195", "3hop1__145427_106426_77199", "3hop1__145924_131905_41948", "3hop1__146155_131905_41948", "3hop1__147135_159767_81096", "3hop1__147162_131905_41948", "3hop1__152880_131926_89261", "3hop1__152880_131926_90707", "3hop1__157807_19788_15107", "3hop1__158139_19788_15107", "3hop1__159803_89752_75165", "3hop1__160324_131905_41948", "3hop1__161433_33952_33939", "3hop1__161507_160713_77246", "3hop1__163024_443779_52195", "3hop1__163654_503371_21711", "3hop1__169494_42197_18397", "3hop1__17192_78396_157843", "3hop1__17192_78396_42428", "3hop1__194006_42197_18397", "3hop1__19768_19788_10117", "3hop1__19768_19788_15107", "3hop1__208108_547811_41132", "3hop1__210639_147339_47686", "3hop1__21282_692112_236857", "3hop1__220023_503371_21711", "3hop1__222497_309482_27537", "3hop1__222497_737465_93723", "3hop1__222979_40769_64047", "3hop1__226638_538202_84283", "3hop1__228_237521_291682", "3hop1__232315_831637_91775", "3hop1__239036_15840_36002", "3hop1__239036_15840_36014", "3hop1__241001_568433_47686", "3hop1__241085_42197_18397", "3hop1__248929_160713_77246", "3hop1__251085_831637_91775", "3hop1__254856_400692_51423", "3hop1__273571_834494_33939", "3hop1__273571_834494_34088", "3hop1__275261_443779_52195", "3hop1__280834_547811_41132", "3hop1__28404_160713_77246", "3hop1__285585_538202_84283", "3hop1__302383_503371_21711", "3hop1__305282_282081_73772", "3hop1__305566_568433_47686", "3hop1__305566_568433_51423", "3hop1__307152_400692_51423", "3hop1__315504_629431_124169", "3hop1__315504_629431_64412", "3hop1__31995_24918_24939", "3hop1__320697_547811_80702", "3hop1__321720_650651_7262", "3hop1__324448_831637_91775", "3hop1__326941_366209_84283", "3hop1__337705_132457_51423", "3hop1__354480_834494_33939", "3hop1__354480_834494_34053", "3hop1__354480_834494_34099", "3hop1__354480_834494_34109", "3hop1__36497_73181_68042", "3hop1__36497_78276_68042", "3hop1__365934_87694_124169", "3hop1__377943_650651_7262", "3hop1__379231_40769_64047", "3hop1__38738_78276_68042", "3hop1__389069_132457_47686", "3hop1__389955_132457_47686", "3hop1__389955_132457_51423", "3hop1__390673_228453_86925", "3hop1__395211_503371_21711", "3hop1__398232_326948_78782", "3hop1__401538_132457_51423", "3hop1__404541_629431_124169", "3hop1__408237_400692_51423", "3hop1__418091_15840_36002", "3hop1__423001_503371_21711", "3hop1__433054_831637_91775", "3hop1__438364_443779_52195", "3hop1__446612_160545_34754", "3hop1__446612_160545_60577", "3hop1__454441_55349_651302", "3hop1__458916_665330_51423", "3hop1__459153_544076_84283", "3hop1__462960_160545_34751", "3hop1__462960_160545_60577", "3hop1__465684_160545_60577", "3hop1__465684_160545_62931", "3hop1__46571_87694_124169", "3hop1__46571_87694_64412", "3hop1__469478_15840_36014", "3hop1__483634_720378_15538", "3hop1__489567_443779_52195", "3hop1__491648_339990_15538", "3hop1__491648_339990_54675", "3hop1__498954_160713_77246", "3hop1__504362_443779_52195", "3hop1__516535_834494_33939", "3hop1__518381_709625_84283", "3hop1__52222_40769_64047", "3hop1__527372_339990_54675", "3hop1__539312_744503_34754", "3hop1__540585_568433_47686", "3hop1__545624_2053_52946", "3hop1__558449_503371_21711", "3hop1__559908_42197_18397", "3hop1__567955_503371_21711", "3hop1__579562_629431_124169", "3hop1__582007_160713_77246", "3hop1__584774_131926_87157", "3hop1__587540_514761_594810", "3hop1__593288_720914_41132", "3hop1__593597_40769_64047", "3hop1__602329_792411_51423", "3hop1__604991_339990_15538", "3hop1__609479_503371_21711", "3hop1__617062_127905_54974", "3hop1__617062_127905_86588", "3hop1__617062_127905_92225", "3hop1__626214_503371_21711", "3hop1__632623_160713_77246", "3hop1__635099_131926_13165", "3hop1__635099_131926_89261", "3hop1__6362_14336_21111", "3hop1__6379_42197_18397", "3hop1__640171_228453_10972", "3hop1__641921_42197_18397", "3hop1__652852_2053_5289", "3hop1__652852_2053_52946", "3hop1__662618_339990_54675", "3hop1__66872_709625_84283", "3hop1__680374_503371_21711", "3hop1__68802_89752_75165", "3hop1__689538_547811_80702", "3hop1__68981_91191_156667", "3hop1__694534_160088_49779", "3hop1__694534_160088_821792", "3hop1__699454_831637_91775", "3hop1__699507_792411_51423", "3hop1__702699_792411_51423", "3hop1__707569_228453_10972", "3hop1__715607_792411_51423", "3hop1__726561_132457_47686", "3hop1__742464_15840_36002", "3hop1__742464_15840_36014", "3hop1__749581_443779_52195", "3hop1__76377_40769_64047", "3hop1__765388_42197_18397", "3hop1__765565_326948_10972", "3hop1__765565_326948_78782", "3hop1__765565_326948_86925", "3hop1__765847_831637_91775", "3hop1__786067_228453_10972", "3hop1__79039_131926_89261", "3hop1__796649_720914_27537", "3hop1__796649_720914_41132", "3hop1__798544_514761_594810", "3hop1__800948_40769_64047", "3hop1__801799_547811_41132", "3hop1__801799_547811_80702", "3hop1__813285_774554_124169", "3hop1__8148_24918_24939", "3hop1__818422_160545_34751", "3hop1__818422_160545_34754", "3hop1__818422_160545_60577", "3hop1__823336_228453_10972", "3hop1__835193_160713_77246", "3hop1__837871_831637_91775", "3hop1__838590_831637_91775", "3hop1__843207_755530_88011", "3hop1__844109_720914_41132", "3hop1__847420_720378_15538", "3hop1__848113_15840_36002", "3hop1__848113_15840_36014", "3hop1__850160_15840_36002", "3hop1__850160_15840_36014", "3hop1__857241_503371_21711", "3hop1__857_846_7701", "3hop1__857_846_7702", "3hop1__857_846_7713", "3hop1__857_846_7770", "3hop1__857_846_7795", "3hop1__857_846_7798", "3hop1__857_846_7846", "3hop1__857_846_7870", "3hop1__857_846_7872", "3hop1__857_846_7887", "3hop1__857_846_7888", "3hop1__862117_792411_51423", "3hop1__90327_83076_319330", "3hop1__9285_5188_63702", "3hop1__9285_5188_6375", "3hop1__92991_73181_68042", "3hop2__103871_20335_9331", "3hop2__104979_23308_28343", "3hop2__125104_127483_10557", "3hop2__125104_90098_10557", "3hop2__127483_125104_10557", "3hop2__127483_76623_10557", "3hop2__127483_79978_10557", "3hop2__132957_133292_40768", "3hop2__132957_222979_40768", "3hop2__132957_379231_40768", "3hop2__132957_51933_40768", "3hop2__14253_76873_64554", "3hop2__145209_20335_9331", "3hop2__14777_8533_9331", "3hop2__159979_30587_44003", "3hop2__19639_90098_10557", "3hop2__20335_82856_9331", "3hop2__209741_89048_66294", "3hop2__222979_132957_40768", "3hop2__25177_19506_23299", "3hop2__27069_92991_76291", "3hop2__28476_14777_9331", "3hop2__30152_105895_20999", "3hop2__304722_203717_63959", "3hop2__304722_230978_63959", "3hop2__304722_238553_63959", "3hop2__304722_297619_63959", "3hop2__304722_423353_63959", "3hop2__304722_590317_63959", "3hop2__304722_667199_63959", "3hop2__304722_747004_63959", "3hop2__304722_781203_63959", "3hop2__304722_796034_63959", "3hop2__31398_2130_2232", "3hop2__326964_263934_7713", "3hop2__326964_36852_7713", "3hop2__326964_7707_7713", "3hop2__326964_7719_7713", "3hop2__326964_7845_7713", "3hop2__326964_7855_7713", "3hop2__326964_7861_7713", "3hop2__326964_789654_7713", "3hop2__326964_811351_7713", "3hop2__326964_851134_7713", "3hop2__368986_89048_66294", "3hop2__38326_92991_76291", "3hop2__43283_12039_93690", "3hop2__43892_23308_28343", "3hop2__49541_121067_51068", "3hop2__49541_140712_51068", "3hop2__49541_140875_51068", "3hop2__565959_467331_162182", "3hop2__569322_223623_162182", "3hop2__569322_467331_162182", "3hop2__57233_105140_56883", "3hop2__57233_106716_56883", "3hop2__57233_11282_56883", "3hop2__57238_1926_54362", "3hop2__60649_90098_10557", "3hop2__607269_467331_162182", "3hop2__655849_223623_162182", "3hop2__668732_467331_162182", "3hop2__67618_30587_44003", "3hop2__72083_92991_76291", "3hop2__76623_90098_10557", "3hop2__781093_223623_162182", "3hop2__792915_223623_162182", "3hop2__79512_16214_84681", "3hop2__809962_89048_66294", "3hop2__831456_223623_162182", "3hop2__831456_467331_162182", "3hop2__84553_90098_10557", "3hop2__851134_326964_7713", "3hop2__851134_613770_7713", "3hop2__855821_223623_162182", "3hop2__87184_36497_76291", "3hop2__87184_38738_76291", "3hop2__88342_93066_90766", "3hop2__89048_228_66294", "3hop2__89854_36497_76291", "3hop2__89854_92991_76291", "3hop2__90098_76623_10557", "3hop2__90098_84553_10557", "3hop2__91678_90098_10557", "3hop2__92991_38326_76291", "3hop2__92991_72083_76291", "3hop2__92991_89854_76291", "3hop2__93066_88342_47738", "3hop2__9951_20335_9331", "4hop1__105688_17130_70784_61381", "4hop1__115977_582428_157828_162309", "4hop1__130404_59747_211319_557671", "4hop1__131002_53706_795904_580996", "4hop1__131632_32392_823060_610794", "4hop1__13170_32392_823060_610794", "4hop1__145422_698949_157828_162309", "4hop1__146971_698949_157828_162309", "4hop1__151650_5274_458768_33637", "4hop1__151650_5274_458768_33677", "4hop1__151903_5274_458768_33637", "4hop1__152146_5274_458768_33632", "4hop1__152146_5274_458768_33633", "4hop1__152562_5274_458768_33632", "4hop1__158877_53706_795904_580996", "4hop1__159467_725495_49925_267352", "4hop1__178366_229349_66759_75165", "4hop1__199362_765799_282674_759393", "4hop1__199881_378185_282674_759393", "4hop1__236903_153080_159767_81096", "4hop1__236903_153080_33897_81096", "4hop1__271272_508773_85832_745702", "4hop1__310029_153080_159767_81096", "4hop1__31050_725495_49925_267352", "4hop1__31050_725495_49925_349426", "4hop1__31333_59747_211319_557671", "4hop1__320457_508773_85832_745702", "4hop1__341156_49925_13759_736921", "4hop1__342858_131850_33952_34053", "4hop1__342858_131850_33952_34109", "4hop1__344155_378185_282674_759393", "4hop1__3496_5274_458768_33633", "4hop1__3496_5274_458768_33637", "4hop1__360072_508773_85832_745702", "4hop1__370129_621192_10659_42311", "4hop1__373866_5186_10659_23296", "4hop1__37608_32392_823060_610794", "4hop1__399219_765799_282674_759393", "4hop1__44149_32392_823060_610794", "4hop1__443274_17130_70784_61381", "4hop1__455862_508773_85832_745702", "4hop1__46196_497223_15840_36014", "4hop1__47210_53706_795904_580996", "4hop1__473563_309800_355213_203322", "4hop1__482815_624859_355213_203322", "4hop1__483807_508773_85832_745702", "4hop1__512794_508773_85832_745702", "4hop1__525129_315334_131926_87157", "4hop1__525129_315334_131926_89261", "4hop1__525129_315334_131926_90707", "4hop1__567737_141375_458768_33637", "4hop1__567737_141375_458768_33677", "4hop1__570103_49925_13759_736921", "4hop1__57467_53706_795904_580996", "4hop1__58323_375563_161848_20546", "4hop1__58323_375563_161848_44231", "4hop1__58323_375563_161848_67585", "4hop1__58323_375563_161848_84681", "4hop1__60000_59747_211319_557671", "4hop1__606685_508773_85832_745702", "4hop1__608132_508773_85832_745702", "4hop1__61681_53706_795904_580996", "4hop1__625463_229349_66759_54221", "4hop1__629520_49925_13759_736921", "4hop1__638706_378185_282674_759393", "4hop1__638988_17130_70784_79935", "4hop1__696484_49925_13759_736921", "4hop1__707078_378185_282674_759393", "4hop1__707078_765799_282674_759393", "4hop1__726152_153080_159767_81096", "4hop1__726152_153080_33897_81096", "4hop1__726391_153080_33897_81096", "4hop1__726391_153080_33952_34109", "4hop1__726675_508773_85832_745702", "4hop1__73810_32392_823060_610794", "4hop1__749065_698949_157828_162309", "4hop1__767417_624859_355213_203322", "4hop1__777217_32392_823060_610794", "4hop1__802394_153080_159767_81096", "4hop1__802394_153080_33897_81096", "4hop1__813171_153080_159767_81096", "4hop1__813171_153080_33897_81096", "4hop1__814776_765799_282674_759393", "4hop1__819901_32392_823060_610794", "4hop1__842143_153080_159767_81096", "4hop1__846600_153080_159767_81096", "4hop1__860115_798482_131926_90707", "4hop1__88342_49853_128008_46894", "4hop1__88342_49853_128008_48717", "4hop1__88342_49853_128008_67954", "4hop1__88342_49853_128008_80487", "4hop1__88342_49853_128008_87812", "4hop1__88342_49853_128008_92225", "4hop1__88342_75218_128008_80286", "4hop1__88342_75218_128008_86588", "4hop1__88342_75218_128008_89859", "4hop1__88342_75218_128008_92225", "4hop1__9002_698949_157828_239539", "4hop1__9007_698949_157828_162309", "4hop1__93316_53706_795904_580996", "4hop1__93661_59747_211319_557671", "4hop1__93963_170667_443779_52195", "4hop1__94201_642284_131926_87157", "4hop1__94201_642284_131926_90707", "4hop2__103790_14670_8987_8529", "4hop2__105527_14670_8987_8974", "4hop2__105527_39078_8987_8974", "4hop2__160585_39078_8987_8974", "4hop2__161324_14670_8987_8529", "4hop2__161602_426860_88460_20988", "4hop2__161602_426860_88460_20999", "4hop2__161602_426860_88460_21034", "4hop2__161602_426860_88460_21074", "4hop2__161602_426860_88460_86452", "4hop2__161602_474028_88460_18966", "4hop2__161602_474028_88460_21063", "4hop2__161602_474028_88460_21074", "4hop2__5206_39078_8987_8974", "4hop2__567956_39078_8987_8974", "4hop2__71753_261673_70784_61381", "4hop2__71753_261673_70784_79935", "4hop2__71753_623626_70784_79935", "4hop2__71753_648517_70784_61381", "4hop2__71753_685934_70784_61381", "4hop2__71753_729371_70784_61381", "4hop2__71753_729371_70784_79935", "4hop2__797545_14670_8987_8974", "4hop2__9988_729371_70784_79935", "4hop3__129318_29339_508306_70744", "4hop3__129456_29339_508306_70744", "4hop3__129682_29339_508306_70744", "4hop3__130276_29339_508306_70744", "4hop3__131820_29339_508306_70744", "4hop3__160230_470287_128875_72134", "4hop3__175072_88460_30152_20999", "4hop3__193820_466199_695123_72134", "4hop3__220945_88460_30152_20999", "4hop3__238811_88460_30152_20999", "4hop3__275416_24325_156850_10557", "4hop3__312119_132409_146285_35031", "4hop3__312119_132409_223216_35031", "4hop3__312119_132409_371500_35031", "4hop3__316459_41402_145282_13584", "4hop3__316459_41402_599212_13584", "4hop3__324979_836463_161616_77103", "4hop3__373573_132409_146285_35031", "4hop3__373866_5189_38229_86687", "4hop3__387712_132409_371500_35031", "4hop3__474028_88460_30152_20999", "4hop3__519729_88460_30152_20999", "4hop3__524186_219173_548463_72134", "4hop3__547073_88460_30152_20999", "4hop3__577443_88460_30152_20999", "4hop3__601548_836463_161616_77103", "4hop3__661103_698586_57596_54362", "4hop3__668721_132409_146285_35031", "4hop3__668721_132409_371500_35031", "4hop3__673447_132409_223216_35031", "4hop3__700962_88460_30152_20999", "4hop3__771862_466199_695123_72134", "4hop3__794915_466199_695123_72134", "4hop3__800262_466199_695123_72134", "4hop3__827497_354093_254885_76356", "4hop3__839787_88460_30152_20999", "4hop3__857_846_613770_7713", "4hop3__860588_88460_30152_20999"], "f4_dev": ["4hop1__105688_17130_70784_61381", "4hop1__115977_582428_157828_162309", "4hop1__130404_59747_211319_557671", "4hop1__131002_53706_795904_580996", "4hop1__131632_32392_823060_610794", "4hop1__13170_32392_823060_610794", "4hop1__145422_698949_157828_162309", "4hop1__146971_698949_157828_162309", "4hop1__151650_5274_458768_33637", "4hop1__151650_5274_458768_33677", "4hop1__151903_5274_458768_33637", "4hop1__152146_5274_458768_33632", "4hop1__152146_5274_458768_33633", "4hop1__152562_5274_458768_33632", "4hop1__158877_53706_795904_580996", "4hop1__159467_725495_49925_267352", "4hop1__178366_229349_66759_75165", "4hop1__199362_765799_282674_759393", "4hop1__199881_378185_282674_759393", "4hop1__236903_153080_159767_81096", "4hop1__236903_153080_33897_81096", "4hop1__271272_508773_85832_745702", "4hop1__310029_153080_159767_81096", "4hop1__31050_725495_49925_267352", "4hop1__31050_725495_49925_349426", "4hop1__31333_59747_211319_557671", "4hop1__320457_508773_85832_745702", "4hop1__341156_49925_13759_736921", "4hop1__342858_131850_33952_34053", "4hop1__342858_131850_33952_34109", "4hop1__344155_378185_282674_759393", "4hop1__3496_5274_458768_33633", "4hop1__3496_5274_458768_33637", "4hop1__360072_508773_85832_745702", "4hop1__370129_621192_10659_42311", "4hop1__373866_5186_10659_23296", "4hop1__37608_32392_823060_610794", "4hop1__399219_765799_282674_759393", "4hop1__44149_32392_823060_610794", "4hop1__443274_17130_70784_61381", "4hop1__455862_508773_85832_745702", "4hop1__46196_497223_15840_36014", "4hop1__47210_53706_795904_580996", "4hop1__473563_309800_355213_203322", "4hop1__482815_624859_355213_203322", "4hop1__483807_508773_85832_745702", "4hop1__512794_508773_85832_745702", "4hop1__525129_315334_131926_87157", "4hop1__525129_315334_131926_89261", "4hop1__525129_315334_131926_90707", "4hop1__567737_141375_458768_33637", "4hop1__567737_141375_458768_33677", "4hop1__570103_49925_13759_736921", "4hop1__57467_53706_795904_580996", "4hop1__58323_375563_161848_20546", "4hop1__58323_375563_161848_44231", "4hop1__58323_375563_161848_67585", "4hop1__58323_375563_161848_84681", "4hop1__60000_59747_211319_557671", "4hop1__606685_508773_85832_745702", "4hop1__608132_508773_85832_745702", "4hop1__61681_53706_795904_580996", "4hop1__625463_229349_66759_54221", "4hop1__629520_49925_13759_736921", "4hop1__638706_378185_282674_759393", "4hop1__638988_17130_70784_79935", "4hop1__696484_49925_13759_736921", "4hop1__707078_378185_282674_759393", "4hop1__707078_765799_282674_759393", "4hop1__726152_153080_159767_81096", "4hop1__726152_153080_33897_81096", "4hop1__726391_153080_33897_81096", "4hop1__726391_153080_33952_34109", "4hop1__726675_508773_85832_745702", "4hop1__73810_32392_823060_610794", "4hop1__749065_698949_157828_162309", "4hop1__767417_624859_355213_203322", "4hop1__777217_32392_823060_610794", "4hop1__802394_153080_159767_81096", "4hop1__802394_153080_33897_81096", "4hop1__813171_153080_159767_81096", "4hop1__813171_153080_33897_81096", "4hop1__814776_765799_282674_759393", "4hop1__819901_32392_823060_610794", "4hop1__842143_153080_159767_81096", "4hop1__846600_153080_159767_81096", "4hop1__860115_798482_131926_90707", "4hop1__88342_49853_128008_46894", "4hop1__88342_49853_128008_48717", "4hop1__88342_49853_128008_67954", "4hop1__88342_49853_128008_80487", "4hop1__88342_49853_128008_87812", "4hop1__88342_49853_128008_92225", "4hop1__88342_75218_128008_80286", "4hop1__88342_75218_128008_86588", "4hop1__88342_75218_128008_89859", "4hop1__88342_75218_128008_92225", "4hop1__9002_698949_157828_239539", "4hop1__9007_698949_157828_162309", "4hop1__93316_53706_795904_580996", "4hop1__93661_59747_211319_557671", "4hop1__93963_170667_443779_52195", "4hop1__94201_642284_131926_87157", "4hop1__94201_642284_131926_90707", "4hop2__103790_14670_8987_8529", "4hop2__105527_14670_8987_8974", "4hop2__105527_39078_8987_8974", "4hop2__160585_39078_8987_8974", "4hop2__161324_14670_8987_8529", "4hop2__161602_426860_88460_20988", "4hop2__161602_426860_88460_20999", "4hop2__161602_426860_88460_21034", "4hop2__161602_426860_88460_21074", "4hop2__161602_426860_88460_86452", "4hop2__161602_474028_88460_18966", "4hop2__161602_474028_88460_21063", "4hop2__161602_474028_88460_21074", "4hop2__5206_39078_8987_8974", "4hop2__567956_39078_8987_8974", "4hop2__71753_261673_70784_61381", "4hop2__71753_261673_70784_79935", "4hop2__71753_623626_70784_79935", "4hop2__71753_648517_70784_61381", "4hop2__71753_685934_70784_61381", "4hop2__71753_729371_70784_61381", "4hop2__71753_729371_70784_79935", "4hop2__797545_14670_8987_8974", "4hop2__9988_729371_70784_79935", "4hop3__129318_29339_508306_70744", "4hop3__129456_29339_508306_70744", "4hop3__129682_29339_508306_70744", "4hop3__130276_29339_508306_70744", "4hop3__131820_29339_508306_70744", "4hop3__160230_470287_128875_72134", "4hop3__175072_88460_30152_20999", "4hop3__193820_466199_695123_72134", "4hop3__220945_88460_30152_20999", "4hop3__238811_88460_30152_20999", "4hop3__275416_24325_156850_10557", "4hop3__312119_132409_146285_35031", "4hop3__312119_132409_223216_35031", "4hop3__312119_132409_371500_35031", "4hop3__316459_41402_145282_13584", "4hop3__316459_41402_599212_13584", "4hop3__324979_836463_161616_77103", "4hop3__373573_132409_146285_35031", "4hop3__373866_5189_38229_86687", "4hop3__387712_132409_371500_35031", "4hop3__474028_88460_30152_20999", "4hop3__519729_88460_30152_20999", "4hop3__524186_219173_548463_72134", "4hop3__547073_88460_30152_20999", "4hop3__577443_88460_30152_20999", "4hop3__601548_836463_161616_77103", "4hop3__661103_698586_57596_54362", "4hop3__668721_132409_146285_35031", "4hop3__668721_132409_371500_35031", "4hop3__673447_132409_223216_35031", "4hop3__700962_88460_30152_20999", "4hop3__771862_466199_695123_72134", "4hop3__794915_466199_695123_72134", "4hop3__800262_466199_695123_72134", "4hop3__827497_354093_254885_76356", "4hop3__839787_88460_30152_20999", "4hop3__857_846_613770_7713", "4hop3__860588_88460_30152_20999"], "f4_train": ["4hop1__101865_10079_503957_720028", "4hop1__101879_10079_503957_720028", "4hop1__102168_52584_71250_135051", "4hop1__103878_221169_833580_61459", "4hop1__107107_221169_833580_61459", "4hop1__107210_221169_833580_61459", "4hop1__118487_534205_81195_43805", "4hop1__122303_539917_832557_5583", "4hop1__12460_31258_43153_32993", "4hop1__1266_41881_375457_49140", "4hop1__129142_31258_43153_32993", "4hop1__129548_85073_830682_68600", "4hop1__129710_74386_444296_179769", "4hop1__129928_31258_43153_32993", "4hop1__130107_85073_830682_68600", "4hop1__130341_85073_830682_68600", "4hop1__131084_31258_43153_32993", "4hop1__131135_74386_444296_179769", "4hop1__131428_31258_43153_32993", "4hop1__131661_85073_830682_68600", "4hop1__13225_22372_375457_49140", "4hop1__132435_84360_334118_85185", "4hop1__133590_631695_74047_257745", "4hop1__133590_631695_74047_318744", "4hop1__133590_631695_74047_576905", "4hop1__133590_631695_74047_650440", "4hop1__136369_74386_444296_179769", "4hop1__136687_74386_444296_179769", "4hop1__14045_93667_695397_4077", "4hop1__14045_93667_695397_48057", "4hop1__14045_93667_695397_82365", "4hop1__145444_84360_334118_41330", "4hop1__155787_497059_158847_784871", "4hop1__156462_100761_1955_90328", "4hop1__157164_591064_91861_124556", "4hop1__159330_7258_65293_48285", "4hop1__15973_74386_444296_179769", "4hop1__159915_46321_1955_417709", "4hop1__159915_46321_1955_53157", "4hop1__159915_46321_1955_64754", "4hop1__162275_10079_503957_720028", "4hop1__16401_4520_65397_52251", "4hop1__16401_4520_65397_93848", "4hop1__16577_52584_71250_135051", "4hop1__166346_9522_375457_49140", "4hop1__166346_9522_41885_9426", "4hop1__189405_715233_91861_124556", "4hop1__204168_9522_375457_49140", "4hop1__204168_9522_41885_126049", "4hop1__205937_144938_83779_18364", "4hop1__205937_144938_83779_34740", "4hop1__205937_144938_83779_44678", "4hop1__205937_144938_83779_49899", "4hop1__205937_144938_83779_63760", "4hop1__216925_221169_833580_61459", "4hop1__228052_344284_86983_516763", "4hop1__228811_344284_86983_516763", "4hop1__233309_727246_158589_10530", "4hop1__233309_727246_158589_81091", "4hop1__249980_529111_91861_124556", "4hop1__272498_570923_833580_61459", "4hop1__28235_74795_84660_64557", "4hop1__28235_74795_84660_74420", "4hop1__286131_77886_77268_37154", "4hop1__29341_30907_482320_707201", "4hop1__293974_423084_449353_4906", "4hop1__297997_164954_6975_6832", "4hop1__31283_31258_43153_32993", "4hop1__314513_106790_158589_10530", "4hop1__314513_106790_158589_16532", "4hop1__314513_106790_158589_62462", "4hop1__314513_106790_158589_81091", "4hop1__31753_52584_71250_135051", "4hop1__319163_106790_158589_10530", "4hop1__319163_106790_158589_16532", "4hop1__319163_106790_158589_67700", "4hop1__319163_106790_158589_81091", "4hop1__322597_452185_53858_69706", "4hop1__325072_344284_86983_516763", "4hop1__325610_301282_65293_48285", "4hop1__32903_103178_69867_20314", "4hop1__32903_103178_799_917", "4hop1__333281_308553_69948_617898", "4hop1__35260_8995_56750_44492", "4hop1__35504_77886_77268_49736", "4hop1__357832_106790_466282_70752", "4hop1__374751_344284_86983_516763", "4hop1__377963_344284_86983_516763", "4hop1__38130_8966_31714_52260", "4hop1__38130_8966_31714_79432", "4hop1__382240_434040_830682_68600", "4hop1__385156_9522_41885_782779", "4hop1__385156_9522_41885_856982", "4hop1__388375_185356_328647_21625", "4hop1__388777_7258_65293_48285", "4hop1__389932_344284_86983_516763", "4hop1__395248_534205_81195_43805", "4hop1__395248_534205_81195_59314", "4hop1__395694_464592_374130_183289", "4hop1__395694_464592_454498_125168", "4hop1__396066_7258_65293_48285", "4hop1__4017_671787_46089_86234", "4hop1__404363_705261_41881_45098", "4hop1__404363_705261_41881_78265", "4hop1__404363_705261_41881_8111", "4hop1__404363_705261_41881_9427", "4hop1__405751_4520_65397_74538", "4hop1__405751_4520_65397_79413", "4hop1__40657_35341_71250_135051", "4hop1__42151_35341_71250_135051", "4hop1__447053_301282_65293_48285", "4hop1__45467_221169_833580_61459", "4hop1__458452_221169_833580_61459", "4hop1__46253_22372_375457_49140", "4hop1__47209_83359_48661_15069", "4hop1__495205_206801_524406_670567", "4hop1__50144_74386_444296_179769", "4hop1__502800_221169_833580_61459", "4hop1__50525_83359_48661_15069", "4hop1__50730_237961_439667_40232", "4hop1__507663_146811_31258_43153", "4hop1__509855_852170_1286_19219", "4hop1__510269_529111_91861_124556", "4hop1__511550_166077_548045_159613", "4hop1__511550_166077_548045_64745", "4hop1__519437_570923_833580_61459", "4hop1__524030_829000_51791_54140", "4hop1__524030_829000_51791_66355", "4hop1__524030_829000_51791_75635", "4hop1__524030_829000_51791_78659", "4hop1__579907_415728_50519_159769", "4hop1__579907_415728_50519_27157", "4hop1__579907_415728_50519_64447", "4hop1__579907_415728_50519_65104", "4hop1__579907_415728_50519_81553", "4hop1__579907_415728_50519_820681", "4hop1__60101_31258_43153_32993", "4hop1__603090_818753_783943_26110", "4hop1__62838_10079_503957_720028", "4hop1__632232_164954_6975_131877", "4hop1__632232_164954_6975_58531", "4hop1__632232_164954_6975_6833", "4hop1__632232_164954_6975_6834", "4hop1__632232_164954_6975_6862", "4hop1__632232_164954_6975_6891", "4hop1__632232_164954_6975_7008", "4hop1__632232_164954_6975_93256", "4hop1__63605_58494_56750_44492", "4hop1__640952_344284_86983_516763", "4hop1__642304_829000_51791_75635", "4hop1__642304_829000_51791_796745", "4hop1__644421_301282_65293_48285", "4hop1__65021_74386_444296_179769", "4hop1__655498_805015_475503_32631", "4hop1__661054_783943_43666_426514", "4hop1__667316_145054_65293_48285", "4hop1__677205_9522_375457_49140", "4hop1__690687_301282_65293_48285", "4hop1__698_669_158722_161173", "4hop1__698_669_158722_35358", "4hop1__698_669_158722_72885", "4hop1__698_669_158722_74346", "4hop1__698_669_158722_78055", "4hop1__698_669_158722_87175", "4hop1__698_669_158722_93820", "4hop1__708978_84360_334118_21414", "4hop1__709382_146811_31223_24603", "4hop1__709382_146811_31223_24622", "4hop1__709382_146811_31223_24627", "4hop1__709382_146811_31223_57615", "4hop1__709382_146811_31223_650862", "4hop1__709382_146811_31223_68437", "4hop1__709382_146811_31223_87556", "4hop1__709382_146811_31258_43153", "4hop1__720508_529111_91861_124556", "4hop1__7210_10079_503957_720028", "4hop1__722410_185356_328647_26110", "4hop1__7312_84360_334118_85185", "4hop1__75408_46321_1955_90328", "4hop1__758879_7258_65293_48285", "4hop1__760007_715233_91861_124556", "4hop1__760816_570923_833580_61459", "4hop1__766821_344284_86983_516763", "4hop1__771620_317689_1286_19116", "4hop1__771620_317689_1286_19188", "4hop1__771620_317689_1286_19193", "4hop1__771620_317689_1286_19198", "4hop1__771620_317689_1286_19216", "4hop1__771620_317689_1286_19220", "4hop1__771620_317689_1286_19273", "4hop1__771620_317689_1286_19309", "4hop1__771620_317689_1286_75504", "4hop1__77709_65225_27378_160063", "4hop1__781534_301282_65293_48285", "4hop1__783955_415728_50519_11098", "4hop1__783955_415728_50519_81553", "4hop1__788011_252313_26424_581618", "4hop1__800857_529111_91861_124556", "4hop1__828190_475952_41885_126049", "4hop1__828190_475952_41885_9426", "4hop1__83819_83359_48661_15069", "4hop1__841580_221169_833580_61459", "4hop1__849358_715233_91861_124556", "4hop1__852921_534205_81195_67444", "4hop1__8954_52584_71250_135051", "4hop1__8962_52584_71250_135051", "4hop1__89787_28719_86983_516763", "4hop2__101276_81195_91861_124556", "4hop2__10725_41193_484788_26397", "4hop2__136460_61674_1952_78767", "4hop2__144457_46089_1952_78767", "4hop2__160763_81195_91861_124556", "4hop2__205028_5537_91861_124556", "4hop2__205028_81195_91861_124556", "4hop2__33840_53235_57802_311656", "4hop2__339729_20606_51791_52221", "4hop2__339729_20606_51791_77420", "4hop2__339729_20606_51791_77826", "4hop2__339729_20606_51791_796745", "4hop2__339729_20606_51791_820357", "4hop2__339729_20606_51791_85837", "4hop2__339729_22831_51791_16315", "4hop2__339729_22831_51791_63911", "4hop2__339729_22831_51791_75635", "4hop2__339729_22831_51791_77826", "4hop2__339729_22831_51791_78659", "4hop2__339729_22831_51791_796745", "4hop2__339729_22831_51791_85837", "4hop2__35882_81195_91861_124556", "4hop2__419859_61674_1952_78767", "4hop2__53235_18485_57802_311656", "4hop2__53235_33840_57802_311656", "4hop2__53235_47209_57802_311656", "4hop2__53235_50525_57802_311656", "4hop2__53235_61450_57802_311656", "4hop2__53235_66475_57802_311656", "4hop2__53235_68764_57802_311656", "4hop2__53235_76303_57802_311656", "4hop2__53235_79417_57802_311656", "4hop2__53235_83819_57802_311656", "4hop2__53235_89746_57802_311656", "4hop2__53235_90366_57802_311656", "4hop2__61674_136460_1952_78767", "4hop2__61674_46089_1952_78767", "4hop2__61674_703690_1952_78767", "4hop2__66475_53235_57802_311656", "4hop2__70097_46089_1952_78767", "4hop2__724536_444580_75897_24472", "4hop2__724536_444580_75897_36009", "4hop2__724536_444580_75897_557802", "4hop2__724536_444580_75897_631997", "4hop2__724536_810753_75897_19629", "4hop2__72459_31688_31714_79432", "4hop3__100362_46089_61674_1952", "4hop3__102630_38788_25582_21116", "4hop3__103802_38788_25582_21116", "4hop3__143391_769404_544850_170163", "4hop3__144373_362455_28338_160498", "4hop3__144936_362455_28338_160498", "4hop3__145795_362455_28338_160498", "4hop3__145892_362455_28338_160498", "4hop3__146207_362455_28338_160498", "4hop3__146476_362455_28338_160498", "4hop3__153061_362455_28338_160498", "4hop3__161297_75897_8509_19700", "4hop3__16401_4520_37620_55609", "4hop3__164419_608613_21563_4107", "4hop3__166346_9522_28235_22384", "4hop3__166346_9522_39185_22384", "4hop3__1707_158293_661360_54023", "4hop3__1707_158293_764770_54023", "4hop3__171895_280480_160165_606586", "4hop3__18138_362455_28338_160498", "4hop3__18305_84421_38001_35312", "4hop3__197577_608613_5529_4107", "4hop3__204168_9522_39185_22384", "4hop3__21483_551941_234987_24137", "4hop3__21483_551941_656547_24137", "4hop3__22527_146265_32417_24628", "4hop3__243398_46089_61674_1952", "4hop3__250064_280480_160165_606586", "4hop3__250064_280480_58096_606586", "4hop3__257966_20196_9998_46960", "4hop3__257990_280480_160165_606586", "4hop3__257990_280480_58096_606586", "4hop3__276435_20196_9998_46960", "4hop3__287536_387027_61746_716149", "4hop3__298115_387027_61746_716149", "4hop3__298484_100414_18393_54090", "4hop3__301896_100414_18393_54090", "4hop3__308778_544708_661360_54023", "4hop3__308898_280480_160165_606586", "4hop3__312602_629330_15766_63115", "4hop3__312602_629330_37225_63115", "4hop3__312602_629330_8451_63115", "4hop3__313385_280480_160165_606586", "4hop3__3152_3356_32417_24628", "4hop3__3157_3356_32417_24628", "4hop3__31642_754527_173395_20507", "4hop3__31642_754527_220881_20507", "4hop3__31642_754527_397221_20507", "4hop3__31642_754527_419327_20507", "4hop3__31642_754527_440683_20507", "4hop3__31642_754527_442081_20507", "4hop3__31642_754527_470666_20507", "4hop3__31642_754527_531155_20507", "4hop3__31642_754527_547989_20507", "4hop3__31642_754527_565076_20507", "4hop3__31642_754527_565113_20507", "4hop3__31642_754527_577372_20507", "4hop3__31642_754527_829113_20507", "4hop3__333045_280480_58096_606586", "4hop3__35504_77886_88620_69951", "4hop3__360282_544708_764770_54023", "4hop3__367080_769404_544850_170163", "4hop3__370066_20196_9998_46960", "4hop3__38130_8966_31688_31714", "4hop3__38356_362455_28338_160498", "4hop3__385156_9522_28235_22384", "4hop3__39178_419859_14750_86234", "4hop3__39178_419859_19526_86234", "4hop3__39178_419859_22784_86234", "4hop3__39198_75897_8509_19700", "4hop3__401291_769404_544850_170163", "4hop3__401611_100414_35260_54090", "4hop3__405751_4520_37620_55609", "4hop3__406969_46089_61674_1952", "4hop3__414353_419859_14750_86234", "4hop3__41457_84421_34135_35312", "4hop3__418854_100414_35260_54090", "4hop3__428082_38788_25582_21116", "4hop3__43051_38788_25582_21116", "4hop3__443202_461200_68869_261712", "4hop3__44699_38788_25582_21116", "4hop3__453094_280480_160165_606586", "4hop3__463724_100414_35260_54090", "4hop3__480095_280480_160165_606586", "4hop3__486463_75897_8509_19700", "4hop3__49391_75897_8509_19700", "4hop3__493923_300471_162189_73761", "4hop3__493923_300471_273567_62462", "4hop3__493923_300471_411476_62462", "4hop3__493923_300471_414258_62462", "4hop3__493923_300471_532290_62462", "4hop3__493923_300471_550937_62462", "4hop3__493923_300471_569086_62462", "4hop3__50171_8966_51964_32334", "4hop3__545609_783837_162189_73761", "4hop3__55666_362455_28338_160498", "4hop3__566317_578030_159600_41384", "4hop3__566317_578030_485741_41384", "4hop3__566317_578030_86203_41384", "4hop3__616279_608613_54405_4107", "4hop3__616279_608613_5529_4107", "4hop3__616279_608613_89818_4107", "4hop3__621442_544708_764770_54023", "4hop3__630162_632690_682571_65370", "4hop3__630162_691163_388866_65370", "4hop3__641045_38788_25582_21116", "4hop3__65690_46089_61674_1952", "4hop3__659125_39490_56933_831253", "4hop3__659125_39490_59173_831253", "4hop3__672947_620110_61746_261712", "4hop3__672947_620110_68869_261712", "4hop3__677205_9522_28235_22384", "4hop3__681751_823491_51280_242202", "4hop3__686976_637504_561108_170163", "4hop3__695568_769559_129926_718885", "4hop3__703974_789671_190988_24137", "4hop3__703974_789671_234987_24137", "4hop3__703974_789671_24078_24137", "4hop3__703974_789671_279838_24137", "4hop3__703974_789671_283562_24137", "4hop3__703974_789671_311440_24137", "4hop3__703974_789671_473969_24137", "4hop3__703974_789671_527723_24137", "4hop3__703974_789671_656547_24137", "4hop3__703974_789671_744084_24137", "4hop3__724536_75897_26851_19700", "4hop3__73634_75897_26851_19700", "4hop3__756618_691163_567839_65370", "4hop3__759135_769404_544850_170163", "4hop3__778278_796114_13235_242202", "4hop3__778278_796114_37605_242202", "4hop3__778278_796114_41291_242202", "4hop3__778278_796114_42842_242202", "4hop3__781532_620110_68869_261712", "4hop3__786436_280480_160165_606586", "4hop3__786436_280480_58096_606586", "4hop3__81733_75897_8509_19700", "4hop3__822796_608613_21563_4107", "4hop3__822796_608613_89818_4107", "4hop3__838995_608613_5529_4107", "4hop3__853503_419859_14750_86234", "4hop3__860948_46089_61674_1952", "4hop3__863541_280480_160165_606586", "4hop3__9622_38788_25582_21116", "4hop3__9664_38788_25582_21116", "4hop3__99279_46089_61674_1952", "4hop3__9979_46089_61674_1952"], "router_train": ["2hop__100512_15014", "2hop__101163_14970", "2hop__101700_2630", "2hop__101852_2630", "2hop__102187_59072", "2hop__102728_511430", "2hop__102782_4632", "2hop__102799_2630", "2hop__102960_36388", "2hop__103203_23140", "2hop__103669_48335", "2hop__103696_85890", "2hop__104065_23140", "2hop__104341_23034", "2hop__104531_44497", "2hop__104627_82538", "2hop__105336_91469", "2hop__105522_374419", "2hop__106382_80004", "2hop__106465_91818", "2hop__106670_48335", "2hop__106753_159106", "2hop__106899_11098", "2hop__107159_91927", "2hop__107217_91469", "2hop__107219_44852", "2hop__107328_80243", "2hop__107488_306274", "2hop__107991_62766", "2hop__109261_37364", "2hop__11092_11122", "2hop__11165_3752", "2hop__11167_11117", "2hop__11230_11117", "2hop__11583_18657", "2hop__116079_523296", "2hop__11757_11827", "2hop__121445_444063", "2hop__121590_86840", "2hop__123458_89953", "2hop__125595_43463", "2hop__127607_514685", "2hop__128265_360927", "2hop__128274_333219", "2hop__128406_679189", "2hop__128598_86343", "2hop__128778_368521", "2hop__128892_54659", "2hop__128895_11427", "2hop__128895_54659", "2hop__128895_85871", "2hop__128979_11415", "2hop__128983_582172", "2hop__129233_92189", "2hop__129270_776856", "2hop__129389_31248", "2hop__129401_53519", "2hop__129529_43057", "2hop__129629_31248", "2hop__129644_85808", "2hop__129770_45439", "2hop__129910_89563", "2hop__129919_66008", "2hop__129978_78714", "2hop__130463_51268", "2hop__130542_555599", "2hop__130545_62851", "2hop__130619_86587", "2hop__130639_29363", "2hop__130639_86587", "2hop__130729_81010", "2hop__131067_160300", "2hop__131094_70019", "2hop__131197_45142", "2hop__131278_85808", "2hop__131398_55630", "2hop__131418_80482", "2hop__131489_50788", "2hop__131517_51968", "2hop__131644_160300", "2hop__131744_91469", "2hop__131828_73786", "2hop__132010_91253", "2hop__132213_91253", "2hop__132549_120207", "2hop__134855_690498", "2hop__136014_80674", "2hop__136501_79793", "2hop__136505_47824", "2hop__136683_80243", "2hop__136744_84128", "2hop__136763_44352", "2hop__136827_79233", "2hop__137051_85298", "2hop__137051_91983", "2hop__137069_366974", "2hop__138166_34874", "2hop__139721_256194", "2hop__139924_4681", "2hop__140451_140916", "2hop__140533_750102", "2hop__140947_4697", "2hop__142393_467995", "2hop__142478_20713", "2hop__142631_3315", "2hop__142767_3430", "2hop__143021_162108", "2hop__143062_58450", "2hop__143160_91782", "2hop__143172_47314", "2hop__143172_58115", "2hop__143195_73786", "2hop__143332_84128", "2hop__143655_177328", "2hop__143687_570414", "2hop__143707_518072", "2hop__143757_829316", "2hop__143847_263710", "2hop__143963_41141", "2hop__144209_784874", "2hop__144323_333079", "2hop__144404_80761", "2hop__144613_160917", "2hop__144760_88472", "2hop__144762_25910", "2hop__145364_77060", "2hop__145459_42328", "2hop__145686_42328", "2hop__145871_79233", "2hop__146266_42328", "2hop__146567_62561", "2hop__146708_62302", "2hop__146708_90536", "2hop__148641_569783", "2hop__149736_432788", "2hop__149881_136477", "2hop__149964_432788", "2hop__150032_432788", "2hop__15010_14971", "2hop__150985_444333", "2hop__151124_15822", "2hop__151210_15815", "2hop__151351_14904", "2hop__151918_5303", "2hop__152980_81963", "2hop__153312_695957", "2hop__153623_86916", "2hop__155700_4688", "2hop__15574_66008", "2hop__155827_83906", "2hop__156536_4697", "2hop__156787_609442", "2hop__157254_439812", "2hop__157635_82682", "2hop__157766_18657", "2hop__157766_40786", "2hop__158922_68056", "2hop__159116_60641", "2hop__159161_92582", "2hop__159171_49385", "2hop__159817_403930", "2hop__160915_160917", "2hop__160945_2170", "2hop__161414_69291", "2hop__161905_44224", "2hop__161977_64008", "2hop__162084_66008", "2hop__162308_88835", "2hop__164767_36340", "2hop__166270_126045", "2hop__16766_16772", "2hop__168096_8682", "2hop__168517_124042", "2hop__172284_851569", "2hop__172371_2578", "2hop__177678_185321", "2hop__177981_3814", "2hop__18067_85807", "2hop__181204_79705", "2hop__18251_33141", "2hop__18516_31433", "2hop__186415_126045", "2hop__187942_333904", "2hop__190216_18221", "2hop__192206_46042", "2hop__19632_34638", "2hop__197667_917", "2hop__199213_85512", "2hop__200665_5303", "2hop__200704_20497", "2hop__201121_623616", "2hop__201497_126101", "2hop__20214_841802", "2hop__202808_160851", "2hop__205967_467995", "2hop__20771_47939", "2hop__208146_43495", "2hop__20857_20724", "2hop__20875_20732", "2hop__20890_42892", "2hop__20905_20909", "2hop__20910_42892", "2hop__20921_20732", "2hop__210276_25910", "2hop__214792_377891", "2hop__215486_269657", "2hop__21555_26878", "2hop__216722_20497", "2hop__217525_52135", "2hop__219633_64929", "2hop__220241_90536", "2hop__221005_126101", "2hop__221448_229413", "2hop__222057_83687", "2hop__223195_829081", "2hop__225027_8607", "2hop__225357_51682", "2hop__225358_18221", "2hop__226169_36414", "2hop__226463_10690", "2hop__226959_89953", "2hop__228063_49870", "2hop__23133_23142", "2hop__23139_44223", "2hop__233032_61027", "2hop__233688_78497", "2hop__234583_81842", "2hop__236547_101443", "2hop__239401_608104", "2hop__243_42892", "2hop__24408_776856", "2hop__244281_5303", "2hop__244659_269657", "2hop__246048_135304", "2hop__24892_434", "2hop__250315_64214", "2hop__250722_10369", "2hop__253105_539716", "2hop__25341_856251", "2hop__25478_54930", "2hop__255953_7606", "2hop__255953_7672", "2hop__256716_57062", "2hop__259338_67650", "2hop__259828_673383", "2hop__26104_26005", "2hop__268321_47779", "2hop__268777_85098", "2hop__269544_37939", "2hop__269983_131909", "2hop__27075_5348", "2hop__27075_74242", "2hop__271309_59201", "2hop__27237_19379", "2hop__273568_47348", "2hop__27714_27669", "2hop__27714_27737", "2hop__27726_27737", "2hop__27742_27737", "2hop__280440_86840", "2hop__28051_48770", "2hop__280665_43057", "2hop__281588_43804", "2hop__281740_404718", "2hop__28239_80319", "2hop__282782_51612", "2hop__28342_20957", "2hop__283564_2578", "2hop__284850_162108", "2hop__284945_638959", "2hop__285474_68172", "2hop__28705_52453", "2hop__287264_263710", "2hop__288236_46366", "2hop__28974_63835", "2hop__292447_800712", "2hop__29278_533073", "2hop__295562_18221", "2hop__296383_421384", "2hop__297874_313216", "2hop__299572_74276", "2hop__300036_313216", "2hop__300077_135138", "2hop__308934_556534", "2hop__312249_79404", "2hop__31240_59695", "2hop__314413_62031", "2hop__315398_229413", "2hop__316061_83050", "2hop__316088_43559", "2hop__316088_63963", "2hop__316183_77478", "2hop__31885_87168", "2hop__319398_88123", "2hop__32014_92077", "2hop__321505_5365", "2hop__322546_126045", "2hop__32506_32631", "2hop__32986_62851", "2hop__332877_351187", "2hop__333874_121919", "2hop__335044_69489", "2hop__335044_84859", "2hop__335385_11117", "2hop__336271_93486", "2hop__3365_92119", "2hop__336703_351187", "2hop__338330_23140", "2hop__34130_56335", "2hop__341498_76347", "2hop__3444_90928", "2hop__3451_2999", "2hop__345332_529125", "2hop__346502_2630", "2hop__347657_18221", "2hop__348101_99329", "2hop__349330_68172", "2hop__352433_159106", "2hop__352532_835780", "2hop__35411_9902", "2hop__35598_806280", "2hop__356546_61463", "2hop__35828_58232", "2hop__36139_40786", "2hop__361726_141649", "2hop__362008_25111", "2hop__362613_82000", "2hop__3656_736907", "2hop__370522_208194", "2hop__371454_34197", "2hop__37229_10531", "2hop__373147_77937", "2hop__374029_10690", "2hop__376266_37939", "2hop__37715_36128", "2hop__37716_15345", "2hop__378568_91717", "2hop__38148_45142", "2hop__381_42221", "2hop__381_42255", "2hop__382166_638959", "2hop__382303_14960", "2hop__382784_3953", "2hop__382787_36090", "2hop__382787_99606", "2hop__383074_36340", "2hop__383564_52448", "2hop__383_434", "2hop__386704_43495", "2hop__387702_20661", "2hop__388742_58115", "2hop__390_443601", "2hop__391888_476099", "2hop__394403_85512", "2hop__39607_332836", "2hop__396830_74309", "2hop__397249_58057", "2hop__397352_21417", "2hop__400205_81382", "2hop__40235_84230", "2hop__406674_64929", "2hop__40765_34844", "2hop__409534_40786", "2hop__410650_500443", "2hop__41219_61968", "2hop__412270_61232", "2hop__412725_126070", "2hop__412886_3983", "2hop__413019_543261", "2hop__416490_32463", "2hop__416490_32467", "2hop__416962_18221", "2hop__41723_74402", "2hop__418064_53752", "2hop__419256_57623", "2hop__4196_91206", "2hop__421479_84254", "2hop__424228_321254", "2hop__427170_20661", "2hop__42910_3004", "2hop__433869_854745", "2hop__442843_208194", "2hop__4499_15755", "2hop__4499_37771", "2hop__450100_21417", "2hop__450687_7666", "2hop__453674_125776", "2hop__455004_523858", "2hop__455389_42292", "2hop__457515_69926", "2hop__457518_162253", "2hop__459175_83050", "2hop__459359_126084", "2hop__460368_18657", "2hop__461798_3429", "2hop__46304_83854", "2hop__464469_57623", "2hop__466302_579740", "2hop__468017_5418", "2hop__468983_70585", "2hop__469523_55098", "2hop__47087_25018", "2hop__473261_77478", "2hop__47356_53573", "2hop__477368_86840", "2hop__477599_126102", "2hop__477709_126102", "2hop__479254_36839", "2hop__482554_3315", "2hop__482554_81633", "2hop__483149_123897", "2hop__483246_754472", "2hop__486709_228553", "2hop__487213_421384", "2hop__487291_78529", "2hop__489221_3994", "2hop__48979_52870", "2hop__490764_72962", "2hop__492509_55630", "2hop__49355_20655", "2hop__49402_774871", "2hop__497258_127916", "2hop__497269_62016", "2hop__497269_82027", "2hop__500722_421645", "2hop__502850_81633", "2hop__503331_37261", "2hop__507957_638959", "2hop__508977_264298", "2hop__51081_7756", "2hop__512280_80728", "2hop__51239_92444", "2hop__51290_63489", "2hop__513910_45731", "2hop__514374_6660", "2hop__514410_43804", "2hop__515812_3089", "2hop__516071_126070", "2hop__517689_61424", "2hop__51811_47348", "2hop__518478_86395", "2hop__518925_48335", "2hop__519553_851079", "2hop__521834_58946", "2hop__523190_77860", "2hop__52359_20122", "2hop__52366_3089", "2hop__523907_20122", "2hop__524948_62302", "2hop__528151_259429", "2hop__52817_65274", "2hop__52834_641809", "2hop__52834_770460", "2hop__531924_60600", "2hop__532817_541630", "2hop__533056_158069", "2hop__533478_126101", "2hop__534267_73460", "2hop__536645_82027", "2hop__536760_3994", "2hop__53941_639038", "2hop__541126_126102", "2hop__543329_23234", "2hop__544003_853000", "2hop__544987_737459", "2hop__546151_68117", "2hop__54630_78168", "2hop__548206_751489", "2hop__5501_23234", "2hop__5501_23235", "2hop__553584_3004", "2hop__553860_373394", "2hop__554432_51612", "2hop__55898_61232", "2hop__565010_64652", "2hop__570284_680902", "2hop__572029_77553", "2hop__572586_58953", "2hop__575454_369731", "2hop__575522_80884", "2hop__57780_33141", "2hop__5820_541630", "2hop__58256_25017", "2hop__584872_368521", "2hop__585304_89167", "2hop__587413_400874", "2hop__59033_84859", "2hop__590896_694982", "2hop__590911_47465", "2hop__592759_8322", "2hop__59308_11211", "2hop__59326_64652", "2hop__593568_73753", "2hop__593753_160137", "2hop__5983_74218", "2hop__599215_45731", "2hop__600548_538118", "2hop__60114_89154", "2hop__603468_78497", "2hop__604820_82027", "2hop__606850_185893", "2hop__6078_47960", "2hop__611026_781580", "2hop__611623_49333", "2hop__61273_20093", "2hop__613350_185893", "2hop__614102_126084", "2hop__614635_126070", "2hop__618223_14183", "2hop__61844_47264", "2hop__619452_321254", "2hop__620480_79175", "2hop__62355_25018", "2hop__624621_121880", "2hop__625178_89360", "2hop__62586_76519", "2hop__628072_297038", "2hop__629635_542971", "2hop__62990_42990", "2hop__632204_5111", "2hop__63373_68900", "2hop__635362_91717", "2hop__635414_58057", "2hop__636562_141689", "2hop__638896_3315", "2hop__639451_47353", "2hop__643531_351162", "2hop__644785_185893", "2hop__6458_1094", "2hop__646825_558469", "2hop__647930_62031", "2hop__648508_493912", "2hop__64964_43937", "2hop__652564_2630", "2hop__652592_49333", "2hop__654114_565529", "2hop__654531_52667", "2hop__656199_84230", "2hop__657577_44326", "2hop__660113_87112", "2hop__661004_159045", "2hop__661643_422982", "2hop__663664_46366", "2hop__664398_917", "2hop__66459_55578", "2hop__66459_64008", "2hop__66459_65075", "2hop__665127_66282", "2hop__665127_79562", "2hop__665445_81463", "2hop__666726_57623", "2hop__666726_59978", "2hop__667140_56101", "2hop__668040_15014", "2hop__668619_10369", "2hop__66868_699691", "2hop__670750_53519", "2hop__672116_61424", "2hop__674211_369731", "2hop__675522_42292", "2hop__677315_91717", "2hop__67793_86874", "2hop__681648_60600", "2hop__682416_160300", "2hop__684109_351187", "2hop__685392_91983", "2hop__685763_159937", "2hop__686446_60047", "2hop__68648_641245", "2hop__686882_208194", "2hop__687205_131909", "2hop__68886_75679", "2hop__692214_82827", "2hop__693327_638959", "2hop__69518_85890", "2hop__697106_51671", "2hop__697916_378383", "2hop__697916_57623", "2hop__699366_86295", "2hop__701886_99679", "2hop__702595_247099", "2hop__706486_131886", "2hop__706925_58935", "2hop__70712_58338", "2hop__70712_75109", "2hop__708446_68172", "2hop__708577_131909", "2hop__71102_23134", "2hop__71102_23198", "2hop__711689_162428", "2hop__713501_58946", "2hop__71350_299942", "2hop__714946_561343", "2hop__715365_131909", "2hop__715977_49441", "2hop__71738_86951", "2hop__71940_61027", "2hop__71940_70625", "2hop__721397_63489", "2hop__723049_32467", "2hop__725167_229413", "2hop__726816_63979", "2hop__728045_47353", "2hop__728674_61027", "2hop__728789_52794", "2hop__728789_81963", "2hop__72949_65274", "2hop__729631_47295", "2hop__732098_43463", "2hop__732415_2578", "2hop__733144_88978", "2hop__733803_909", "2hop__734804_135710", "2hop__735295_60943", "2hop__73587_65919", "2hop__739209_8600", "2hop__740985_126727", "2hop__74152_25017", "2hop__744161_131909", "2hop__745021_191221", "2hop__74579_36741", "2hop__746732_13787", "2hop__746732_15928", "2hop__746732_25018", "2hop__747192_44637", "2hop__749254_58953", "2hop__751709_638959", "2hop__753498_7666", "2hop__754542_185893", "2hop__754806_7643", "2hop__757660_3836", "2hop__75837_159536", "2hop__758384_18120", "2hop__76267_261307", "2hop__763486_83697", "2hop__773493_81842", "2hop__775709_160978", "2hop__775856_159045", "2hop__778101_58115", "2hop__778900_37927", "2hop__779948_3953", "2hop__780254_32631", "2hop__780574_849321", "2hop__780756_63644", "2hop__781496_224276", "2hop__781496_81010", "2hop__782253_31296", "2hop__78247_383079", "2hop__782585_71652", "2hop__783773_92189", "2hop__784370_46077", "2hop__786012_69489", "2hop__786333_44191", "2hop__788541_72036", "2hop__789792_135710", "2hop__79065_704711", "2hop__790858_74309", "2hop__791225_368521", "2hop__791417_49333", "2hop__79306_842239", "2hop__793564_686699", "2hop__794746_135703", "2hop__801353_54210", "2hop__80185_88653", "2hop__804185_64929", "2hop__805672_471321", "2hop__805677_51671", "2hop__807900_748934", "2hop__808090_297038", "2hop__809080_84477", "2hop__812861_185321", "2hop__813239_159045", "2hop__813488_32631", "2hop__81363_84342", "2hop__81497_91983", "2hop__817996_10369", "2hop__818330_126055", "2hop__819523_3429", "2hop__819997_673383", "2hop__82009_61463", "2hop__821298_160978", "2hop__821458_88978", "2hop__825113_52448", "2hop__82586_75818", "2hop__82744_68379", "2hop__827601_181429", "2hop__828334_57623", "2hop__829942_77060", "2hop__83065_86706", "2hop__831036_20644", "2hop__831672_285802", "2hop__832542_526735", "2hop__836_919", "2hop__839424_160978", "2hop__84294_47878", "2hop__843217_160798", "2hop__843720_135710", "2hop__845227_62776", "2hop__849185_10690", "2hop__849293_26382", "2hop__850790_80728", "2hop__854389_150998", "2hop__85441_77561", "2hop__858074_496495", "2hop__858082_31296", "2hop__86096_121880", "2hop__863803_48335", "2hop__863824_91422", "2hop__864_85088", "2hop__864_919", "2hop__86984_43463", "2hop__88890_88472", "2hop__89126_11218", "2hop__89126_52135", "2hop__89162_77937", "2hop__89253_47465", "2hop__89295_92427", "2hop__90434_321254", "2hop__91811_3089", "2hop__92286_832457", "2hop__92405_49700", "2hop__92405_51957", "2hop__92623_746978", "2hop__92702_731379", "2hop__93502_85298", "2hop__9448_9509", "2hop__9471_31210", "2hop__95494_57988", "2hop__95552_417288", "2hop__96146_760198", "2hop__97238_154727", "2hop__99998_20577", "3hop1__103247_387516_145746", "3hop1__104531_50615_789589", "3hop1__105813_58005_87052", "3hop1__105813_62641_44955", "3hop1__107676_145979_34644", "3hop1__108918_145979_34644", "3hop1__11050_337139_318766", "3hop1__115399_753582_41129", "3hop1__118150_839945_66869", "3hop1__12470_78573_66646", "3hop1__1266_41881_22438", "3hop1__129307_85073_92389", "3hop1__129482_43666_426514", "3hop1__129677_66618_440465", "3hop1__131044_86983_516763", "3hop1__131377_548096_527472", "3hop1__131450_587553_527472", "3hop1__132435_830682_68600", "3hop1__135437_804098_821513", "3hop1__136299_159891_86976", "3hop1__141522_206161_44760", "3hop1__141551_751065_670567", "3hop1__143714_291186_4303", "3hop1__144079_84467_86976", "3hop1__145260_65293_48285", "3hop1__145302_99691_35202", "3hop1__145815_65293_48285", "3hop1__146600_728452_124684", "3hop1__150746_803683_83466", "3hop1__153023_86983_516763", "3hop1__155787_497059_61981", "3hop1__156462_100761_68345", "3hop1__157534_275705_20634", "3hop1__157791_1887_76121", "3hop1__158488_761000_24534", "3hop1__159886_1286_19154", "3hop1__159899_761000_130836", "3hop1__161080_158722_87175", "3hop1__162275_69867_36839", "3hop1__162325_11248_52135", "3hop1__16401_4520_59736", "3hop1__165074_284171_771594", "3hop1__165258_674732_500442", "3hop1__16577_52584_35376", "3hop1__1707_158293_13993", "3hop1__180933_763924_573834", "3hop1__191025_84360_334118", "3hop1__192838_852454_26118", "3hop1__195784_144910_3684", "3hop1__22702_66733_33264", "3hop1__231402_783837_73761", "3hop1__233275_269981_787896", "3hop1__236471_559792_25082", "3hop1__237908_291186_4303", "3hop1__238983_403313_26397", "3hop1__238983_403313_61770", "3hop1__239347_501716_79175", "3hop1__247266_8995_1698", "3hop1__257047_81195_59314", "3hop1__26417_449353_11672", "3hop1__278358_823374_26254", "3hop1__286131_77886_37969", "3hop1__289021_859552_846191", "3hop1__29335_30907_24628", "3hop1__293591_183029_831331", "3hop1__297997_164954_56516", "3hop1__308778_544708_33164", "3hop1__310490_861630_87032", "3hop1__312602_629330_21082", "3hop1__3157_3356_24622", "3hop1__3157_3356_55276", "3hop1__3157_3356_57615", "3hop1__31942_48661_15069", "3hop1__320396_104224_796745", "3hop1__32903_103178_68306", "3hop1__330447_715836_26008", "3hop1__332614_131794_41097", "3hop1__332614_131794_68568", "3hop1__352707_410515_56369", "3hop1__354622_491782_78183", "3hop1__360282_544708_33164", "3hop1__368999_4658_63911", "3hop1__368999_4658_85837", "3hop1__369224_104557_86736", "3hop1__370177_809999_533791", "3hop1__373039_652332_84045", "3hop1__38095_66386_160613", "3hop1__39130_84068_12463", "3hop1__400179_266275_33913", "3hop1__4017_671787_85374", "3hop1__42226_761000_24534", "3hop1__434518_136629_55288", "3hop1__446065_490280_85185", "3hop1__447877_187350_79175", "3hop1__450185_102686_72241", "3hop1__450462_147364_537186", "3hop1__451900_704023_44900", "3hop1__455492_348668_856982", "3hop1__465107_43572_372338", "3hop1__47356_517267_451901", "3hop1__48264_96305_25007", "3hop1__48727_62641_44955", "3hop1__489233_629230_7014", "3hop1__48942_65293_48285", "3hop1__494531_266275_159492", "3hop1__494531_266275_33913", "3hop1__50181_748648_369731", "3hop1__50525_69948_617898", "3hop1__507663_146811_31260", "3hop1__507663_146811_58046", "3hop1__51280_6975_6838", "3hop1__519595_770122_611260", "3hop1__520721_132413_16030", "3hop1__525731_780678_366897", "3hop1__52717_597383_59330", "3hop1__530205_334118_85185", "3hop1__530391_784444_75283", "3hop1__5313_777020_31361", "3hop1__531681_247691_579740", "3hop1__534590_348668_856982", "3hop1__536767_777020_31262", "3hop1__547010_104557_161232", "3hop1__548192_737820_131877", "3hop1__552887_424331_41129", "3hop1__553999_674732_500442", "3hop1__562135_49283_632017", "3hop1__562728_715836_71981", "3hop1__568406_233976_23923", "3hop1__58522_787757_69397", "3hop1__590056_280519_81233", "3hop1__596691_332903_141689", "3hop1__606361_715836_26008", "3hop1__620631_861630_87032", "3hop1__621442_544708_87310", "3hop1__624062_145979_34644", "3hop1__644924_859552_846191", "3hop1__659125_39490_21118", "3hop1__659125_39490_44822", "3hop1__660065_23998_24103", "3hop1__66475_83359_33297", "3hop1__665727_164564_573834", "3hop1__674688_707133_72062", "3hop1__67506_543242_786236", "3hop1__685813_739335_90527", "3hop1__686828_377850_78659", "3hop1__691429_84360_334118", "3hop1__704748_797479_81829", "3hop1__706183_20196_80319", "3hop1__709382_146811_65254", "3hop1__715503_146715_45994", "3hop1__715503_490108_29562", "3hop1__72459_31714_79432", "3hop1__724826_284171_771594", "3hop1__732880_369053_59330", "3hop1__737740_336227_126099", "3hop1__74698_99741_93695", "3hop1__750125_183029_831331", "3hop1__75023_58494_1960", "3hop1__763149_633553_12055", "3hop1__764479_147364_40232", "3hop1__77823_45116_90860", "3hop1__778287_144910_3684", "3hop1__797572_687783_377423", "3hop1__80558_84298_53741", "3hop1__81865_106790_159613", "3hop1__824303_341136_21517", "3hop1__835186_300060_81574", "3hop1__835614_424025_31226", "3hop1__836616_291186_50964", "3hop1__84597_587553_527472", "3hop1__854023_255545_71981", "3hop1__858308_102146_40159", "3hop1__858454_10446_50948", "3hop1__86120_52205_55099", "3hop1__86997_833580_61459", "3hop1__88936_815459_88521", "3hop1__8954_27378_160063", "3hop1__9194_79683_159363", "3hop1__93206_74386_516763", "3hop1__95375_147364_40239", "3hop1__9605_161545_81091", "3hop1__9998_93626_820357", "3hop2__10879_631658_161133", "3hop2__10879_664541_161133", "3hop2__11799_760795_41384", "3hop2__128917_306302_65370", "3hop2__129681_11988_24628", "3hop2__131345_764770_54023", "3hop2__136688_51280_242202", "3hop2__15169_763533_74533", "3hop2__158735_9998_46960", "3hop2__280480_411433_606586", "3hop2__30654_144337_89329", "3hop2__30796_484597_24137", "3hop2__30796_732692_24137", "3hop2__337255_762762_83343", "3hop2__418966_79453_66325", "3hop2__642527_58096_606586", "3hop2__695235_34135_35312", "3hop2__75408_26851_19700", "3hop2__77886_92949_69951", "3hop2__79453_311259_66325", "3hop2__79453_526190_66325", "3hop2__86911_306302_65370", "3hop2__89818_850628_4107", "4hop1__102195_52584_71250_135051", "4hop1__103769_221169_833580_61459", "4hop1__122303_539917_832557_158690", "4hop1__132458_84360_334118_21414", "4hop1__133590_631695_74047_456919", "4hop1__153023_74386_444296_179769", "4hop1__156462_100761_1955_64754", "4hop1__156462_100761_1955_88270", "4hop1__159612_22372_375457_49140", "4hop1__160178_8995_56750_1891", "4hop1__205937_144938_83779_69169", "4hop1__28235_74795_84660_20655", "4hop1__297997_164954_6975_93256", "4hop1__322597_452185_53858_162531", "4hop1__32903_103178_77757_753032", "4hop1__32903_103178_799_26537", "4hop1__366739_106790_158589_81091", "4hop1__38130_8966_31714_41245", "4hop1__38130_8966_31714_59389", "4hop1__38130_8966_31714_74049", "4hop1__389932_344284_86983_818397", "4hop1__411132_7258_65293_48285", "4hop1__446791_100761_1955_53157", "4hop1__570335_805015_475503_32631", "4hop1__632232_164954_6975_6838", "4hop1__66475_83359_48661_15069", "4hop1__70393_74386_444296_179769", "4hop1__709382_146811_31223_130836", "4hop1__75408_46321_1955_73755", "4hop1__81865_106790_158589_81091", "4hop1__88111_52584_71250_135051", "4hop1__93206_74386_444296_179769", "4hop2__10725_41193_484788_29116", "4hop2__339729_22831_51791_66355", "4hop2__57411_61674_1952_78767", "4hop2__724536_444580_75897_25092", "4hop3__144724_362455_28338_160498", "4hop3__146067_362455_28338_160498", "4hop3__164419_608613_54405_4107", "4hop3__182665_38788_25582_21116", "4hop3__205911_280480_160165_606586", "4hop3__28342_84421_38001_35312", "4hop3__286131_77886_52539_69951", "4hop3__3153_3356_11988_24628", "4hop3__31642_754527_265321_20507", "4hop3__358018_75897_8509_19700", "4hop3__365176_38788_25582_21116", "4hop3__383601_620110_61746_261712", "4hop3__486463_75897_26851_19700", "4hop3__491655_858588_68869_274317", "4hop3__60241_75897_8509_19700", "4hop3__616279_608613_21563_4107", "4hop3__630162_691163_306302_65370", "4hop3__656765_419859_61674_1952", "4hop3__659370_691163_306302_65370", "4hop3__703974_789671_638197_24137", "4hop3__703974_789671_732692_24137", "4hop3__710649_38788_25582_21116", "4hop3__752182_280480_160165_606586", "4hop3__778278_796114_30802_242202", "4hop3__778278_796114_51280_242202", "4hop3__798258_769404_544850_170163", "4hop3__836986_38788_25582_21116"], "dev300": ["2hop__82378_158266", "3hop1__529164_567566_84283", "2hop__595747_31270", "3hop1__108062_720914_41132", "2hop__136214_483189", "3hop2__304722_397371_63959", "3hop2__89854_90327_76291", "3hop1__28841_547811_41132", "2hop__789565_416401", "2hop__31091_31122", "3hop1__128865_30587_83479", "4hop1__436202_765799_282674_759393", "3hop1__698501_503371_21711", "4hop1__3496_5274_458768_33677", "4hop3__152056_698586_57596_54362", "2hop__141456_6455", "2hop__258940_135844", "3hop1__287291_375759_84283", "2hop__21104_16254", "4hop1__342858_131850_33952_34099", "3hop1__222497_309482_80702", "4hop1__152146_5274_458768_33637", "2hop__695364_513121", "4hop3__279362_88460_30152_20999", "2hop__86458_20273", "4hop1__76111_624859_355213_203322", "3hop2__69814_76873_64554", "2hop__141365_417697", "2hop__519160_78303", "2hop__50199_59409", "2hop__815205_590407", "3hop1__109185_720914_41132", "3hop1__145194_160545_62931", "2hop__50068_494136", "2hop__159737_27110", "3hop1__90327_78276_68042", "4hop1__88342_75218_128008_80487", "3hop1__857_846_7874", "2hop__17508_17335", "2hop__129721_40482", "2hop__2299_1783", "3hop1__120881_2053_5289", "2hop__448615_127908", "2hop__131275_72870", "2hop__80546_75184", "2hop__765678_310556", "4hop3__316459_41402_145922_13584", "3hop1__30390_36635_87083", "2hop__861157_135481", "3hop1__639955_834494_34109", "4hop1__58323_375563_161848_61344", "2hop__435087_55984", "3hop1__791757_15840_36002", "3hop2__304722_591230_63959", "2hop__607517_161450", "4hop1__567737_141375_458768_33633", "2hop__84439_482364", "3hop1__635099_131926_87157", "4hop2__71753_158985_70784_79935", "2hop__85713_84469", "3hop2__57186_89048_66294", "4hop1__58323_375563_161848_83118", "3hop2__782397_223623_162182", "2hop__70584_198548", "2hop__156700_73244", "2hop__92716_319330", "3hop1__159728_91191_156667", "4hop1__324759_765799_282674_759393", "2hop__865961_159109", "2hop__29191_80144", "3hop1__536452_15840_36002", "2hop__152229_604644", "2hop__71336_604644", "3hop2__90098_60649_10557", "4hop1__89632_32392_823060_610794", "3hop1__572324_568433_51423", "3hop1__465684_160545_34751", "2hop__271045_68633", "3hop1__691197_15840_36014", "3hop1__347858_503371_21711", "2hop__9930_21567", "2hop__25396_593388", "2hop__42027_42004", "4hop1__814349_624859_355213_203322", "2hop__586343_83289", "3hop1__847684_339990_54675", "3hop1__639955_834494_34099", "2hop__93145_54024", "3hop2__132957_595371_40768", "2hop__471509_136043", "3hop1__390673_228453_10972", "2hop__85463_50252", "2hop__778212_22458", "3hop1__127716_157828_239539", "3hop1__174833_650651_7262", "3hop1__103890_10659_83548", "2hop__846844_47134", "3hop1__865037_214799_259594", "3hop2__90098_125104_10557", "3hop1__109196_720914_41132", "2hop__51881_20590", "4hop3__661103_698586_1926_54362", "4hop3__507819_88460_30152_20999", "3hop1__617062_127905_46748", "3hop1__161433_33952_34099", "4hop1__94201_642284_131926_13165", "2hop__363214_590899", "2hop__10620_49084", "3hop1__353661_629431_124169", "2hop__80860_510545", "2hop__711946_269414", "2hop__60001_512508", "4hop1__199881_765799_282674_759393", "3hop1__222380_443779_52195", "2hop__460091_405771", "3hop1__617062_127905_80487", "2hop__852657_155922", "2hop__859431_18803", "2hop__130984_55721", "4hop1__105401_17130_70784_61381", "3hop2__9988_73205_70784", "2hop__669456_108549", "3hop2__304722_398767_63959", "4hop1__88342_49853_128008_86588", "2hop__446324_620302", "3hop1__671542_651917_47686", "2hop__481349_302087", "2hop__25788_25855", "3hop1__84887_538202_84283", "2hop__17192_77606", "3hop1__756602_831637_91775", "3hop1__19768_19788_19761", "3hop1__109113_720914_27537", "2hop__23297_23366", "2hop__8496_21567", "3hop1__104762_24918_24991", "3hop1__593288_720914_27537", "2hop__359312_18803", "2hop__58691_192417", "4hop1__129682_59747_211319_557671", "3hop1__820301_720914_41132", "2hop__77832_159673", "3hop1__305282_282081_10972", "3hop1__516535_834494_34088", "2hop__658472_5385", "2hop__59274_461854", "2hop__475070_532404", "2hop__159903_154896", "4hop1__343844_17130_70784_79935", "4hop1__708184_153080_33897_81096", "2hop__748182_78303", "3hop1__186307_503371_21711", "2hop__507528_139339", "2hop__682872_516436", "4hop2__9988_261673_70784_79935", "2hop__593688_292889", "3hop2__304722_330033_63959", "3hop1__105767_443779_52195", "2hop__61714_52026", "2hop__136179_13529", "2hop__82051_7298", "2hop__32441_522949", "3hop1__158848_66089_86107", "2hop__747894_135844", "4hop1__39871_314549_131976_44892", "3hop2__304722_582839_63959", "4hop3__862_846_613770_7713", "2hop__89632_40480", "4hop1__264443_49925_13759_736921", "2hop__497191_129669", "2hop__88632_67668", "2hop__21991_43945", "2hop__13353_85402", "4hop1__159467_725495_49925_349426", "3hop2__92991_28727_76291", "3hop1__144678_443779_52195", "3hop1__104996_160713_77246", "2hop__70338_160040", "3hop2__304722_466316_63959", "3hop1__664835_650651_7262", "3hop1__816887_127905_80286", "4hop1__130276_59747_211319_557671", "3hop1__773623_87694_124169", "3hop1__617062_127905_46894", "2hop__128420_375952", "2hop__256553_617289", "4hop1__88342_49853_128008_89859", "2hop__683203_72813", "3hop2__92991_87184_76291", "3hop1__145194_160545_34751", "2hop__50432_56873", "2hop__132954_533882", "2hop__85958_87295", "3hop2__87184_92991_76291", "2hop__388523_75487", "3hop1__534450_831637_91775", "2hop__501624_181960", "3hop1__135794_87694_64412", "3hop2__132957_132798_40768", "2hop__200391_44187", "2hop__646573_83769", "3hop2__20335_8533_9331", "4hop1__72247_497223_15840_36014", "2hop__635544_110949", "3hop1__497845_629431_124169", "4hop3__524186_219173_862998_72134", "3hop1__24980_42197_18397", "3hop2__89048_860687_66294", "4hop1__71715_59747_211319_557671", "2hop__496732_658428", "4hop1__88342_75218_128008_54974", "2hop__418941_429437", "2hop__78401_158262", "2hop__556426_9237", "2hop__160151_23241", "2hop__852122_150107", "3hop1__747772_514761_594810", "3hop2__655849_467331_162182", "2hop__37353_23241", "2hop__56806_7298", "2hop__822965_165304", "2hop__537404_55227", "2hop__53175_548781", "3hop1__131820_59747_90139", "3hop1__51933_40769_64047", "2hop__153573_44085", "2hop__46862_68042", "2hop__147171_27537", "2hop__142621_225454", "4hop1__429751_32392_823060_610794", "3hop1__136083_87694_124169", "2hop__827995_159109", "2hop__54651_169233", "3hop1__106864_160713_77246", "2hop__14092_8311", "2hop__145288_502838", "2hop__25396_212301", "2hop__122565_37168", "3hop1__404541_629431_64412", "2hop__329591_91104", "2hop__159146_120065", "4hop3__773800_152874_161616_77103", "2hop__64175_90973", "2hop__242938_18803", "3hop1__106042_64399_52278", "3hop2__90098_79978_10557", "4hop1__94201_642284_131926_89261", "2hop__3131_3300", "2hop__706038_14251", "3hop1__312146_720914_41132", "3hop2__132957_800948_40768", "3hop1__320697_547811_41132", "2hop__30741_85990", "2hop__133241_33564", "3hop1__131829_39743_24526", "3hop1__131783_131926_87157", "4hop1__166471_49925_13759_736921", "3hop1__469478_15840_36002", "2hop__66708_573255", "2hop__38229_84500", "3hop1__604991_339990_54675", "2hop__507722_124896", "3hop1__178435_547811_41132", "3hop2__222979_132628_40768", "3hop1__73796_87694_64412", "4hop3__813358_24325_125104_10557", "2hop__293131_110222", "2hop__543853_124498", "2hop__794999_113442", "2hop__55552_158105", "3hop2__30152_101802_20999", "3hop1__830700_538202_84283", "2hop__41158_35124", "2hop__89764_827343", "2hop__848156_130869", "2hop__814671_82341", "2hop__89657_289940", "2hop__808562_72813", "4hop1__105688_17130_70784_79935", "2hop__686395_141338", "2hop__91713_289940", "2hop__61752_54024", "2hop__310112_88165", "2hop__66167_90991", "2hop__136067_160249", "3hop1__159802_39743_24526", "2hop__35989_623159", "2hop__62020_158262", "2hop__691639_154896", "3hop1__57186_237521_291682", "2hop__525242_52835", "2hop__788087_150107", "2hop__6265_718451", "4hop2__161602_474028_88460_21057", "4hop1__39871_314549_131976_90181", "4hop3__152056_698586_89595_54362", "2hop__580231_162399", "3hop1__617062_127905_67954", "2hop__24697_634490", "3hop2__132957_483843_40768"]}
+# exp12: pair-matched control for the iterative ranker
+
+Pre-registered in [PROTOCOL.md](PROTOCOL.md): commit 975371a, revised after an adversarial pre-run review by Codex.
+- **Control:** M1-ctrl is trained on M1-iter's **exact** 18,101 training pairs in the same order, with the query prefix of picked paragraphs removed.
+- **Compute:** Colab T4, seeds 0â€“2. Code pinned to 975371a. The analysis code (`analyze.py`) was written before training.
+- **Results:** [`results/results.json`](results/results.json) and per-question hits in [`results/hits_compact.json`](results/hits_compact.json). The raw orders stay on the Colab account's Drive.
+
+## Bottom line
+
+1. **Primary fails: once training data is matched, iteration's overall gain is small and not significant.** M1-iter (iterative inference) vs M1-ctrl (one-shot), test recall@5:
+   - **0.7475 vs 0.7075, +0.040 [âˆ’0.005, +0.085]**, 52 vs 36 discordant questions, p = 0.109.
+   - The minimum detectable effect was about 0.07, so this does not show "no effect".
+2. **The small gain is consistent across seeds:** +0.040 / +0.028 / +0.033 (mean +0.033, SD 0.006). It is positive in all 3 seeds (descriptive).
+3. **exp09's +0.068 splits roughly into two parts:**
+   - **+0.025 from more training:** M1-ctrl vs exp09's M1, 12 vs 2 discordant questions, p = 0.013 (descriptive).
+   - **about +0.04 from conditioning:** not significant.
+   - So H6 ("iteration beats one-shot") is **not confirmed** once the confound is removed.
+4. **The advantage is concentrated in 4-hop chains (exploratory, uncorrected).** 4-hop: **0.578 vs 0.391** (20 vs 8 discordant questions, p = 0.036, n = 64). 2-hop: 0.823 vs 0.813. 3-hop: 0.714 vs 0.699.
+5. **Secondary holds: the pure conditioning change is rank 2.** D = M1-iter âˆ’ M1-ctrl, grafted onto M1-ctrl at rank 2, recovers **86.8% [77.7, 95.8]** of the gain on test (iterative inference: 0.4075 â†’ 0.7025, full 0.7475).
+   - The norm-matched random rank-2 control recovers 7% on dev300, against 85% for the real rank 2.
+   - **What this change does:** it is the skill of *reading* a conditioned query. Without it, M1-ctrl collapses when run iteratively (0.41). The change is functionally rank 2, even though its benefit over a matched one-shot ranker is small overall.
+
+## 2Ã—2: model Ã— inference (test recall@5, seed 0)
+
+| | One-shot inference | Iterative inference |
+|---|---|---|
+| **M1-iter** (trained with conditioning) | 0.685 | **0.7475** |
+| **M1-ctrl** (same pairs, no conditioning) | **0.7075** | 0.4075 |
+
+Each model is best in the inference mode it was trained for. Conditioning hurts one-shot use a little (0.685 vs 0.7075).
+
+## Recall@k (test, seed 0)
+
+| k | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 15 |
+|---|---|---|---|---|---|---|---|---|
+| M1-iter, iterative | **0.313** | **0.530** | **0.675** | **0.748** | 0.775 | **0.848** | 0.898 | 0.958 |
+| M1-ctrl, one-shot | 0.283 | 0.505 | 0.595 | 0.708 | **0.785** | 0.845 | **0.913** | **0.980** |
+| M1-ctrl + rank-2 D, iterative | 0.298 | 0.500 | 0.648 | 0.703 | 0.753 | 0.848 | 0.880 | 0.960 |
+
+The pattern from exp09/exp10 holds with matched data: iteration helps at the top (k â‰¤ 5, mostly on 4-hop questions) and loses in the tail (k â‰¥ 10).
+
+## What this changes in the claim ledger
+
+- **H6 (iteration beats one-shot): from C? to N at matched data.** There is a small, seed-consistent effect (+0.03), and an exploratory 4-hop effect that must be re-tested before anyone claims it.
+- **H9 (the iteration change is low-rank): confirmed in the de-confounded form.** Both D_it (exp11, 84.7%) and the pure conditioning change D (exp12, 86.8%) are about rank 2.
+- **For the thesis, the honest framing:**
+  - *Practical:* in-domain one-shot ranking plus adaptive stopping is the efficient choice. Iteration costs 3.7Ã— the passes for about +0.03 recall@5 overall.
+  - *Research:* the ability to use a conditioned query is a separable, rank-2 change. Its value shows up on long chains (4-hop), which motivates a cascade: switch it on only for hard or long questions.
+
+## Deviations
+
+1. **Input staging.** This PC's Google Drive belongs to another account, so the inputs come from the Colab account's Drive (A1, sha-checked) and from the official MuSiQue release (sha-checked). No model was trained before the fix. The first train-subset hash had been computed on a Windows CRLF copy; the LF copy was verified byte-identical.
+2. **Results transfer.** The Colab Drive is not synced here. `results.json` and the per-question hits were copied from the notebook output, and the copy was checked: recall@5 recomputed from the hits matches exactly, and so does the McNemar test.
+
+## Files
+
+- `PROTOCOL.md`, `train.py` (`--mode ctrl`, `--seed`), `evaluate.py`, `analyze.py`, `make_notebook.py`, `exp12_colab.ipynb`
+- `results/results.json`, `results/hits_compact.json`
+
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command '$files = @('"'experiments/exp13_cascade/PROTOCOL.md','experiments/exp13_cascade/rank.py','experiments/exp13_cascade/analyze.py','experiments/exp13_cascade/make_notebook.py','experiments/exp13_cascade/data.py','experiments/exp12_matched_control/README.md'); foreach ("'$f in $files) { "--- $f"; $n=0; Get-Content $f | ForEach-Object { $n++; '"'{0,4}: {1}' -f "'$n, $_ } };' in C:\code\qualiusp2026
+ succeeded in 934ms:
+--- experiments/exp13_cascade/PROTOCOL.md
+   1: # exp13 protocol: 4-hop confirmation and a one-shot â†’ iterative cascade (pre-registered 2026-11-15)
+   2: 
+   3: ## Why
+   4: 
+   5: exp12 (matched training pairs) found:
+   6: - **Overall:** iteration adds only +0.04 recall@5 (n.s.).
+   7: - **4-hop chains (exploratory):** 0.578 vs 0.391 (p = 0.036, n = 64), and almost nothing on 2â€“3 hops.
+   8: 
+   9: An effect seen exploratorily must be re-tested on fresh data before anyone claims it (`HYPOTHESES.md`). If it holds, the practical design is a **cascade**: cheap one-shot ranking by default, and the conditioning-trained ranker only where it helps.
+  10: 
+  11: ## Models (frozen, from exp12; Colab Drive `exp12_975371a/models`)
+  12: 
+  13: - **M1-iter** = `m1_iter_s0` (iterative inference). **M1-ctrl** = `m1_ctrl` (one-shot). Both were trained on identical pairs.
+  14: - **Seeds 1â€“2** (`*_s1`, `*_s2`) are run for the primary only (descriptive).
+  15: - Inference is exp09/exp12's. Passes = cross-encoder forward passes per question.
+  16: 
+  17: ## Data (`split_ids.json`, fixed before any scoring; seed 13)
+  18: 
+  19: | Split | n | What | Use |
+  20: |---|---|---|---|
+  21: | `f4_dev` | 166 | all **unused** MuSiQue-Ans dev 4-hop questions (not in exp08/exp09 splits) | primary, stratum 1 |
+  22: | `f4_train` | 400 | seeded sample of the 789 unused MuSiQue-Ans train 4-hop questions | primary, stratum 2 |
+  23: | `router_train` | 1,000 | exp10's holdout (unused exp09 train ids, natural hop mix) | fit the router only |
+  24: | `dev_fresh` | 1,017 | all unused dev questions (529 / 322 / 166 two/three/four-hop) | cascade evaluation |
+  25: 
+  26: No question here has been used to train or select anything before. `f4_dev` âŠ‚ `dev_fresh` by construction. `f4_train` and `router_train` are disjoint. Training-split questions are unseen by the models, which trained on exp09's 1,000 `train` ids only.
+  27: 
+  28: ## Pre-registered tests
+  29: 
+  30: 1. **Primary (H6-4hop):** on the 566 fresh 4-hop questions (`f4_dev` âˆª `f4_train`), recall@5 of M1-iter (iterative) vs M1-ctrl (one-shot), McNemar exact, two-sided Î± = 0.05.
+  31:    - **Success** = M1-iter higher and p < 0.05.
+  32:    - **Also reported:**
+  33:      - each stratum separately ("both positive" is a consistency check, not a test)
+  34:      - a paired-bootstrap CI of the difference
+  35:      - the seed 1/2 differences
+  36:    - **Power:** exp12's 4-hop discordance rate was 0.44, so about 250 discordant questions are expected. The minimum detectable effect at 80% power is about **+0.08** (exp12 observed +0.19, which is likely inflated because it was selected after the fact).
+  37: 2. **Router (fixed before seeing any exp13 result):** logistic regression for "is 4-hop".
+  38:    - Fit on `router_train`.
+  39:    - **Features:** question length in words, comma count, and the sorted top-10 scores of the one-shot model (M1-ctrl). All are available after the one-shot pass, at no extra cost.
+  40:    - **Class-balanced weights** (`class_weight="balanced"`), because only 6.3% of `router_train` is 4-hop vs 16% of dev. **Threshold 0.5, with no tuning.**
+  41: 3. **Secondary (cascade, `dev_fresh`):** the cascade = M1-ctrl one-shot for every question, then M1-iter iterative for routed questions. A routed question pays both: about 20 + 74 passes.
+  42:    - **a. Cascade vs one-shot:** recall@5, McNemar. "Beats" = higher and p < 0.05.
+  43:    - **b. Cascade vs always-iterative:** non-inferiority. The lower bound of the 95% paired-bootstrap CI of (cascade âˆ’ iterative) must be **> âˆ’0.01**.
+  44:    - **Mean passes are reported for all policies.**
+  45: 4. **Descriptive:**
+  46:    - an **oracle cascade** (route exactly the 4-hop questions), as an upper bound for routing
+  47:    - the router's 4-hop recall and precision
+  48:    - recall@k for k = 2 â€¦ 15, by hops
+  49: 
+  50: **Claim ledger:** the primary is confirmatory for "H6-4hop". Secondaries 3a and 3b are confirmatory for the cascade. Error rates are per claim.
+  51: 
+  52: ## Analysis
+  53: 
+  54: `analyze.py`, written before any exp13 ranking. Bootstrap: 5,000 resamples, seed 0.
+  55: 
+  56: ## Compute
+  57: 
+  58: - **Colab T4** (`exp13_colab.ipynb` from `make_notebook.py`, pinned to the registration commit). Rankings take minutes.
+  59: - **Inputs:**
+  60:   - A1 tokenizer from the Colab Drive (`exp02_results/full/model`, sha-checked)
+  61:   - MuSiQue from the official release (dev sha `15fa63â€¦bf3b`; the train subset of the 1,400 `router_train` âˆª `f4_train` rows, LF, sha `c47ce5â€¦65fe`)
+  62:   - exp12 models from the Colab Drive
+  63: 
+  64: ## Honest priors
+  65: 
+  66: - **Primary:** likely positive, but the true 4-hop effect is probably smaller than +0.19, since that was the most favorable stratum chosen after the fact. A null is informative: it would mean exp12's 4-hop effect was noise.
+  67: - **Cascade vs one-shot:** probably a small gain overall, because only about 16% of questions are 4-hop.
+  68: - **Cascade vs iterative:** non-inferiority is plausible, since iteration helps little on 2â€“3 hops. Routing errors may break it.
+  69: - **Cost:** routing everything costs more than always-iterative (20 + 74), so the cascade saves passes only when the router routes fewer than about 75% of questions.
+--- experiments/exp13_cascade/rank.py
+   1: """exp13 ranking (PROTOCOL.md): exp12's frozen GPU models, one-shot and iterative inference, on the fresh splits.
+   2: 
+   3:   python rank.py --split f4_dev --only iter_iter ctrl_oneshot
+   4: Writes RESULTS_DIR/rank_<split>.jsonl: one line per config with per-question orders, one-shot scores (top 10) and passes.
+   5: Resumable per config.
+   6: """
+   7: 
+   8: from __future__ import annotations
+   9: 
+  10: import argparse
+  11: import json
+  12: import os
+  13: import time
+  14: from pathlib import Path
+  15: 
+  16: import torch
+  17: from transformers import AutoModelForSequenceClassification, AutoTokenizer
+  18: 
+  19: from data import encode, load, paragraphs_of, query
+  20: 
+  21: HERE = Path(__file__).resolve().parent
+  22: MODELS = Path(os.environ.get("MODELS_DIR", HERE / "models"))  # exp12 models (Colab Drive)
+  23: A1 = Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1"))  # tokenizer only
+  24: DEV = "cuda" if torch.cuda.is_available() else "cpu"
+  25: STEPS = 4
+  26: CONFIGS = {"iter_iter": ("m1_iter_s0", True), "ctrl_oneshot": ("m1_ctrl", False),
+  27:            "iter_iter_s1": ("m1_iter_s1", True), "ctrl_oneshot_s1": ("m1_ctrl_s1", False),
+  28:            "iter_iter_s2": ("m1_iter_s2", True), "ctrl_oneshot_s2": ("m1_ctrl_s2", False)}
+  29: 
+  30: 
+  31: @torch.no_grad()
+  32: def rank_all(model, tok, rows, iterative):
+  33:     """exp09 inference: one-shot sort, or 4 greedy steps with the tail ordered by the step-3 scores."""
+  34:     def score(q, ps):
+  35:         return model(**encode(tok, [q] * len(ps), ps).to(DEV)).logits.float().cpu().squeeze(-1).reshape(-1).tolist()
+  36: 
+  37:     out = []
+  38:     for r in rows:
+  39:         _, paras = paragraphs_of(r)
+  40:         rest, order, passes, top = list(range(len(paras))), [], 0, None
+  41:         for _ in range(STEPS if iterative else 1):
+  42:             s = score(query(r["question"], [paras[i] for i in order]), [paras[i] for i in rest])
+  43:             passes += len(rest)
+  44:             ranked = sorted(zip(s, rest), key=lambda z: -z[0])
+  45:             if not iterative:
+  46:                 order, top = [i for _, i in ranked], [round(v, 4) for v, _ in ranked[:10]]
+  47:                 break
+  48:             order.append(ranked[0][1]); rest = [i for _, i in ranked[1:]]
+  49:         out.append({"order": order + (rest if iterative else []), "passes": passes, "top10": top})
+  50:     return out
+  51: 
+  52: 
+  53: def main():
+  54:     ap = argparse.ArgumentParser()
+  55:     ap.add_argument("--split", required=True)
+  56:     ap.add_argument("--only", nargs="*", default=list(CONFIGS))
+  57:     args = ap.parse_args()
+  58:     tok = AutoTokenizer.from_pretrained(str(A1))
+  59:     rows = load(args.split)
+  60:     out = Path(os.environ.get("RESULTS_DIR", HERE / "results")) / f"rank_{args.split}.jsonl"
+  61:     done = {json.loads(x)["config"] for x in out.read_text().splitlines()} if out.exists() else set()
+  62:     for name in args.only:
+  63:         if name in done:
+  64:             continue
+  65:         tag, iterative = CONFIGS[name]
+  66:         t0 = time.time()
+  67:         model = AutoModelForSequenceClassification.from_pretrained(str(MODELS / tag / "model")).eval().to(DEV)
+  68:         res = rank_all(model, tok, rows, iterative)
+  69:         with out.open("a") as fh:
+  70:             fh.write(json.dumps({"config": name, "model": tag, "iterative": iterative, "ids": [r["id"] for r in rows],
+  71:                                  "orders": [x["order"] for x in res], "passes": [x["passes"] for x in res],
+  72:                                  "top10": [x["top10"] for x in res]}) + "\n")
+  73:         print(args.split, name, round(time.time() - t0), "s", flush=True)
+  74: 
+  75: 
+  76: if __name__ == "__main__":
+  77:     main()
+--- experiments/exp13_cascade/analyze.py
+   1: """exp13 pre-registered analysis (PROTOCOL.md). Written before any exp13 ranking was run.
+   2: 
+   3:   python analyze.py        # RESULTS_DIR must hold rank_{f4_dev,f4_train,router_train,dev_fresh}.jsonl -> results.json
+   4: """
+   5: 
+   6: from __future__ import annotations
+   7: 
+   8: import json
+   9: import os
+  10: from pathlib import Path
+  11: 
+  12: import numpy as np
+  13: from scipy.stats import binomtest
+  14: from sklearn.linear_model import LogisticRegression
+  15: from sklearn.preprocessing import StandardScaler
+  16: 
+  17: from data import gold_mask, hops, load
+  18: 
+  19: HERE = Path(__file__).resolve().parent
+  20: RES = Path(os.environ.get("RESULTS_DIR", HERE / "results"))
+  21: B, KS = 5000, (2, 3, 4, 5, 6, 8, 10, 15)
+  22: 
+  23: 
+  24: def ranks(split):
+  25:     rows = load(split)
+  26:     out = {}
+  27:     for line in (RES / f"rank_{split}.jsonl").read_text().splitlines():
+  28:         j = json.loads(line)
+  29:         assert j["ids"] == [r["id"] for r in rows], f"ids differ: {split} {j['config']}"
+  30:         out[j["config"]] = j
+  31:     return rows, out
+  32: 
+  33: 
+  34: def hits(rows, orders, k=5):
+  35:     return np.array([int(np.array(gold_mask(r), bool)[o[:k]].sum() == sum(gold_mask(r))) for r, o in zip(rows, orders)])
+  36: 
+  37: 
+  38: def mcnemar(x, y):
+  39:     b, c = int(((x == 1) & (y == 0)).sum()), int(((x == 0) & (y == 1)).sum())
+  40:     return {"only_x": b, "only_y": c, "p": float(binomtest(b, b + c, 0.5).pvalue) if b + c else 1.0}
+  41: 
+  42: 
+  43: def boot(d, rng):
+  44:     n = len(d); bs = [d[rng.integers(0, n, n)].mean() for _ in range(B)]
+  45:     return [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)]
+  46: 
+  47: 
+  48: def feats(rows, oneshot):
+  49:     """Router features (PROTOCOL): question length in words, commas, and the one-shot model's sorted top-10 scores."""
+  50:     return np.array([[len(r["question"].split()), r["question"].count(",")] + t for r, t in zip(rows, oneshot["top10"])], float)
+  51: 
+  52: 
+  53: def main():
+  54:     rng, rep = np.random.default_rng(0), {}
+  55:     # 1. Primary: 4-hop, iterative M1-iter vs one-shot M1-ctrl (seed 0), pooled over f4_dev + f4_train
+  56:     X, Y, strata, seeds = [], [], {}, {s: ([], []) for s in ("", "_s1", "_s2")}
+  57:     for sp in ("f4_dev", "f4_train"):
+  58:         rows, R = ranks(sp)
+  59:         assert all(hops(r) == 4 for r in rows)
+  60:         x, y = hits(rows, R["iter_iter"]["orders"]), hits(rows, R["ctrl_oneshot"]["orders"])
+  61:         X.append(x); Y.append(y)
+  62:         strata[sp] = {"n": len(x), "iter": round(float(x.mean()), 4), "ctrl": round(float(y.mean()), 4),
+  63:                       "diff": round(float((x - y).mean()), 4), **mcnemar(x, y)}
+  64:         for s in seeds:
+  65:             if f"iter_iter{s}" in R and f"ctrl_oneshot{s}" in R:
+  66:                 seeds[s][0].append(hits(rows, R[f"iter_iter{s}"]["orders"])); seeds[s][1].append(hits(rows, R[f"ctrl_oneshot{s}"]["orders"]))
+  67:     x, y = np.concatenate(X), np.concatenate(Y)
+  68:     p = {"n": len(x), "iter": round(float(x.mean()), 4), "ctrl": round(float(y.mean()), 4),
+  69:          "diff": round(float((x - y).mean()), 4), "diff_ci95": boot(x - y, rng), **mcnemar(x, y), "strata": strata}
+  70:     p["success"] = bool(x.mean() > y.mean() and p["p"] < 0.05)
+  71:     p["both_strata_positive"] = all(v["diff"] > 0 for v in strata.values())
+  72:     p["seed_diffs"] = {s or "_s0": round(float((np.concatenate(a) - np.concatenate(b)).mean()), 4) for s, (a, b) in seeds.items() if a}
+  73:     rep["primary_4hop"] = p
+  74: 
+  75:     # 2. Router: logistic regression for "4-hop", fit on router_train (one-shot features), threshold 0.5
+  76:     rt_rows, rt = ranks("router_train")
+  77:     Ft, yt = feats(rt_rows, rt["ctrl_oneshot"]), np.array([int(hops(r) == 4) for r in rt_rows])
+  78:     sc = StandardScaler().fit(Ft); lr = LogisticRegression(max_iter=5000, class_weight="balanced").fit(sc.transform(Ft), yt)  # 4-hop is 6.3% of router_train
+  79: 
+  80:     # 3. Cascade on dev_fresh (natural hop mix)
+  81:     rows, R = ranks("dev_fresh")
+  82:     hp = np.array([hops(r) for r in rows]); oneshot, itr = R["ctrl_oneshot"], R["iter_iter"]
+  83:     route = lr.predict_proba(sc.transform(feats(rows, oneshot)))[:, 1] >= 0.5
+  84:     pol = {"oneshot": np.zeros(len(rows), bool), "iterative": np.ones(len(rows), bool), "cascade": route, "oracle_cascade": hp == 4}
+  85:     po, pi = np.array(oneshot["passes"]), np.array(itr["passes"])
+  86:     H = {}
+  87:     for name, m in pol.items():
+  88:         orders = [itr["orders"][i] if m[i] else oneshot["orders"][i] for i in range(len(rows))]
+  89:         passes = np.where(m, (po + pi) if name in ("cascade", "oracle_cascade") else pi, po)  # a routed question pays one-shot + iterative
+  90:         H[name] = hits(rows, orders)
+  91:         rep.setdefault("cascade", {})[name] = {
+  92:             "recall_at_k": {k: round(float(hits(rows, orders, k).mean()), 4) for k in KS},
+  93:             "passes": round(float(passes.mean()), 1), "routed": round(float(m.mean()), 3),
+  94:             "by_hops_recall5": {int(h): round(float(H[name][hp == h].mean()), 3) for h in (2, 3, 4)}}
+  95:     rep["router"] = {"train_4hop_rate": round(float(yt.mean()), 3), "dev_fresh_routed_4hop_recall": round(float(route[hp == 4].mean()), 3),
+  96:                      "dev_fresh_routed_precision": round(float((hp[route] == 4).mean()), 3) if route.any() else None}
+  97:     # Secondary (PROTOCOL): cascade vs one-shot, recall@5 McNemar; cascade vs iterative, non-inferiority margin 0.01
+  98:     c, o, i = H["cascade"], H["oneshot"], H["iterative"]
+  99:     rep["secondary"] = {"cascade_vs_oneshot": {"diff": round(float((c - o).mean()), 4), "diff_ci95": boot(c - o, rng), **mcnemar(c, o)},
+ 100:                         "cascade_vs_iterative": {"diff": round(float((c - i).mean()), 4), "diff_ci95": boot(c - i, rng)}}
+ 101:     s = rep["secondary"]
+ 102:     s["cascade_beats_oneshot"] = bool(c.mean() > o.mean() and s["cascade_vs_oneshot"]["p"] < 0.05)
+ 103:     s["cascade_noninferior_to_iterative"] = bool(s["cascade_vs_iterative"]["diff_ci95"][0] > -0.01)
+ 104:     (RES / "results.json").write_text(json.dumps(rep, indent=1))
+ 105:     print(json.dumps(rep, indent=1))
+ 106: 
+ 107: 
+ 108: if __name__ == "__main__":
+ 109:     main()
+--- experiments/exp13_cascade/make_notebook.py
+   1: """Writes exp13_colab.ipynb (edit this file, not the notebook).  python make_notebook.py <pinned commit>"""
+   2: import json
+   3: import sys
+   4: 
+   5: PIN = sys.argv[1]
+   6: 
+   7: cells = [
+   8: ("markdown", """# exp13: 4-hop confirmation and cascade (Colab GPU)
+   9: 
+  10: Runtime â†’ Change runtime type â†’ **T4 GPU**, then *Run all*. A1 is read from Drive (`MyDrive/qualiusp2026/exp02_results/full/model`); MuSiQue is downloaded from the official release; both are hash-checked.
+  11: Models and results are written to Drive (`MyDrive/qualiusp2026/exp12_<commit>`). Training checkpoints every 500 steps, so after a
+  12: disconnect just *Run all* again: finished models and evaluation configs are skipped. Code comes from the public repo (PROTOCOL.md). Models: exp12's frozen GPU models on Drive."""),
+  13: ("code", """from google.colab import drive
+  14: drive.mount('/content/drive')
+  15: import os, pathlib, subprocess
+  16: PIN = '__PIN__'  # registration commit (PROTOCOL: pinned code, fresh output folder)
+  17: OUT = f'/content/drive/MyDrive/qualiusp2026/exp13_{PIN[:7]}'
+  18: M12 = '/content/drive/MyDrive/qualiusp2026/exp12_975371a/models'  # frozen exp12 models
+  19: A1 = '/content/drive/MyDrive/qualiusp2026/exp02_results/full/model'  # exp02's A1 (sha256 checked below)
+  20: pathlib.Path(OUT, 'models').mkdir(parents=True, exist_ok=True); pathlib.Path(OUT, 'results').mkdir(exist_ok=True)
+  21: if not os.path.exists('/content/qualiusp2026'):
+  22:     !git clone -q https://github.com/arnml/qualiusp2026.git /content/qualiusp2026
+  23: !cd /content/qualiusp2026 && git fetch -q && git checkout -q {PIN} && git log --oneline -1
+  24: assert subprocess.check_output(['git', '-C', '/content/qualiusp2026', 'rev-parse', 'HEAD']).decode().strip() == PIN
+  25: # Inputs (deviation 1): A1 from exp02's Drive folder; MuSiQue from the official release (StonyBrookNLP/musique).
+  26: # Both are checked against sha256 hashes of the local files used in exp08-exp11.
+  27: import hashlib, json
+  28: def sha(path): return hashlib.sha256(open(path, 'rb').read()).hexdigest()
+  29: assert sha(f'{A1}/model.safetensors') == '605c986eb9a9a82b10ac43c43c77b2a0f976c04c7ed40f21cc66f2a5b19d950d'
+  30: D = '/content/qualiusp2026/experiments/exp08_musique/data'
+  31: if os.path.islink(D): os.unlink(D)  # left by the first attempt (Drive inputs from another account)
+  32: if not os.path.exists(f'{D}/musique_ans_v1.0_dev.jsonl'):
+  33:     !pip -q install gdown && cd /content && gdown -q 1tGdADlNjWFaHLeZZGShh2IRcpO6Lv24h -O musique.zip && unzip -q -o musique.zip -d musique_raw
+  34:     os.makedirs(D, exist_ok=True)
+  35:     src = subprocess.check_output('find /content/musique_raw -name musique_ans_v1.0_dev.jsonl', shell=True).decode().split()[0].rsplit('/', 1)[0]
+  36:     !cp {src}/musique_ans_v1.0_dev.jsonl {D}/
+  37:     ids = json.load(open('/content/qualiusp2026/experiments/exp13_cascade/split_ids.json'))
+  38:     ids = set(ids['router_train']) | set(ids['f4_train'])
+  39:     with open(f'{src}/musique_ans_v1.0_train.jsonl') as f, open(f'{D}/musique_ans_v1.0_train.jsonl', 'w') as g:
+  40:         for line in f:
+  41:             if json.loads(line)['id'] in ids: g.write(line)
+  42: assert sha(f'{D}/musique_ans_v1.0_dev.jsonl') == '15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b', 'dev file differs'
+  43: assert sha(f'{D}/musique_ans_v1.0_train.jsonl') == 'c47ce51185d2447ebede240dc31acdd6acc8822219cbaab4d540f6f2dd1e65fe', 'train subset differs'
+  44: print('inputs verified')
+  45: os.environ.update(A1_DIR=A1, MODELS_DIR=M12, RESULTS_DIR=f'{OUT}/results', TOKENIZERS_PARALLELISM='false')
+  46: os.chdir('/content/qualiusp2026/experiments/exp13_cascade')
+  47: for t in ('m1_iter_s0', 'm1_ctrl', 'm1_iter_s1', 'm1_ctrl_s1', 'm1_iter_s2', 'm1_ctrl_s2'):
+  48:     print(t, sha(f'{M12}/{t}/model/model.safetensors')[:16])
+  49: !nvidia-smi --query-gpu=name,memory.total --format=csv
+  50: !pip -q install tiktoken
+  51: !git rev-parse HEAD > {OUT}/results/commit.txt"""),
+  52: ("markdown", "## Rank (frozen exp12 models), then the pre-registered analysis"),
+  53: ("code", """!python rank.py --split f4_dev 2>&1 | grep -v -e Warning -e Loading
+  54: !python rank.py --split f4_train 2>&1 | grep -v -e Warning -e Loading
+  55: !python rank.py --split router_train --only ctrl_oneshot 2>&1 | grep -v -e Warning -e Loading
+  56: !python rank.py --split dev_fresh --only ctrl_oneshot iter_iter 2>&1 | grep -v -e Warning -e Loading
+  57: !python analyze.py"""),
+  58: ]
+  59: nb = {"cells": [{"cell_type": t, "metadata": {}, "source": s.splitlines(True), **({"outputs": [], "execution_count": None} if t == "code" else {})}
+  60:                 for t, s in cells],
+  61:       "metadata": {"accelerator": "GPU", "colab": {"gpuType": "T4"}, "kernelspec": {"name": "python3", "display_name": "Python 3"}},
+  62:       "nbformat": 4, "nbformat_minor": 5}
+  63: txt = json.dumps(nb, indent=1).replace("__PIN__", PIN)
+  64: open("exp13_colab.ipynb", "w").write(txt)
+--- experiments/exp13_cascade/data.py
+   1: """MuSiQue-Ans loading, paragraph format and prompt (copied from exp08; data files read from ../exp08_musique/data)."""
+   2: 
+   3: from __future__ import annotations
+   4: 
+   5: import json
+   6: from functools import lru_cache
+   7: from pathlib import Path
+   8: 
+   9: HERE = Path(__file__).resolve().parent
+  10: FILES = {"dev": "musique_ans_v1.0_dev.jsonl", "pool": "musique_ans_v1.0_train.jsonl"}
+  11: SPLITS = {"dev_fresh": "dev", "f4_dev": "dev", "f4_train": "pool", "router_train": "pool", "dev300": "dev"}  # split -> source file
+  12: 
+  13: 
+  14: @lru_cache(maxsize=None)
+  15: def _file(src: str) -> dict:
+  16:     with open(HERE.parent / "exp08_musique" / "data" / FILES[src], encoding="utf-8") as fh:
+  17:         return {r["id"]: r for r in map(json.loads, fh)}
+  18: 
+  19: 
+  20: def load(split: str) -> list[dict]:
+  21:     ids = json.loads((HERE / "split_ids.json").read_text())[split]
+  22:     rows = _file(SPLITS[split])
+  23:     return [rows[i] for i in ids]
+  24: 
+  25: 
+  26: def paragraphs_of(row: dict) -> tuple[list[str], list[str]]:
+  27:     """'<title>. <text>' as in exp02."""
+  28:     ps = sorted(row["paragraphs"], key=lambda p: p["idx"])
+  29:     titles = [p["title"].strip() for p in ps]
+  30:     return titles, [f"{t}. {p['paragraph_text'].strip()}" for t, p in zip(titles, ps)]
+  31: 
+  32: 
+  33: def gold_mask(row: dict) -> list[int]:
+  34:     return [int(p["is_supporting"]) for p in sorted(row["paragraphs"], key=lambda p: p["idx"])]
+  35: 
+  36: 
+  37: def hops(row: dict) -> int:
+  38:     return len(row["question_decomposition"])
+  39: 
+  40: 
+  41: def build_retrieval_prompt(question: str, paragraphs: list[str]) -> str:
+  42:     """exp02/BRACIS prompt; only change: 'the HotpotQA question' -> 'the question'."""
+  43:     context_str = "\n\n".join([f"[{i + 1}] {p}" for i, p in enumerate(paragraphs)])
+  44:     return f"""Answer the question using only the provided context.
+  45: 
+  46: Rules:
+  47: - Output only the final answer.
+  48: - If the answer is yes, no or noanswer, output exactly: yes or no or noanswer.
+  49: - Otherwise output a short span or entity name only.
+  50: - Do not include any explanation.
+  51: - Do not repeat the question.
+  52: - If multiple positions/titles are mentioned, output only the one that
+  53:   directly answers the question.
+  54: 
+  55: Context:
+  56: {context_str}
+  57: 
+  58: Question: {question}
+  59: 
+  60: Answer:"""
+  61: 
+  62: 
+  63: _ENC = None
+  64: 
+  65: 
+  66: def n_tokens(text: str) -> int:
+  67:     global _ENC
+  68:     if _ENC is None:
+  69:         import tiktoken
+  70: 
+  71:         _ENC = tiktoken.get_encoding("o200k_base")
+  72:     return len(_ENC.encode(text))
+  73: 
+  74: 
+  75: def chain(row: dict) -> list[int]:
+  76:     """Gold paragraph positions (in paragraphs_of order) in decomposition (hop) order."""
+  77:     pos = {p["idx"]: i for i, p in enumerate(sorted(row["paragraphs"], key=lambda p: p["idx"]))}
+  78:     return [pos[d["paragraph_support_idx"]] for d in row["question_decomposition"]]
+  79: 
+  80: 
+  81: def query(question: str, selected: list[str]) -> str:
+  82:     """Question + selected paragraphs, most recent first (truncation cuts the oldest)."""
+  83:     return " [SEP] ".join([question, *reversed(selected)])
+  84: 
+  85: 
+  86: def encode(tok, qs, ps, max_length=512):
+  87:     """Truncate the query side only (PROTOCOL); if a paragraph alone exceeds max_length, fall back to longest_first."""
+  88:     try:
+  89:         return tok(qs, ps, truncation="only_first", max_length=max_length, padding=True, return_tensors="pt")
+  90:     except Exception:  # noqa: BLE001 - tokenizers raises a bare Exception for this case
+  91:         return tok(qs, ps, truncation="longest_first", max_length=max_length, padding=True, return_tensors="pt")
+--- experiments/exp12_matched_control/README.md
+   1: # exp12: pair-matched control for the iterative ranker
+   2: 
+   3: Pre-registered in [PROTOCOL.md](PROTOCOL.md): commit 975371a, revised after an adversarial pre-run review by Codex.
+   4: - **Control:** M1-ctrl is trained on M1-iter's **exact** 18,101 training pairs in the same order, with the query prefix of picked paragraphs removed.
+   5: - **Compute:** Colab T4, seeds 0â€“2. Code pinned to 975371a. The analysis code (`analyze.py`) was written before training.
+   6: - **Results:** [`results/results.json`](results/results.json) and per-question hits in [`results/hits_compact.json`](results/hits_compact.json). The raw orders stay on the Colab account's Drive.
+   7: 
+   8: ## Bottom line
+   9: 
+  10: 1. **Primary fails: once training data is matched, iteration's overall gain is small and not significant.** M1-iter (iterative inference) vs M1-ctrl (one-shot), test recall@5:
+  11:    - **0.7475 vs 0.7075, +0.040 [âˆ’0.005, +0.085]**, 52 vs 36 discordant questions, p = 0.109.
+  12:    - The minimum detectable effect was about 0.07, so this does not show "no effect".
+  13: 2. **The small gain is consistent across seeds:** +0.040 / +0.028 / +0.033 (mean +0.033, SD 0.006). It is positive in all 3 seeds (descriptive).
+  14: 3. **exp09's +0.068 splits roughly into two parts:**
+  15:    - **+0.025 from more training:** M1-ctrl vs exp09's M1, 12 vs 2 discordant questions, p = 0.013 (descriptive).
+  16:    - **about +0.04 from conditioning:** not significant.
+  17:    - So H6 ("iteration beats one-shot") is **not confirmed** once the confound is removed.
+  18: 4. **The advantage is concentrated in 4-hop chains (exploratory, uncorrected).** 4-hop: **0.578 vs 0.391** (20 vs 8 discordant questions, p = 0.036, n = 64). 2-hop: 0.823 vs 0.813. 3-hop: 0.714 vs 0.699.
+  19: 5. **Secondary holds: the pure conditioning change is rank 2.** D = M1-iter âˆ’ M1-ctrl, grafted onto M1-ctrl at rank 2, recovers **86.8% [77.7, 95.8]** of the gain on test (iterative inference: 0.4075 â†’ 0.7025, full 0.7475).
+  20:    - The norm-matched random rank-2 control recovers 7% on dev300, against 85% for the real rank 2.
+  21:    - **What this change does:** it is the skill of *reading* a conditioned query. Without it, M1-ctrl collapses when run iteratively (0.41). The change is functionally rank 2, even though its benefit over a matched one-shot ranker is small overall.
+  22: 
+  23: ## 2Ã—2: model Ã— inference (test recall@5, seed 0)
+  24: 
+  25: | | One-shot inference | Iterative inference |
+  26: |---|---|---|
+  27: | **M1-iter** (trained with conditioning) | 0.685 | **0.7475** |
+  28: | **M1-ctrl** (same pairs, no conditioning) | **0.7075** | 0.4075 |
+  29: 
+  30: Each model is best in the inference mode it was trained for. Conditioning hurts one-shot use a little (0.685 vs 0.7075).
+  31: 
+  32: ## Recall@k (test, seed 0)
+  33: 
+  34: | k | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 15 |
+  35: |---|---|---|---|---|---|---|---|---|
+  36: | M1-iter, iterative | **0.313** | **0.530** | **0.675** | **0.748** | 0.775 | **0.848** | 0.898 | 0.958 |
+  37: | M1-ctrl, one-shot | 0.283 | 0.505 | 0.595 | 0.708 | **0.785** | 0.845 | **0.913** | **0.980** |
+  38: | M1-ctrl + rank-2 D, iterative | 0.298 | 0.500 | 0.648 | 0.703 | 0.753 | 0.848 | 0.880 | 0.960 |
+  39: 
+  40: The pattern from exp09/exp10 holds with matched data: iteration helps at the top (k â‰¤ 5, mostly on 4-hop questions) and loses in the tail (k â‰¥ 10).
+  41: 
+  42: ## What this changes in the claim ledger
+  43: 
+  44: - **H6 (iteration beats one-shot): from C? to N at matched data.** There is a small, seed-consistent effect (+0.03), and an exploratory 4-hop effect that must be re-tested before anyone claims it.
+  45: - **H9 (the iteration change is low-rank): confirmed in the de-confounded form.** Both D_it (exp11, 84.7%) and the pure conditioning change D (exp12, 86.8%) are about rank 2.
+  46: - **For the thesis, the honest framing:**
+  47:   - *Practical:* in-domain one-shot ranking plus adaptive stopping is the efficient choice. Iteration costs 3.7Ã— the passes for about +0.03 recall@5 overall.
+  48:   - *Research:* the ability to use a conditioned query is a separable, rank-2 change. Its value shows up on long chains (4-hop), which motivates a cascade: switch it on only for hard or long questions.
+  49: 
+  50: ## Deviations
+  51: 
+  52: 1. **Input staging.** This PC's Google Drive belongs to another account, so the inputs come from the Colab account's Drive (A1, sha-checked) and from the official MuSiQue release (sha-checked). No model was trained before the fix. The first train-subset hash had been computed on a Windows CRLF copy; the LF copy was verified byte-identical.
+  53: 2. **Results transfer.** The Colab Drive is not synced here. `results.json` and the per-question hits were copied from the notebook output, and the copy was checked: recall@5 recomputed from the hits matches exactly, and so does the McNemar test.
+  54: 
+  55: ## Files
+  56: 
+  57: - `PROTOCOL.md`, `train.py` (`--mode ctrl`, `--seed`), `evaluate.py`, `analyze.py`, `make_notebook.py`, `exp12_colab.ipynb`
+  58: - `results/results.json`, `results/hits_compact.json`
+
+codex
+The main implementation risk is already clear: the primary compares two complete systems with different inference modes and different cumulative query lengths, while the cascade analysis reuses the primary’s `f4_dev` questions. I’m checking the fixed split structure and line-level code details before ranking the concrete fixes.
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command '$p=Get-Content experiments/exp13_cascade/split_ids.json -Raw | ConvertFrom-Json; foreach ($name in @('"'f4_dev','f4_train','router_train','dev_fresh')) { "'$v=$p.$name; $u=@($v | Sort-Object -Unique); '"'{0}: n={1}, unique={2}, first={3}' -f "'$name,$v.Count,$u.Count,($v[0]) }; '"'f4_dev in dev_fresh: {0}/{1}' -f @("'$p.f4_dev | Where-Object { $p.dev_fresh -contains $_ }).Count,$p.f4_dev.Count; '"'f4_train overlap router_train: {0}' -f @("'$p.f4_train | Where-Object { $p.router_train -contains $_ }).Count; '"'train-like IDs among dev_fresh by prefix: ' + (("'$p.dev_fresh | ForEach-Object { ($_ -split '"'__')[0] } | Group-Object | ForEach-Object { \""'$($_.Name)=$($_.Count)" }) -join '"', ');" in C:\code\qualiusp2026
+ succeeded in 1342ms:
+f4_dev: n=166, unique=166, first=4hop1__105688_17130_70784_61381
+f4_train: n=400, unique=400, first=4hop1__101865_10079_503957_720028
+router_train: n=1000, unique=1000, first=2hop__100512_15014
+dev_fresh: n=1017, unique=1017, first=2hop__10114_599630
+f4_dev in dev_fresh: 166/166
+f4_train overlap router_train: 0
+train-like IDs among dev_fresh by prefix: 2hop=529, 3hop1=233, 3hop2=89, 4hop1=104, 4hop2=24, 4hop3=38
+
+codex
+## Null case: priority findings
+
+1. **The primary does not isolate the effect of conditioning.** It compares iterative inference with `M1-iter` against one-shot inference with `M1-ctrl` ([protocol lines 13, 30](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:13>)). That is a comparison of two complete systems: model training condition, inference mode, and number of steps all differ. The exp12 README says the *training pairs* were matched exactly and in the same order, but doesn’t establish that training schedules or every other training condition matched ([README line 4](</C:/code/qualiusp2026/experiments/exp12_matched_control/README.md:4>)).
+
+2. **Input lengths and truncation differ by inference mode.** Iterative queries grow as paragraphs are selected; one-shot queries do not. `encode` truncates the query side to 512 tokens, with a `longest_first` fallback when that fails ([data.py lines 81–91](</C:/code/qualiusp2026/experiments/exp13_cascade/data.py:81>)). Thus later iterative steps can see a truncated question/conditioning history, and candidate passages may be treated differently. The notebook checks the A1 *model weights* hash, but not tokenizer files; it only prints model hashes instead of asserting them ([make_notebook.py lines 27–29, 42–48](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:27>)). **Cheap check:** log and compare per-step token lengths, truncation/fallback counts, and actual model/tokenizer hashes before analysis.
+
+3. **Results can silently be stale.** `rank.py` skips any config name already in the output file, without checking its checkpoint, tokenizer, code, split contents, or run identity ([rank.py lines 60–68](</C:/code/qualiusp2026/experiments/exp13_cascade/rank.py:60>)). The notebook uses a stable output directory for the pinned commit ([make_notebook.py lines 16–20](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:16>)). **Before running:** use a unique empty results directory; store and assert hashes for each checkpoint and tokenizer; include those hashes and the commit in each rank file; reject duplicates and mismatches.
+
+4. **The “fresh” cascade evaluation overlaps the primary.** All 166 `f4_dev` questions are in `dev_fresh` (confirmed from `split_ids.json`); `f4_train` and `router_train` are disjoint. So cascade secondary results reuse a set already used in the primary, and the claims are statistically dependent. **Cheap check:** report cascade results on the 851 `dev_fresh \ f4_dev` questions as a sensitivity analysis; keep the registered result labeled as overlapping.
+
+5. **The router’s training provenance needs checking.** The protocol calls `router_train` exp10’s holdout but also says the questions were unused for prior selection ([protocol lines 23, 26, 37–40](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:23>)). The supplied exp12 README does not resolve whether exp10’s holdout influenced prior model or feature decisions. **Before running:** audit prior experiment usage of those IDs; if used for selection, label router performance as non-fresh and reserve a new router-training split.
+
+6. **Primary power is weak for the effect the authors now expect.** The protocol’s 80% MDE is about +0.08, while it expects the selected exp12 estimate (+0.19) to shrink ([protocol lines 7, 36, 66](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:7>)). A nonsignificant result would not distinguish no useful effect from a smaller positive effect. The exp12 README itself says its overall matched effect was +0.04 and nonsignificant ([README lines 10–18](</C:/code/qualiusp2026/experiments/exp12_matched_control/README.md:10>)). **Before running:** state a minimum worthwhile effect and power for it, or frame this as estimation with the CI as primary evidence.
+
+7. **Pooling train- and dev-sourced 4-hop questions can hide a stratum failure.** The primary pools 400 sampled train questions with all 166 dev questions for one McNemar test; separate stratum differences are reported but are not gates ([protocol lines 21–22, 30–35](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:21>); [analyze.py lines 57–71](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:57>)). “Both positive” is explicitly only a check. **Before running:** pre-specify the target weighting and a source-stratified estimate/test, with an interaction or consistency rule if claiming a general 4-hop effect.
+
+8. **The non-inferiority rule is fragile at its boundary.** It uses a percentile bootstrap and compares the *rounded-to-4-decimals* lower CI bound to −0.01 ([analyze.py lines 43–45, 99–103](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:43>)). A borderline decision can change through rounding; the 0.01 margin also needs a practical justification. **Before running:** compare unrounded bounds, predefine a one-sided CI procedure and justify the margin in recall points.
+
+9. **Multiplicity is waved through by the claim ledger.** There are three confirmatory claims (primary and two cascade claims), each at 0.05, plus many descriptive recall@k and hop slices ([protocol lines 42–50](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:42>); [analyze.py lines 91–103](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:91>)). Per-claim error rates do not control the chance of at least one favorable claim. **Before running:** name one primary claim for the experiment; label the others secondary/exploratory or define a familywise adjustment.
+
+10. **The cascade claim may be positive without being a useful cascade.** The router is trained on a 6.3% 4-hop rate and evaluated where 16.3% are 4-hop; class-balanced weights plus threshold 0.5 do not guarantee a useful routing rate or cost ([protocol lines 24, 40](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:24>); [analyze.py lines 75–96](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:75>)). Cascade-vs-one-shot significance can still accompany poor precision, excessive passes, or no savings over always-iterative. **Cheap check:** predefine a maximum mean-pass budget and report the joint outcome: recall gain, non-inferiority, routed fraction, precision, and passes.
+
+11. **Other checks before interpreting a positive result:** verify ranks are full permutations and gold masks/orders have matching lengths—currently `hits` trusts both ([analyze.py lines 34–35](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:34>)); verify all expected configs exist and there is exactly one per split/config (duplicate lines silently overwrite in `ranks`, [lines 24–31](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:24>)); record actual GPU/model device and inference settings. The notebook requests a T4 and prints GPU info, but does not assert it ([make_notebook.py lines 47–50](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:47>)). No hardware mismatch is demonstrated in the reviewed files; it is simply not enforced.
+tokens used
+50,761
+## Null case: priority findings
+
+1. **The primary does not isolate the effect of conditioning.** It compares iterative inference with `M1-iter` against one-shot inference with `M1-ctrl` ([protocol lines 13, 30](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:13>)). That is a comparison of two complete systems: model training condition, inference mode, and number of steps all differ. The exp12 README says the *training pairs* were matched exactly and in the same order, but doesn’t establish that training schedules or every other training condition matched ([README line 4](</C:/code/qualiusp2026/experiments/exp12_matched_control/README.md:4>)).
+
+2. **Input lengths and truncation differ by inference mode.** Iterative queries grow as paragraphs are selected; one-shot queries do not. `encode` truncates the query side to 512 tokens, with a `longest_first` fallback when that fails ([data.py lines 81–91](</C:/code/qualiusp2026/experiments/exp13_cascade/data.py:81>)). Thus later iterative steps can see a truncated question/conditioning history, and candidate passages may be treated differently. The notebook checks the A1 *model weights* hash, but not tokenizer files; it only prints model hashes instead of asserting them ([make_notebook.py lines 27–29, 42–48](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:27>)). **Cheap check:** log and compare per-step token lengths, truncation/fallback counts, and actual model/tokenizer hashes before analysis.
+
+3. **Results can silently be stale.** `rank.py` skips any config name already in the output file, without checking its checkpoint, tokenizer, code, split contents, or run identity ([rank.py lines 60–68](</C:/code/qualiusp2026/experiments/exp13_cascade/rank.py:60>)). The notebook uses a stable output directory for the pinned commit ([make_notebook.py lines 16–20](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:16>)). **Before running:** use a unique empty results directory; store and assert hashes for each checkpoint and tokenizer; include those hashes and the commit in each rank file; reject duplicates and mismatches.
+
+4. **The “fresh” cascade evaluation overlaps the primary.** All 166 `f4_dev` questions are in `dev_fresh` (confirmed from `split_ids.json`); `f4_train` and `router_train` are disjoint. So cascade secondary results reuse a set already used in the primary, and the claims are statistically dependent. **Cheap check:** report cascade results on the 851 `dev_fresh \ f4_dev` questions as a sensitivity analysis; keep the registered result labeled as overlapping.
+
+5. **The router’s training provenance needs checking.** The protocol calls `router_train` exp10’s holdout but also says the questions were unused for prior selection ([protocol lines 23, 26, 37–40](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:23>)). The supplied exp12 README does not resolve whether exp10’s holdout influenced prior model or feature decisions. **Before running:** audit prior experiment usage of those IDs; if used for selection, label router performance as non-fresh and reserve a new router-training split.
+
+6. **Primary power is weak for the effect the authors now expect.** The protocol’s 80% MDE is about +0.08, while it expects the selected exp12 estimate (+0.19) to shrink ([protocol lines 7, 36, 66](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:7>)). A nonsignificant result would not distinguish no useful effect from a smaller positive effect. The exp12 README itself says its overall matched effect was +0.04 and nonsignificant ([README lines 10–18](</C:/code/qualiusp2026/experiments/exp12_matched_control/README.md:10>)). **Before running:** state a minimum worthwhile effect and power for it, or frame this as estimation with the CI as primary evidence.
+
+7. **Pooling train- and dev-sourced 4-hop questions can hide a stratum failure.** The primary pools 400 sampled train questions with all 166 dev questions for one McNemar test; separate stratum differences are reported but are not gates ([protocol lines 21–22, 30–35](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:21>); [analyze.py lines 57–71](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:57>)). “Both positive” is explicitly only a check. **Before running:** pre-specify the target weighting and a source-stratified estimate/test, with an interaction or consistency rule if claiming a general 4-hop effect.
+
+8. **The non-inferiority rule is fragile at its boundary.** It uses a percentile bootstrap and compares the *rounded-to-4-decimals* lower CI bound to −0.01 ([analyze.py lines 43–45, 99–103](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:43>)). A borderline decision can change through rounding; the 0.01 margin also needs a practical justification. **Before running:** compare unrounded bounds, predefine a one-sided CI procedure and justify the margin in recall points.
+
+9. **Multiplicity is waved through by the claim ledger.** There are three confirmatory claims (primary and two cascade claims), each at 0.05, plus many descriptive recall@k and hop slices ([protocol lines 42–50](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:42>); [analyze.py lines 91–103](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:91>)). Per-claim error rates do not control the chance of at least one favorable claim. **Before running:** name one primary claim for the experiment; label the others secondary/exploratory or define a familywise adjustment.
+
+10. **The cascade claim may be positive without being a useful cascade.** The router is trained on a 6.3% 4-hop rate and evaluated where 16.3% are 4-hop; class-balanced weights plus threshold 0.5 do not guarantee a useful routing rate or cost ([protocol lines 24, 40](</C:/code/qualiusp2026/experiments/exp13_cascade/PROTOCOL.md:24>); [analyze.py lines 75–96](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:75>)). Cascade-vs-one-shot significance can still accompany poor precision, excessive passes, or no savings over always-iterative. **Cheap check:** predefine a maximum mean-pass budget and report the joint outcome: recall gain, non-inferiority, routed fraction, precision, and passes.
+
+11. **Other checks before interpreting a positive result:** verify ranks are full permutations and gold masks/orders have matching lengths—currently `hits` trusts both ([analyze.py lines 34–35](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:34>)); verify all expected configs exist and there is exactly one per split/config (duplicate lines silently overwrite in `ranks`, [lines 24–31](</C:/code/qualiusp2026/experiments/exp13_cascade/analyze.py:24>)); record actual GPU/model device and inference settings. The notebook requests a T4 and prints GPU info, but does not assert it ([make_notebook.py lines 47–50](</C:/code/qualiusp2026/experiments/exp13_cascade/make_notebook.py:47>)). No hardware mismatch is demonstrated in the reviewed files; it is simply not enforced.
