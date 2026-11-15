@@ -1,12 +1,12 @@
 \chapter{Preliminary Results}
 \label{chap:results}
 
-Each section states the pre-registered question, the result and its status. All numbers are on held-out questions. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
+The results first measure how many tokens a small selector saves, then test whether conditioning on already-selected paragraphs improves multi-hop evidence selection and, finally, answer quality. Each section states the pre-registered question, the result and its status. All numbers are on held-out questions. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
 
 \section{A small selector saves most of the tokens (HotpotQA)}
 \label{sec:res_selector}
 
-A1, the fine-tuned 22.7M cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set. The reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. Table~\ref{tab:hotpot} shows that all A1 rules used 68--77\% fewer prompt tokens, with small F1 differences whose 95\% CIs included zero; no non-inferiority margin was registered for this comparison, so it does not establish equivalence. The gold-paragraphs oracle is better than $k=10$ by 0.040 F1 (CI $[0.017, 0.064]$), so distractors actively hurt the reader.
+A1, the fine-tuned 22.7M cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set. The reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. Table~\ref{tab:hotpot} shows that all A1 rules used 68--77\% fewer prompt tokens, with small F1 differences whose 95\% CIs included zero; no non-inferiority margin was registered for this comparison, so it does not establish equivalence. The gold-paragraphs condition had 0.040 higher F1 than $k=10$ (CI $[0.017, 0.064]$), which is consistent with irrelevant context reducing answer quality.
 
 \begin{table}[htbp]
 \centering
@@ -34,7 +34,7 @@ On HotpotQA, choosing between two and four paragraphs per question with a learne
 \section{On MuSiQue, ranking quality limits cost}
 \label{sec:res_bottleneck}
 
-With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets; the pre-registered comparison was declared not testable. The results below, from later experiments, suggest that ranking quality is the main limiting factor. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised full-support recall@5 from 0.355 to 0.682, and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). That comparison, however, was confounded by the amount of training data (Section~\ref{sec:res_matched}).
+With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets; the pre-registered comparison was declared not testable. The results below, from later experiments, suggest that ranking quality is the main limiting factor. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised full-support recall@5 from 0.355 to 0.682, and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter, trained on more pairs than M1, reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). Because of the difference in training data, this comparison is confounded (Section~\ref{sec:res_matched}).
 
 \section{The iteration change is functionally rank 2}
 \label{sec:res_rank}
@@ -53,7 +53,7 @@ Figure~\ref{fig:matched} illustrates the design. With identical training pairs, 
 \label{fig:matched}
 \end{figure}
 
-The pre-registered secondary test asked whether the pure conditioning change, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is also low-rank. Grafted onto M1-ctrl at rank 2, it recovered 86.8\% of the gap between M1-ctrl run iteratively and M1-iter on the test set (CI $[77.7\%, 95.8\%]$), while a random rank-2 change of the same norm recovered 7\% (one draw, tuning set). Without this change, M1-ctrl collapses when run iteratively (recall@5 of 0.41), so $\Delta$ encodes the ability to \emph{read} a conditioned query. Recovery is measured from that collapsed baseline: overall, the grafted model run iteratively (0.7025) did not beat M1-ctrl run one-shot (0.7075). On the 64 four-hop test questions it reached 0.500, between one-shot (0.391) and the full M1-iter (0.578) (descriptive).
+The pre-registered secondary test asked whether the pure conditioning change, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is also low-rank. Grafted onto M1-ctrl at rank 2, it recovered 86.8\% of the gap between M1-ctrl run iteratively and M1-iter on the test set (CI $[77.7\%, 95.8\%]$), while a random rank-2 change of the same norm recovered 7\% (one draw, tuning set). Without this change, M1-ctrl collapses when run iteratively (recall@5 of 0.41); the result supports the interpretation that $\Delta$ is what lets the model use a conditioned query. Recovery here is the fraction of the gap between that collapsed baseline and M1-iter that the rank-2 graft closes: overall, the grafted model run iteratively (0.7025) did not beat M1-ctrl run one-shot (0.7075). On the 64 four-hop test questions it reached 0.500, between one-shot (0.391) and the full M1-iter (0.578) (descriptive).
 
 \section{The effect is concentrated on long chains}
 \label{sec:res_long}
@@ -86,7 +86,7 @@ Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
 
 \section{Summary}
 
-Table~\ref{tab:claims} lists the claims and their status. The practical result is that a small in-domain selector with adaptive stopping is the cost-efficient choice. The research result is that the weight change behind chain-following in such a selector is functionally approximated at rank 2; conditioning-trained iteration improved the registered four-hop outcome, exploratory analyses suggest the gain extends to three-hop but not two-hop questions, and simple routing does not yet capture it.
+Table~\ref{tab:claims} lists the claims and their status. The practical result is that, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the best cost found so far. The research result is that the weight change behind chain-following in such a selector is functionally approximated at rank 2; conditioning-trained iteration improved the registered four-hop outcome, exploratory analyses suggest the gain extends to three-hop but not two-hop questions, and simple routing does not yet capture it.
 
 \begin{table}[htbp]
 \centering
@@ -97,7 +97,7 @@ Table~\ref{tab:claims} lists the claims and their status. The practical result i
 \toprule
 Claim & Status & Section \\
 \midrule
-Small selector: 68--77\% fewer tokens at equal F1 (HotpotQA) & C & \ref{sec:res_selector} \\
+Small selector: 68--77\% fewer tokens, F1 differences not significant (HotpotQA) & C & \ref{sec:res_selector} \\
 Adaptive stopping saves tokens at a recall target & C (HotpotQA; MuSiQue at 0.95 only) & \ref{sec:res_adaptive} \\
 Iteration beats one-shot at matched training data & N ($+0.040$, $p=0.11$) & \ref{sec:res_matched} \\
 A rank-2 graft recovers the conditioning change & C (86.8\%) & \ref{sec:res_rank}, \ref{sec:res_matched} \\

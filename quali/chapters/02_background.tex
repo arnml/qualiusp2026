@@ -1,9 +1,10 @@
 \chapter{Background}
 \label{chap:background}
 
-This chapter introduces the concepts the rest of the text relies on: retrieval-augmented generation, multi-hop question answering, cross-encoder reranking, the structure of fine-tuning updates, and the evaluation metrics and statistical tests used.
+This chapter introduces the concepts the experiments measure: what a RAG system pays for (Section~\ref{sec:bg_rag}), why multi-hop questions are hard to select evidence for, how the selector scores paragraphs, how a fine-tuning change can be described, and how results are evaluated and tested.
 
 \section{Parametric and non-parametric knowledge}
+\label{sec:bg_rag}
 
 A Transformer language model \cite{vaswani2017attention} stores what it learned in its weights. This \emph{parametric} knowledge is implicit: it cannot be inspected or updated piece by piece, and the model may produce fluent but unsupported statements, which \citeonline{liu2026unifieddefinitionhallucinationits} analyse as failures of the model's world model.
 
@@ -15,7 +16,7 @@ A question is \emph{multi-hop} when its answer requires combining several pieces
 
 \section{Cross-encoder reranking}
 
-A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. It is more accurate but needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. Scoring the twenty paragraphs of a MuSiQue question takes twenty forward passes.
+A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. Because it models the interaction between question and paragraph, it is typically more accurate for reranking \cite{nogueira2019passage}, but it needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. Scoring the twenty paragraphs of a MuSiQue question takes twenty forward passes.
 
 \textbf{One-shot and iterative reranking.} A one-shot reranker scores every paragraph against the question once and sorts them. An \emph{iterative} reranker selects one paragraph at a time and re-scores the remaining ones with a query that contains the question and the paragraphs already selected. Iterative selection can follow a chain from one piece of evidence to the next, at the cost of more passes \cite{xiong2021mdr,zhang2024beamretrieval}.
 
@@ -26,12 +27,14 @@ Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$
 \Delta_r = \sum_{i=1}^{r} \sigma_i u_i v_i^\top,
 \label{eq:svd}
 \end{equation}
-where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors (the Eckart--Young theorem). PHLoRA \cite{vasani2025phlora} uses this operation to extract adapters from fine-tuned checkpoints. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
+where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors (the Eckart--Young theorem).
+
+Intuitively, each term $\sigma_i u_i v_i^\top$ is one \emph{direction of change}: a column vector times a row vector, so every row of the term is the same pattern, only scaled. A rank-1 change moves the matrix along a single such direction; a rank-2 change is the sum of two. The rank therefore measures how simple a change is. For a $384\times384$ matrix, a full change has about 147,000 numbers, while a rank-2 approximation needs $2\times(384+384)\approx1{,}500$. When a rank-$r$ approximation reproduces most of a fine-tuned model's behaviour, we call the change \emph{functionally} rank~$r$: keeping $r$ directions is enough for the behaviour, although the full change may contain many more small directions. PHLoRA \cite{vasani2025phlora} uses this operation to extract adapters from fine-tuned checkpoints. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
 
 \section{Metrics}
 
 \begin{description}
-  \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than the usual per-paragraph recall, and matches what a reader needs to answer a multi-hop question.
+  \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than per-paragraph recall: it measures whether the selected set contains every annotated supporting paragraph.
   \item[Tokens.] The number of input tokens of the reader's prompt with the selected paragraphs, counted with the reader's tokenizer (\texttt{o200k\_base}) or as reported by the API.
   \item[Passes.] Cross-encoder forward passes per question, the selector's compute cost.
   \item[Answer F1 and EM.] Token-level F1 and exact match between the reader's answer and the reference answer (maximum over aliases), after standard normalization.

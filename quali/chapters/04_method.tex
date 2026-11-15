@@ -1,9 +1,11 @@
 \chapter{Materials and Methods}
 \label{chap:method}
 
+This chapter specifies the controlled comparisons needed to separate three effects that are easily confused: token savings from selection, the effect of conditioning the selector on already-selected paragraphs, and the effect of simply training on more data.
+
 \section{Data}
 
-\textbf{HotpotQA} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
+\textbf{HotpotQA} \cite{yang2018hotpotqa} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
 
 \textbf{MuSiQue-Ans} \cite{trivedi2022musique} is used for the multi-hop experiments. The official test labels are not public, so all evaluation sets are drawn from the labelled development split, disjoint from each other and fixed in advance:
 \begin{itemize}

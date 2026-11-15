@@ -1,13 +1,15 @@
 \chapter{Related Work}
 \label{chap:related}
 
-This chapter positions the work against three lines of research: context selection for RAG, multi-hop retrieval, and the structure of fine-tuning updates. Table~\ref{tab:positioning} summarizes what is known and what this work adds.
+Existing work reduces what the LLM reads or retrieves evidence iteratively, but it leaves open whether a very small reranker can follow evidence chains, and whether that ability can be isolated in its weights. This chapter reviews three lines of research, context selection for RAG, multi-hop retrieval and the structure of fine-tuning updates, and Table~\ref{tab:positioning} summarizes what is known and what this work adds.
 
 \section{Context selection and compression for RAG}
 
-Several methods reduce what the LLM reads. RECOMP \cite{xu2024recomp} trains compressors that summarize retrieved documents; LongLLMLingua \cite{jiang2024longllmlingua} prunes tokens; FILCO \cite{wang2023filco} filters context at the span level; Provence \cite{chirkova2025provence} prunes sentences with a trained cross-encoder; and CompAct \cite{yoon2024compact} compresses iteratively. Adaptive methods decide how much to retrieve: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores and adds a buffer of extra passages (five by default). Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
+Several methods reduce what the LLM reads by compressing the context. RECOMP \cite{xu2024recomp} trains compressors that summarize retrieved documents; LongLLMLingua \cite{jiang2024longllmlingua} prunes tokens; FILCO \cite{wang2023filco} filters context at the span level; Provence \cite{chirkova2025provence} prunes sentences with a trained cross-encoder; and CompAct \cite{yoon2024compact} compresses iteratively.
 
-Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a careful cost accounting of a very small selector at matched recall and answer quality, and the finding that on harder multi-hop data the ranker, not the stopping rule, is the bottleneck.
+Other methods decide how much to retrieve or send: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores and adds a buffer of extra passages (five by default). Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
+
+Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a cost accounting of a very small selector at fixed recall targets, with answer-F1 differences and confidence intervals reported, and the finding that on harder multi-hop data ranking quality, rather than the stopping rule, limits cost.
 
 \section{Multi-hop retrieval}
 
@@ -33,9 +35,9 @@ Against this background, a low-rank fine-tuning update is not surprising in itse
 Topic & Known & Added here \\
 \midrule
 Small selector saves tokens & Trained selectors and compressors cut tokens at equal quality \cite{xu2024recomp,chirkova2025provence} & Matched-recall and matched-F1 accounting at 22.7M parameters \\
-Adaptive stopping & Adaptive-$k$, DynamicRAG, Self-RAG & Learned stopping on cross-encoder scores; Adaptive-$k$ is weak on these scores \\
-Iterative reranking & Beam Retrieval, MDR, Baleen & Pair-matched control: part of the gain was more training data \\
-Low-rank updates & LoRA, PHLoRA, intrinsic dimension & A retrieval behaviour is a rank-2 change, with random and matched controls \\
+Adaptive stopping & Adaptive-$k$, DynamicRAG, Self-RAG \cite{taguchi2025adaptivek,sun2025dynamicrag,asai2024selfrag} & Learned stopping on cross-encoder scores; Adaptive-$k$ is weak on these scores \\
+Iterative reranking & Beam Retrieval, MDR, Baleen \cite{zhang2024beamretrieval,xiong2021mdr,khattab2021baleen} & Pair-matched control: part of the gain was more training data \\
+Low-rank updates & LoRA, PHLoRA, intrinsic dimension \cite{hu2022lora,vasani2025phlora,aghajanyan2021intrinsic} & A retrieval behaviour is a rank-2 change, with random and matched controls \\
 Behaviour in tiny adapters & Rank-1 behaviours in LLMs \cite{soligo2025convergent} & The same in a small encoder, for a retrieval behaviour \\
 \bottomrule
 \end{tabularx}

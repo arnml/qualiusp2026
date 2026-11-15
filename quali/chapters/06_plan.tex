@@ -3,7 +3,7 @@
 
 \section{Expected contribution}
 
-The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
+The remaining work tests whether one small selector can serve short questions cheaply and switch on iterative selection only where it improves the evidence for long chains. The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
 \begin{enumerate}
   \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
   \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that lets the one-shot selector run iteratively, so a single base model serves both modes. Its value must be shown where iteration helps (long chains): the extracted rank-2 graft restored iterative use but did not beat one-shot ranking overall;

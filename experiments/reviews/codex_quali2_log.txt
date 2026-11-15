@@ -1,0 +1,1093 @@
+OpenAI Codex v0.157.1
+--------
+workdir: C:\code\qualiusp2026
+model: gpt-6-luna
+provider: openai
+approval: on-request
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 01a1e072-c459-7511-a5b7-522eb2f1ae21
+--------
+user
+Second audit of a master's qualification text (Escola Politécnica da USP, Computer Engineering). Read-only. Read quali/chapters/*.tex (and quali/bibli.bib for available citations).
+Report, ranked, with file:line and a concrete fix for each:
+1. UNCITED STRONG CLAIMS: every general or factual statement about the world, the field, or other methods that has no \cite and is not supported by this work's own results (e.g. "X is well established", "distractors mislead models", "iterative retrieval follows chains", "cross-encoders are more accurate"). For each, say whether (a) a key already in bibli.bib fits (name it), (b) a new citation is needed (suggest a well-known paper you are sure exists), or (c) the claim should be softened/removed. Also flag statements about this work's results that are stronger than the reported numbers.
+2. PURPOSE AND RELEVANCE: does the abstract, introduction and each chapter opening make clear WHY the problem matters (cost of LLM context in RAG, multi-hop failure, practical deployment, scientific question about what fine-tuning changes) and what the reader gains? Point to where motivation is missing or buried and propose sharper wording.
+3. WRITING STYLE: academic English issues (vague words, long sentences, jargon not defined on first use such as "full-support recall", "graft", "recovery", "conditioning", "pair-matched"), inconsistent terminology, passive overuse, paragraphs that only list numbers without interpretation, repetition across chapters. Suggest concrete rewrites for the 8 worst passages.
+Max ~90 lines.
+
+2026-11-15T18:23:02.206252Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when AuthRequired(AuthRequiredError { www_authenticate_header: "Bearer resource_metadata=\"https://mcp.context7.com/.well-known/oauth-protected-resource/mcp\"" })
+codex
+I’ll read the chapter text and bibliography, then rank the issues with exact line references and concrete edits. I’ll keep this read-only and won’t build the LaTeX.
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command 'Get-ChildItem quali/chapters -Filter *.tex | ForEach-Object { $_.FullName }; Get-Content quali/bibli.bib | Measure-Object -Line' in C:\code\qualiusp2026
+ succeeded in 1478ms:
+C:\code\qualiusp2026\quali\chapters\00_abstract.tex
+C:\code\qualiusp2026\quali\chapters\01_introduction.tex
+C:\code\qualiusp2026\quali\chapters\02_background.tex
+C:\code\qualiusp2026\quali\chapters\03_related_work.tex
+C:\code\qualiusp2026\quali\chapters\04_method.tex
+C:\code\qualiusp2026\quali\chapters\05_results.tex
+C:\code\qualiusp2026\quali\chapters\06_plan.tex
+C:\code\qualiusp2026\quali\chapters\A_experiment_index.tex
+
+Lines Words Characters Property
+----- ----- ---------- --------
+  913                          
+
+
+
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command 'Get-ChildItem quali/chapters -Filter *.tex | ForEach-Object { $n=(Get-Content $_.FullName).Count; "{0}: {1}" -f $_.Name,$n }; rg -n "''^@|''^'"\\\\bibitem|"'^" quali/bibli.bib | Select-Object -First 120' in C:\code\qualiusp2026
+ exited 1 in 1854ms:
+00_abstract.tex: 17
+01_introduction.tex: 36
+02_background.tex: 42
+03_related_work.tex: 42
+04_method.tex: 59
+05_results.tex: 110
+06_plan.tex: 96
+A_experiment_index.tex: 30
+1:@InProceedings{pmlr-v119-guu20a,
+2:  title = 	 {Retrieval Augmented Language Model Pre-Training},
+3:  author =       {Guu, Kelvin and Lee, Kenton and Tung, Zora and Pasupat, Panupong and Chang, Mingwei},
+4:  booktitle = 	 {Proceedings of the 37th International Conference on Machine Learning},
+5:  pages = 	 {3929--3938},
+6:  year = 	 {2020},
+7:  editor = 	 {III, Hal Daumé and Singh, Aarti},
+8:  volume = 	 {119},
+9:  series = 	 {Proceedings of Machine Learning Research},
+10:  month = 	 {13--18 Jul},
+11:  publisher =    {PMLR},
+12:  pdf = 	 {http://proceedings.mlr.press/v119/guu20a/guu20a.pdf},
+13:  url = 	 {https://proceedings.mlr.press/v119/guu20a.html},
+14:  abstract = 	 {Language model pre-training has been shown to capture a surprising amount of world knowledge, crucial for NLP tasks such as question answering. However, this knowledge is stored implicitly in the parameters of a neural network, requiring ever-larger networks to cover more facts. To capture knowledge in a more modular and interpretable way, we augment language model pre-training with a latent knowledge retriever, which allows the model to retrieve and attend over documents from a large corpus such as Wikipedia, used during pre-training, fine-tuning and inference. For the first time, we show how to pre-train such a knowledge retriever in an unsupervised manner, using masked language modeling as the learning signal and backpropagating through a retrieval step that considers millions of documents. We demonstrate the effectiveness of Retrieval-Augmented Language Model pre-training (REALM) by fine-tuning on the challenging task of Open-domain Question Answering (Open-QA). We compare against state-of-the-art models for both explicit and implicit knowledge storage on three popular Open-QA benchmarks, and find that we outperform all previous methods by a significant margin (4-16% absolute accuracy), while also providing qualitative benefits such as interpretability and modularity.}
+15:}
+16:
+17:@inproceedings{3495724.3496517,
+18:author = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K\"{u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt\"{a}schel, Tim and Riedel, Sebastian and Kiela, Douwe},
+19:title = {Retrieval-augmented generation for knowledge-intensive NLP tasks},
+20:year = {2020},
+21:isbn = {9781713829546},
+22:publisher = {Curran Associates Inc.},
+23:address = {Red Hook, NY, USA},
+24:abstract = {Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks. However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures. Additionally, providing provenance for their decisions and updating their world knowledge remain open research problems. Pre-trained models with a differentiable access mechanism to explicit non-parametric memory can overcome this issue, but have so far been only investigated for extractive downstream tasks. We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) — models which combine pre-trained parametric and non-parametric memory for language generation. We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever. We compare two RAG formulations, one which conditions on the same retrieved passages across the whole generated sequence, and another which can use different passages per token. We fine-tune and evaluate our models on a wide range of knowledge-intensive NLP tasks and set the state of the art on three open domain QA tasks, outperforming parametric seq2seq models and task-specific retrieve-and-extract architectures. For language generation tasks, we find that RAG models generate more specific, diverse and factual language than a state-of-the-art parametric-only seq2seq baseline.},
+25:booktitle = {Proceedings of the 34th International Conference on Neural Information Processing Systems},
+26:articleno = {793},
+27:numpages = {16},
+28:location = {Vancouver, BC, Canada},
+29:series = {NIPS '20}
+30:}
+31:
+32:@misc{asai2024reliableadaptableattributablelanguage,
+33:      title={Reliable, Adaptable, and Attributable Language Models with Retrieval}, 
+34:      author={Akari Asai and Zexuan Zhong and Danqi Chen and Pang Wei Koh and Luke Zettlemoyer and Hannaneh Hajishirzi and Wen-tau Yih},
+35:      year={2024},
+36:      eprint={2403.03187},
+37:      archivePrefix={arXiv},
+38:      primaryClass={cs.CL},
+39:      url={https://arxiv.org/abs/2403.03187}, 
+40:}
+41:
+42:@inproceedings{jin-etal-2025-rag,
+43:    title = "{RAG}-{R}eward{B}ench: Benchmarking Reward Models in Retrieval Augmented Generation for Preference Alignment",
+44:    author = "Jin, Zhuoran  and
+45:      Yuan, Hongbang  and
+46:      Men, Tianyi  and
+47:      Cao, Pengfei  and
+48:      Chen, Yubo  and
+49:      Xu, Jiexin  and
+50:      Li, Huaijun  and
+51:      Jiang, Xiaojian  and
+52:      Liu, Kang  and
+53:      Zhao, Jun",
+54:    editor = "Che, Wanxiang  and
+55:      Nabende, Joyce  and
+56:      Shutova, Ekaterina  and
+57:      Pilehvar, Mohammad Taher",
+58:    booktitle = "Findings of the Association for Computational Linguistics: ACL 2025",
+59:    month = jul,
+60:    year = "2025",
+61:    address = "Vienna, Austria",
+62:    publisher = "Association for Computational Linguistics",
+63:    url = "https://aclanthology.org/2025.findings-acl.877/",
+64:    doi = "10.18653/v1/2025.findings-acl.877",
+65:    pages = "17061--17090",
+66:    ISBN = "979-8-89176-256-5",
+67:    abstract = "Despite the significant progress made by existing retrieval augmented language models (RALMs) in providing trustworthy responses and grounding in reliable sources, they often overlook effective alignment with human preferences. In the alignment process, reward models (RMs) act as a crucial proxy for human values to guide optimization. However, it remains unclear how to evaluate and select a reliable RM for preference alignment in RALMs. To this end, we propose RAG-RewardBench, the first benchmark for evaluating RMs in RAG settings. First, we design four crucial and challenging RAG-specific scenarios to assess RMs, including multi-hop reasoning, fine-grained citation, appropriate abstain, and conflict robustness. Then, we incorporate 18 RAG subsets, six retrievers, and 24 RALMs to increase the diversity of data sources. Finally, we adopt an LLM-as-a-judge approach to improve preference annotation efficiency and effectiveness, exhibiting a strong correlation with human annotations. Based on the RAG-RewardBench, we conduct a comprehensive evaluation of 45 RMs and uncover their limitations in RAG scenarios. Additionally, we also reveal that existing trained RALMs show almost no improvement in preference alignment, highlighting the need for a shift towards preference-aligned training."
+68:}
+69:
+70:%https://web.stanford.edu/class/cs224n/
+71:
+72:%rag in humanity research
+73:%link: https://www.cambridge.org/core/journals/cambridge-forum-on-ai-culture-and-society/article/atlas-harnessing-retrievalaugmented-generation-rag/FBDE8D88E2D840BC9BD290F60B1E71E7
+74:@article{Smithies_Berman_Taiuru_Spychal_Moore_2026, title={ATLAS: Harnessing retrieval-augmented generation (RAG)}, volume={2}, DOI={10.1017/cfc.2026.10029}, journal={Cambridge Forum on AI: Culture and Society}, author={Smithies, James and Berman, Glen and Taiuru, Karaitiana and Spychal, Martin and Moore, John}, year={2026}, pages={e17}}
+75:
+76:
+77:%bert architecture 
+78:%https://huggingface.co/blog/bert-101
+79:@article{reimers2019sentence,
+80:  title={Sentence-bert: Sentence embeddings using siamese bert-networks},
+81:  author={Reimers, Nils and Gurevych, Iryna},
+82:  journal={arXiv preprint arXiv:1908.10084},
+83:  year={2019}
+84:}
+85:
+86:% A Unified Definition of Hallucination: It's The World Model, Stupid!
+87:@misc{liu2026unifieddefinitionhallucinationits,
+88:      title={A Unified Definition of Hallucination: It's The World Model, Stupid!}, 
+89:      author={Emmy Liu and Varun Gangal and Chelsea Zou and Michael Yu and Xiaoqi Huang and Alex Chang and Zhuofu Tao and Karan Singh and Sachin Kumar and Steven Y. Feng},
+90:      year={2026},
+91:      eprint={2512.21577},
+92:      archivePrefix={arXiv},
+93:      primaryClass={cs.CL},
+94:      url={https://arxiv.org/abs/2512.21577}, 
+95:}
+96:
+97:% DeepSeek-R1: first paper that demonstrated that reasoning behavior can be achieved with pure reinforcement learning (RL).
+98:@article{Guo_2025,
+99:   title={DeepSeek-R1 incentivizes reasoning in LLMs through reinforcement learning},
+100:   volume={645},
+101:   ISSN={1476-4687},
+102:   url={http://dx.doi.org/10.1038/s41586-025-09422-z},
+103:   DOI={10.1038/s41586-025-09422-z},
+104:   number={8081},
+105:   journal={Nature},
+106:   publisher={Springer Science and Business Media LLC},
+107:   author={Guo, Daya and Yang, Dejian and Zhang, Haowei and Song, Junxiao and Wang, Peiyi and Zhu, Qihao and Xu, Runxin and Zhang, Ruoyu and Ma, Shirong and Bi, Xiao and Zhang, Xiaokang and Yu, Xingkai and Wu, Yu and Wu, Z. F. and Gou, Zhibin and Shao, Zhihong and Li, Zhuoshu and Gao, Ziyi and Liu, Aixin and Xue, Bing and Wang, Bingxuan and Wu, Bochao and Feng, Bei and Lu, Chengda and Zhao, Chenggang and Deng, Chengqi and Ruan, Chong and Dai, Damai and Chen, Deli and Ji, Dongjie and Li, Erhang and Lin, Fangyun and Dai, Fucong and Luo, Fuli and Hao, Guangbo and Chen, Guanting and Li, Guowei and Zhang, H. and Xu, Hanwei and Ding, Honghui and Gao, Huazuo and Qu, Hui and Li, Hui and Guo, Jianzhong and Li, Jiashi and Chen, Jingchang and Yuan, Jingyang and Tu, Jinhao and Qiu, Junjie and Li, Junlong and Cai, J. L. and Ni, Jiaqi and Liang, Jian and Chen, Jin and Dong, Kai and Hu, Kai and You, Kaichao and Gao, Kaige and Guan, Kang and Huang, Kexin and Yu, Kuai and Wang, Lean and Zhang, Lecong and Zhao, Liang and Wang, Litong and Zhang, Liyue and Xu, Lei and Xia, Leyi and Zhang, Mingchuan and Zhang, Minghua and Tang, Minghui and Zhou, Mingxu and Li, Meng and Wang, Miaojun and Li, Mingming and Tian, Ning and Huang, Panpan and Zhang, Peng and Wang, Qiancheng and Chen, Qinyu and Du, Qiushi and Ge, Ruiqi and Zhang, Ruisong and Pan, Ruizhe and Wang, Runji and Chen, R. J. and Jin, R. L. and Chen, Ruyi and Lu, Shanghao and Zhou, Shangyan and Chen, Shanhuang and Ye, Shengfeng and Wang, Shiyu and Yu, Shuiping and Zhou, Shunfeng and Pan, Shuting and Li, S. S. and Zhou, Shuang and Wu, Shaoqing and Yun, Tao and Pei, Tian and Sun, Tianyu and Wang, T. and Zeng, Wangding and Liu, Wen and Liang, Wenfeng and Gao, Wenjun and Yu, Wenqin and Zhang, Wentao and Xiao, W. L. and An, Wei and Liu, Xiaodong and Wang, Xiaohan and Chen, Xiaokang and Nie, Xiaotao and Cheng, Xin and Liu, Xin and Xie, Xin and Liu, Xingchao and Yang, Xinyu and Li, Xinyuan and Su, Xuecheng and Lin, Xuheng and Li, X. Q. and Jin, Xiangyue and Shen, Xiaojin and Chen, Xiaosha and Sun, Xiaowen and Wang, Xiaoxiang and Song, Xinnan and Zhou, Xinyi and Wang, Xianzu and Shan, Xinxia and Li, Y. K. and Wang, Y. Q. and Wei, Y. X. and Zhang, Yang and Xu, Yanhong and Li, Yao and Zhao, Yao and Sun, Yaofeng and Wang, Yaohui and Yu, Yi and Zhang, Yichao and Shi, Yifan and Xiong, Yiliang and He, Ying and Piao, Yishi and Wang, Yisong and Tan, Yixuan and Ma, Yiyang and Liu, Yiyuan and Guo, Yongqiang and Ou, Yuan and Wang, Yuduan and Gong, Yue and Zou, Yuheng and He, Yujia and Xiong, Yunfan and Luo, Yuxiang and You, Yuxiang and Liu, Yuxuan and Zhou, Yuyang and Zhu, Y. X. and Huang, Yanping and Li, Yaohui and Zheng, Yi and Zhu, Yuchen and Ma, Yunxian and Tang, Ying and Zha, Yukun and Yan, Yuting and Ren, Z. Z. and Ren, Zehui and Sha, Zhangli and Fu, Zhe and Xu, Zhean and Xie, Zhenda and Zhang, Zhengyan and Hao, Zhewen and Ma, Zhicheng and Yan, Zhigang and Wu, Zhiyu and Gu, Zihui and Zhu, Zijia and Liu, Zijun and Li, Zilin and Xie, Ziwei and Song, Ziyang and Pan, Zizheng and Huang, Zhen and Xu, Zhipeng and Zhang, Zhongyu and Zhang, Zhen},
+108:   year={2025},
+109:   month=Sept, pages={633–638} }
+110:
+111:% Tulu 3: coined the RLVT term.
+112:@misc{lambert2025tulu3pushingfrontiers,
+113:      title={Tulu 3: Pushing Frontiers in Open Language Model Post-Training}, 
+114:      author={Nathan Lambert and Jacob Morrison and Valentina Pyatkin and Shengyi Huang and Hamish Ivison and Faeze Brahman and Lester James V. Miranda and Alisa Liu and Nouha Dziri and Shane Lyu and Yuling Gu and Saumya Malik and Victoria Graf and Jena D. Hwang and Jiangjiang Yang and Ronan Le Bras and Oyvind Tafjord and Chris Wilhelm and Luca Soldaini and Noah A. Smith and Yizhong Wang and Pradeep Dasigi and Hannaneh Hajishirzi},
+115:      year={2025},
+116:      eprint={2411.15124},
+117:      archivePrefix={arXiv},
+118:      primaryClass={cs.CL},
+119:      url={https://arxiv.org/abs/2411.15124}, 
+120:}
+
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command '$files=Get-ChildItem quali/chapters -Filter *.tex; foreach($f in $files){ "`n===== $($f.Name) ====="; $i=0; Get-Content $f.FullName | ForEach-Object { $i++; "{0,3}: {1}" -f $i,$_ } }' in C:\code\qualiusp2026
+ succeeded in 1046ms:
+
+===== 00_abstract.tex =====
+  1: % ========== Resumo (Portuguese; to be reviewed by the author) ==========
+  2: \begin{resumo}
+  3: A geraÃ§Ã£o aumentada por recuperaÃ§Ã£o (RAG) permite que um modelo de linguagem de grande porte (LLM) responda a partir de evidÃªncias externas, mas cada parÃ¡grafo enviado ao LLM custa \textit{tokens}, e parÃ¡grafos irrelevantes podem prejudicar a resposta. Em perguntas de mÃºltiplos saltos o problema Ã© mais difÃ­cil, pois as evidÃªncias finais costumam ter pouca relaÃ§Ã£o lexical com a pergunta. Este trabalho estuda a \emph{seleÃ§Ã£o barata de evidÃªncias}: um \textit{cross-encoder} pequeno (22,7M parÃ¢metros) decide quais parÃ¡grafos o LLM recebe. Os resultados preliminares indicam que um seletor pequeno ajustado envia 68--77\% menos \textit{tokens} no HotpotQA com diferenÃ§as de F1 pequenas e nÃ£o significativas; que, no MuSiQue, a capacidade de usar uma consulta condicionada aos parÃ¡grafos jÃ¡ selecionados Ã© aproximada funcionalmente por uma alteraÃ§Ã£o de posto 2 nos pesos (86,8\% da lacuna recuperada; controles aleatÃ³rios 7--9\%), embora o modelo resultante nÃ£o supere a ordenaÃ§Ã£o em um passo no conjunto completo; e que essa capacidade melhora a cobertura completa de evidÃªncias em perguntas de quatro saltos (+0,055; IC 95\% $[0{,}007; 0{,}102]$). O trabalho restante treina diretamente esse componente como um adaptador de posto 2, avalia um roteador que decide quando ativÃ¡-lo e testa a transferÃªncia entre modelos e conjuntos de dados.
+  4: 
+  5: \textbf{Palavras-chave:} geraÃ§Ã£o aumentada por recuperaÃ§Ã£o, perguntas de mÃºltiplos saltos, seleÃ§Ã£o de evidÃªncias, reordenaÃ§Ã£o com \textit{cross-encoder}, adaptaÃ§Ã£o de baixo posto.
+  6: \end{resumo}
+  7: 
+  8: % ========== Abstract ==========
+  9: \begin{abstract}
+ 10: Retrieval-augmented generation (RAG) lets a large language model (LLM) answer from external evidence, but every paragraph sent to the LLM costs tokens, and irrelevant paragraphs can lower answer quality. Multi-hop questions make this harder, because later evidence is often only weakly related to the question itself. This work studies \emph{cheap evidence selection}: a small cross-encoder (22.7M parameters) decides which paragraphs the LLM sees.
+ 11: 
+ 12: On HotpotQA, a fine-tuned small selector sent 68--77\% fewer prompt tokens than the ten retrieved paragraphs, with small answer-F1 differences whose 95\% confidence intervals included zero. On MuSiQue, ranking quality rather than the stopping rule appeared to limit cost, and re-scoring the remaining paragraphs with the question plus the paragraphs already selected (iterative reranking) seemed to help; a pair-matched control showed that part of that gain came from additional training data. The weight difference that lets the selector use such a conditioned query was functionally approximated by a per-matrix rank-2 graft: without it the matched model collapses when run iteratively, and the graft recovered 86.8\% of the gap (95\% CI $[77.7\%, 95.8\%]$), against 7--9\% for norm-matched random controls. Overall, the grafted model did not beat one-shot ranking; any advantage is expected on long chains. On 566 unused four-hop questions, conditioning-trained iteration improved full-support recall@5 by 0.055 (95\% CI $[0.007, 0.102]$), and on questions with three or more hops its evidence improved the reader's answer F1 by 0.076 (95\% CI $[0.041, 0.112]$) at the same five-paragraph budget; a router that predicts hop count did not yield a useful cascade.
+ 13: 
+ 14: The remaining work trains this component directly as a rank-2 \emph{chain adapter}, evaluates a router that decides when to activate it, measures answer quality, and tests transfer across rerankers and datasets.
+ 15: 
+ 16: \textbf{Keywords:} retrieval-augmented generation, multi-hop question answering, evidence selection, cross-encoder reranking, low-rank adaptation.
+ 17: \end{abstract}
+
+===== 01_introduction.tex =====
+  1: \chapter{Introduction}
+  2: \label{chap:intro}
+  3: 
+  4: \section{Context}
+  5: 
+  6: Large language models store knowledge in their parameters, but this \emph{parametric} knowledge is hard to update, hard to attribute and prone to errors \cite{pmlr-v119-guu20a,3495724.3496517,liu2026unifieddefinitionhallucinationits}. Retrieval-augmented generation (RAG) adds a \emph{non-parametric} memory: a retriever finds passages, and the LLM conditions its answer on them \cite{3495724.3496517,pmlr-v119-guu20a}. This makes answers easier to update and to verify, but it moves part of the cost to the prompt. Every passage sent to the LLM is paid for in input tokens, and passages that do not support the answer can mislead the model \cite{liu2024lostinthemiddle,wang2023filco}.
+  7: 
+  8: Multi-hop questions make this trade-off sharper. In a question such as ``In which city was the founder of the company that makes product $X$ born?'', the second and third pieces of evidence share little vocabulary with the question; they are related to the evidence found in the previous step \cite{yang2018hotpotqa,trivedi2022musique}. A selector that scores each passage against the question alone tends to rank such \emph{bridge} passages low, so a system either sends many passages, which is expensive, or risks losing the chain.
+  9: 
+ 10: \section{Problem and research questions}
+ 11: 
+ 12: This work studies \emph{cheap evidence selection} for multi-hop RAG: a small model, much cheaper than the LLM, decides which retrieved paragraphs the LLM sees. The cost of interest is the LLM's input tokens, plus the selector's own compute, measured as cross-encoder forward passes. The questions are:
+ 13: 
+ 14: \begin{description}
+ 15:   \item[RQ1] How many prompt tokens can a small fine-tuned cross-encoder save at equal evidence recall and answer quality?
+ 16:   \item[RQ2] On harder multi-hop data, is the limit the stopping rule (how many passages to send) or the ranker itself?
+ 17:   \item[RQ3] Does conditioning the ranker on the passages already selected (iterative reranking) help, once confounds such as the amount of training data are controlled?
+ 18:   \item[RQ4] What is the structure of the weight change that gives a small reranker this chain-following ability, and can it be isolated as a small, reusable component?
+ 19: \end{description}
+ 20: 
+ 21: \section{Hypothesis}
+ 22: 
+ 23: The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap. The preliminary results support the first part functionally (by grafting an extracted change); training the adapter directly is part of the remaining work.
+ 24: 
+ 25: \section{Contributions so far}
+ 26: 
+ 27: \begin{enumerate}
+ 28:   \item An evaluation of a 22.7M-parameter cross-encoder as an evidence selector: token accounting at fixed recall targets and answer quality with an LLM reader on HotpotQA and MuSiQue.
+ 29:   \item Evidence that, on MuSiQue, the one-shot ranker rather than the stopping rule limits cost, and a pair-matched control showing that part of the apparent benefit of iterative reranking came from additional training data.
+ 30:   \item Evidence that the weight change behind the ability to use a conditioned query is functionally approximated at rank 2 (about 85\% of its effect recovered, random controls 7--9\%), and pre-registered tests showing that conditioning-trained iteration helps long chains, in evidence recall and in answer F1.
+ 31:   \item A research protocol for an AI-assisted project: pre-registration of every decision rule in version control, paired statistics, adversarial review of each protocol before running it, and a claim ledger that records null results (Section~\ref{sec:protocol}).
+ 32: \end{enumerate}
+ 33: 
+ 34: \section{Organization}
+ 35: 
+ 36: Chapter~\ref{chap:background} introduces RAG, multi-hop question answering, cross-encoder reranking and the structure of fine-tuning updates. Chapter~\ref{chap:related} positions this work against related research. Chapter~\ref{chap:method} describes the models, data, inference procedures, analyses and the research protocol. Chapter~\ref{chap:results} reports the preliminary results. Chapter~\ref{chap:plan} presents the remaining work, the planned artifact and the schedule. Appendix~\ref{app:index} lists every experiment run so far, including those not used in this text.
+
+===== 02_background.tex =====
+  1: \chapter{Background}
+  2: \label{chap:background}
+  3: 
+  4: This chapter introduces the concepts the rest of the text relies on: retrieval-augmented generation, multi-hop question answering, cross-encoder reranking, the structure of fine-tuning updates, and the evaluation metrics and statistical tests used.
+  5: 
+  6: \section{Parametric and non-parametric knowledge}
+  7: 
+  8: A Transformer language model \cite{vaswani2017attention} stores what it learned in its weights. This \emph{parametric} knowledge is implicit: it cannot be inspected or updated piece by piece, and the model may produce fluent but unsupported statements, which \citeonline{liu2026unifieddefinitionhallucinationits} analyse as failures of the model's world model.
+  9: 
+ 10: Retrieval-augmented models add a \emph{non-parametric} memory. REALM \cite{pmlr-v119-guu20a} trains a retriever jointly with a masked language model; RAG \cite{3495724.3496517} conditions a generator on passages from a dense retriever. In the systems studied here the LLM is used as a fixed reader: a retriever returns candidate paragraphs, a selector chooses some of them, and the LLM answers from the selected ones.
+ 11: 
+ 12: \section{Multi-hop question answering}
+ 13: 
+ 14: A question is \emph{multi-hop} when its answer requires combining several pieces of evidence. HotpotQA \cite{yang2018hotpotqa} provides two-hop questions with ten candidate paragraphs each, two of them supporting and eight distractors. MuSiQue \cite{trivedi2022musique} composes two- to four-hop questions from single-hop ones and filters out questions that can be answered by shortcuts; each question has about twenty candidate paragraphs. In both datasets the supporting paragraphs are annotated, so evidence recall can be measured without an LLM. 2WikiMultiHopQA \cite{ho2020twowiki} is a third, related benchmark planned for the remaining work.
+ 15: 
+ 16: \section{Cross-encoder reranking}
+ 17: 
+ 18: A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. It is more accurate but needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. Scoring the twenty paragraphs of a MuSiQue question takes twenty forward passes.
+ 19: 
+ 20: \textbf{One-shot and iterative reranking.} A one-shot reranker scores every paragraph against the question once and sorts them. An \emph{iterative} reranker selects one paragraph at a time and re-scores the remaining ones with a query that contains the question and the paragraphs already selected. Iterative selection can follow a chain from one piece of evidence to the next, at the cost of more passes \cite{xiong2021mdr,zhang2024beamretrieval}.
+ 21: 
+ 22: \section{Structure of fine-tuning updates}
+ 23: 
+ 24: Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$ into $W_1 = W_0 + \Delta$. Several lines of work show that useful updates are often well approximated in a low-dimensional subspace. \citeonline{aghajanyan2021intrinsic} measure a low intrinsic dimension of fine-tuning, and LoRA \cite{hu2022lora} trains only a low-rank update $\Delta = BA$ with $B \in \mathbb{R}^{m \times r}$, $A \in \mathbb{R}^{r \times n}$ and small $r$. Given a full update, its best rank-$r$ approximation in the Frobenius norm is the truncated singular value decomposition,
+ 25: \begin{equation}
+ 26: \Delta_r = \sum_{i=1}^{r} \sigma_i u_i v_i^\top,
+ 27: \label{eq:svd}
+ 28: \end{equation}
+ 29: where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors (the Eckart--Young theorem). PHLoRA \cite{vasani2025phlora} uses this operation to extract adapters from fine-tuned checkpoints. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
+ 30: 
+ 31: \section{Metrics}
+ 32: 
+ 33: \begin{description}
+ 34:   \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than the usual per-paragraph recall, and matches what a reader needs to answer a multi-hop question.
+ 35:   \item[Tokens.] The number of input tokens of the reader's prompt with the selected paragraphs, counted with the reader's tokenizer (\texttt{o200k\_base}) or as reported by the API.
+ 36:   \item[Passes.] Cross-encoder forward passes per question, the selector's compute cost.
+ 37:   \item[Answer F1 and EM.] Token-level F1 and exact match between the reader's answer and the reference answer (maximum over aliases), after standard normalization.
+ 38: \end{description}
+ 39: 
+ 40: \section{Statistical tests}
+ 41: 
+ 42: All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. A non-significant difference is not evidence of equivalence \cite{card2020power}; the later experiments therefore test ``no worse'' claims as non-inferiority with a margin fixed in advance, while the early ones report the interval only.
+
+===== 03_related_work.tex =====
+  1: \chapter{Related Work}
+  2: \label{chap:related}
+  3: 
+  4: This chapter positions the work against three lines of research: context selection for RAG, multi-hop retrieval, and the structure of fine-tuning updates. Table~\ref{tab:positioning} summarizes what is known and what this work adds.
+  5: 
+  6: \section{Context selection and compression for RAG}
+  7: 
+  8: Several methods reduce what the LLM reads. RECOMP \cite{xu2024recomp} trains compressors that summarize retrieved documents; LongLLMLingua \cite{jiang2024longllmlingua} prunes tokens; FILCO \cite{wang2023filco} filters context at the span level; Provence \cite{chirkova2025provence} prunes sentences with a trained cross-encoder; and CompAct \cite{yoon2024compact} compresses iteratively. Adaptive methods decide how much to retrieve: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores and adds a buffer of extra passages (five by default). Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
+  9: 
+ 10: Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a careful cost accounting of a very small selector at matched recall and answer quality, and the finding that on harder multi-hop data the ranker, not the stopping rule, is the bottleneck.
+ 11: 
+ 12: \section{Multi-hop retrieval}
+ 13: 
+ 14: Multi-hop dense retrieval \cite{xiong2021mdr} and Baleen \cite{khattab2021baleen} retrieve iteratively, conditioning each step on what was found before. IRCoT \cite{trivedi2023ircot} interleaves retrieval with chain-of-thought reasoning by an LLM, and EfficientRAG \cite{zhuang2024efficientrag} replaces some LLM calls with small models. Beam Retrieval \cite{zhang2024beamretrieval} is the closest method to the iterative reranker studied here: a cross-encoder scores each candidate together with the question and the passages already chosen, with beam search. It reports high support recall on MuSiQue with much larger encoders (DeBERTa base and large).
+ 15: 
+ 16: The iterative reranker in this work is therefore not a new method. What is new is (i) its evaluation at 22.7M parameters with a pair-matched control that separates the effect of conditioning from the effect of more training data, and (ii) the analysis of the weight change it requires.
+ 17: 
+ 18: \section{Structure of fine-tuning updates}
+ 19: 
+ 20: The low intrinsic dimension of fine-tuning \cite{li2018intrinsic,aghajanyan2021intrinsic} and the success of low-rank adapters \cite{hu2022lora} are well established. PHLoRA \cite{vasani2025phlora} extracts low-rank adapters from full fine-tuning checkpoints with truncated SVD, the same operation used here. Localization studies find that task skills concentrate in few parameters or layers \cite{panigrahi2023skilllocalization}, including the middle layers of a large reranker \cite{perlman2026emergence}. LoRA updates differ structurally from full fine-tuning \cite{biderman2024loralearnsless,shuttleworth2025illusion}, and rank measures of updates need a noise baseline before they are interpreted \cite{altaf2026noisebaseline}.
+ 21: 
+ 22: Behaviours, not only domains, can sit in very low-rank updates. Rank-1 adapters suffice to induce emergent misalignment in an LLM, and the induced direction transfers across fine-tunes \cite{turner2025modelorganisms,soligo2025convergent}. Reasoning gains from reinforcement learning can be recovered with tiny adapters, while supervised fine-tuning needs much larger updates \cite{morris2026tinylora,ye2026rlvrlowrank}. Task arithmetic transfers domain knowledge between rerankers \cite{braga2025taskarithmetic}.
+ 23: 
+ 24: Against this background, a low-rank fine-tuning update is not surprising in itself. The specific claim tested here is narrower: a \emph{retrieval behaviour} (using already-selected evidence in the query) in a small reranker is a rank-2 change, isolated with a pair-matched control and norm-matched random controls, and it pays off on long chains.
+ 25: 
+ 26: \begin{table}[htbp]
+ 27: \centering
+ 28: \caption{Positioning: what is known and what this work adds.}
+ 29: \label{tab:positioning}
+ 30: \small
+ 31: \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}X>{\raggedright\arraybackslash}p{4.2cm}}
+ 32: \toprule
+ 33: Topic & Known & Added here \\
+ 34: \midrule
+ 35: Small selector saves tokens & Trained selectors and compressors cut tokens at equal quality \cite{xu2024recomp,chirkova2025provence} & Matched-recall and matched-F1 accounting at 22.7M parameters \\
+ 36: Adaptive stopping & Adaptive-$k$, DynamicRAG, Self-RAG & Learned stopping on cross-encoder scores; Adaptive-$k$ is weak on these scores \\
+ 37: Iterative reranking & Beam Retrieval, MDR, Baleen & Pair-matched control: part of the gain was more training data \\
+ 38: Low-rank updates & LoRA, PHLoRA, intrinsic dimension & A retrieval behaviour is a rank-2 change, with random and matched controls \\
+ 39: Behaviour in tiny adapters & Rank-1 behaviours in LLMs \cite{soligo2025convergent} & The same in a small encoder, for a retrieval behaviour \\
+ 40: \bottomrule
+ 41: \end{tabularx}
+ 42: \end{table}
+
+===== 04_method.tex =====
+  1: \chapter{Materials and Methods}
+  2: \label{chap:method}
+  3: 
+  4: \section{Data}
+  5: 
+  6: \textbf{HotpotQA} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
+  7: 
+  8: \textbf{MuSiQue-Ans} \cite{trivedi2022musique} is used for the multi-hop experiments. The official test labels are not public, so all evaluation sets are drawn from the labelled development split, disjoint from each other and fixed in advance:
+  9: \begin{itemize}
+ 10:   \item a 400-question test set and a 300-question tuning set (\texttt{dev300}), used up to the matched-control experiment;
+ 11:   \item a \emph{fresh} set of all 1,017 development questions not used before (529, 322 and 166 two-, three- and four-hop), used for the confirmation experiment.
+ 12: \end{itemize}
+ 13: Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. Every split was written to a file and committed before any model was scored on it.
+ 14: 
+ 15: \section{Models}
+ 16: 
+ 17: All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, the query side is truncated (if a paragraph alone exceeds the limit, both sides are truncated).
+ 18: 
+ 19: \begin{table}[htbp]
+ 20: \centering
+ 21: \caption{Selectors. All share the MiniLM-L6 architecture (22.7M parameters).}
+ 22: \label{tab:models}
+ 23: \small
+ 24: \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+ 25: \toprule
+ 26: Name & Training \\
+ 27: \midrule
+ 28: A0 & Off-the-shelf MS MARCO reranker (\texttt{ms-marco-MiniLM-L6-v2}) \\
+ 29: A1 & A0 fine-tuned on about 90,000 HotpotQA training questions \\
+ 30: M1 & A1 fine-tuned on 1,000 MuSiQue questions; query = question only (8,338 pairs) \\
+ 31: M1-iter & A1 fine-tuned on the same questions with one example per reasoning step: query = question + the supporting paragraphs of the previous steps; positives = the supporting paragraphs not yet in the query (18,101 pairs) \\
+ 32: M1-ctrl & Pair-matched control: exactly M1-iter's pairs, in the same order, with the query reduced to the question (18,101 pairs) \\
+ 33: \bottomrule
+ 34: \end{tabularx}
+ 35: \end{table}
+ 36: 
+ 37: \textbf{The confound and its control.} M1-iter sees about 2.2 times as many training pairs as M1, so a comparison of the two mixes the effect of conditioning with the effect of more training. M1-ctrl removes this confound: it receives the same paragraphs, labels, order, number of steps and learning-rate schedule as M1-iter, and differs only in the query text. M1-iter and M1-ctrl were trained with three seeds each.
+ 38: 
+ 39: \section{Inference}
+ 40: 
+ 41: \textbf{One-shot.} Every paragraph is scored against the question and the list is sorted; this costs one pass per paragraph (about 20 on MuSiQue).
+ 42: 
+ 43: \textbf{Iterative.} For four greedy steps, the remaining paragraphs are scored against a query made of the question followed by the paragraphs selected so far (most recent first, separated by a special token), and the highest-scoring paragraph is selected. The remaining paragraphs are then ordered by their scores in the last step. This costs about $20+19+18+17 = 74$ passes per question.
+ 44: 
+ 45: \textbf{Adaptive stopping.} Instead of a fixed $k$, a logistic regression estimates, for each $k$, the probability that the top $k$ contains all supporting paragraphs, from features of the selector's scores (the sorted scores, the score at position $k$ and $k{+}1$, and their gap). The system sends the smallest $k$ whose probability exceeds a threshold $\tau$; $\tau$ is chosen on a tuning set as the value with the fewest tokens that reaches a recall target (0.90 or 0.95), and applied once to the test set.
+ 46: 
+ 47: \section{Delta grafting}
+ 48: 
+ 49: To study the structure of a fine-tuning update, the difference between two models is \emph{grafted}, partly, onto the first one. Given a base model with weights $\{W^{(b)}\}$ and a target model $\{W^{(t)}\}$, the delta of each weight matrix is $\Delta = W^{(t)} - W^{(b)}$. A rank-$r$ graft replaces every two-dimensional $\Delta$ by its truncated SVD $\Delta_r$ (Equation~\ref{eq:svd}) and keeps one-dimensional parameters (biases, layer norms) in full. A layer graft adds the full delta of a single Transformer layer only. The effect of a graft $g$ is summarized by its \emph{recovery},
+ 50: \begin{equation}
+ 51: \mathrm{rec}(g) = \frac{R(g) - R(\text{base})}{R(\text{target}) - R(\text{base})},
+ 52: \label{eq:recovery}
+ 53: \end{equation}
+ 54: where $R$ is full-support recall@5 under the target's inference mode. As a control, each $\Delta_r$ is replaced by a random rank-$r$ matrix with the same Frobenius norm; if random matrices recovered as much, ``low-rank'' would be indistinguishable from ``any perturbation of that size''. The graft is chosen without looking at data, so the tuning set can be used to select the smallest rank with at least 80\% recovery, which is then confirmed once on a held-out set with a paired bootstrap confidence interval for the recovery ratio.
+ 55: 
+ 56: \section{Research protocol}
+ 57: \label{sec:protocol}
+ 58: 
+ 59: Every experiment was pre-registered: its question, data splits, metrics, decision rules and budget were committed to version control before any model was scored on evaluation data \cite{nosek2018preregistration}, and deviations were recorded. Each experiment has one primary test; exploratory results are reported as such and are not promoted to confirmed claims without a new registered test on unused data. Recent protocols also state the minimum detectable effect \cite{card2020power}. Because the project uses AI tools for coding, analysis and drafting, each protocol was reviewed before running by an independent model instructed to argue for the null hypothesis, every citation was checked against its official source, and results copied between machines were recomputed and compared. Code, protocols, results and a ledger of all claims are kept in the project repository.
+
+===== 05_results.tex =====
+  1: \chapter{Preliminary Results}
+  2: \label{chap:results}
+  3: 
+  4: Each section states the pre-registered question, the result and its status. All numbers are on held-out questions. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
+  5: 
+  6: \section{A small selector saves most of the tokens (HotpotQA)}
+  7: \label{sec:res_selector}
+  8: 
+  9: A1, the fine-tuned 22.7M cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set. The reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. Table~\ref{tab:hotpot} shows that all A1 rules used 68--77\% fewer prompt tokens, with small F1 differences whose 95\% CIs included zero; no non-inferiority margin was registered for this comparison, so it does not establish equivalence. The gold-paragraphs oracle is better than $k=10$ by 0.040 F1 (CI $[0.017, 0.064]$), so distractors actively hurt the reader.
+ 10: 
+ 11: \begin{table}[htbp]
+ 12: \centering
+ 13: \caption{HotpotQA test (400 questions): answer quality and prompt tokens. $\Delta$F1 is paired against $k=10$.}
+ 14: \label{tab:hotpot}
+ 15: \small
+ 16: \begin{tabular}{lrrrl}
+ 17: \toprule
+ 18: Context & F1 & EM & Tokens & $\Delta$F1 [95\% CI] \\
+ 19: \midrule
+ 20: All 10 paragraphs ($k=10$) & 0.782 & 0.620 & 1,448 & --- \\
+ 21: A1, threshold for recall 0.95 & 0.796 & 0.630 & 467 ($-68\%$) & $+0.014$ $[-0.013, +0.043]$ \\
+ 22: A1, threshold for recall 0.90 & 0.778 & 0.623 & 397 ($-73\%$) & $-0.004$ $[-0.033, +0.026]$ \\
+ 23: A1, top-2 & 0.780 & 0.628 & 330 ($-77\%$) & $-0.001$ $[-0.033, +0.030]$ \\
+ 24: Gold paragraphs (oracle) & 0.822 & 0.670 & 329 & $+0.040$ $[+0.017, +0.064]$ \\
+ 25: \bottomrule
+ 26: \end{tabular}
+ 27: \end{table}
+ 28: 
+ 29: \section{Adaptive stopping saves further tokens}
+ 30: \label{sec:res_adaptive}
+ 31: 
+ 32: On HotpotQA, choosing between two and four paragraphs per question with a learned stopping rule saved 57 and 71 tokens per question against A1's threshold at recall targets 0.90 and 0.95 (CIs $[-71, -44]$ and $[-91, -53]$), with recall differences not significant. On MuSiQue, adaptive stopping beat the pre-registered fixed-$k$ policy of the iterative ranker at recall 0.95 ($-244$ tokens, CI $[-296, -192]$) but not at 0.90 ($-43$, CI $[-95, +9]$), and the iterative ranker's scores were not a better stopping signal than one-shot scores (a refuted secondary). Descriptively, adaptive stopping on the one-shot in-domain ranker reached recall 0.95 with 1,554 tokens and 20 passes per question, against 2,535 tokens for sending all paragraphs. Adaptive-$k$ \cite{taguchi2025adaptivek} with its default buffer of five paragraphs, applied to the same cross-encoder scores, spent the same tokens as the learned rule but recovered fewer complete chains (0.815 vs 0.868; exploratory, test set); without the buffer it cut after 3.7 paragraphs on average (recall 0.50). This agrees with its failure on cosine scores in \citeonline{lavado2027noisegate}.
+ 33: 
+ 34: \section{On MuSiQue, ranking quality limits cost}
+ 35: \label{sec:res_bottleneck}
+ 36: 
+ 37: With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets; the pre-registered comparison was declared not testable. The results below, from later experiments, suggest that ranking quality is the main limiting factor. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised full-support recall@5 from 0.355 to 0.682, and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). That comparison, however, was confounded by the amount of training data (Section~\ref{sec:res_matched}).
+ 38: 
+ 39: \section{The iteration change is functionally rank 2}
+ 40: \label{sec:res_rank}
+ 41: 
+ 42: The weight difference $\Delta = \text{M1-iter} - \text{M1}$ was grafted onto M1 at ranks 1 to 16 (Equation~\ref{eq:recovery}), and the model was run iteratively. These are the CPU-trained models of the iterative-reranking experiment, so $\Delta$ here still includes the training-data confound addressed in Section~\ref{sec:res_matched}. Without the graft, M1 run iteratively reached recall@5 of 0.45 on the tuning set (\texttt{dev300}), against 0.74 for M1-iter. Recovery was 74\% at rank 1 and 95\% at rank 2, and stayed flat at higher ranks (97\% at ranks 4 and 8). A random rank-4 change of the same norm (one draw, tuning set) recovered 9\%. On the test set, the rank-2 graft recovered 84.7\% of the gain (CI $[73.6\%, 96.2\%]$); it remained below the full model (14 vs 31 discordant questions, $p=0.016$). Grafting single layers showed that layers 3 and 4 contribute most (43\% and 40\%), but layers 0--2 also contribute about 30\% each, a flatter profile than for the HotpotQA skill (A1 $-$ A0), where a rank-4 graft recovered 80\% of a token-based measure of the gain and the middle layers dominated. Ranks 2 to 8 differ by about two questions on \texttt{dev300}; the result is a plateau from rank 2, not a strict ordering.
+ 43: 
+ 44: \section{Pair-matched control}
+ 45: \label{sec:res_matched}
+ 46: 
+ 47: Figure~\ref{fig:matched} illustrates the design. With identical training pairs, M1-iter run iteratively beat M1-ctrl run one-shot by 0.040 recall@5 on the test set (0.7475 vs 0.7075, CI $[-0.005, 0.085]$, $p=0.11$): the pre-registered primary test failed. All three seed estimates were positive ($+0.040$, $+0.028$, $+0.033$; re-trainings evaluated on the same questions, not independent replications), but the primary test did not establish an overall gain; with a minimum detectable effect of about 0.07, it cannot exclude a small one either. Training on more pairs alone accounted for about 0.025 of the original gain (M1-ctrl vs M1, $p=0.013$, descriptive).
+ 48: 
+ 49: \begin{figure}[htbp]
+ 50: \centering
+ 51: \input{figures/matched_control}
+ 52: \caption{Pair-matched control. Both models start from A1 and see the same paragraphs, labels and order; only the query differs. Each is evaluated in the inference mode it was trained for, and their weight difference $\Delta$ is analysed by grafting.}
+ 53: \label{fig:matched}
+ 54: \end{figure}
+ 55: 
+ 56: The pre-registered secondary test asked whether the pure conditioning change, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is also low-rank. Grafted onto M1-ctrl at rank 2, it recovered 86.8\% of the gap between M1-ctrl run iteratively and M1-iter on the test set (CI $[77.7\%, 95.8\%]$), while a random rank-2 change of the same norm recovered 7\% (one draw, tuning set). Without this change, M1-ctrl collapses when run iteratively (recall@5 of 0.41), so $\Delta$ encodes the ability to \emph{read} a conditioned query. Recovery is measured from that collapsed baseline: overall, the grafted model run iteratively (0.7025) did not beat M1-ctrl run one-shot (0.7075). On the 64 four-hop test questions it reached 0.500, between one-shot (0.391) and the full M1-iter (0.578) (descriptive).
+ 57: 
+ 58: \section{The effect is concentrated on long chains}
+ 59: \label{sec:res_long}
+ 60: 
+ 61: An exploratory reading of the matched control suggested that the gain was concentrated on four-hop questions. This was tested on 566 four-hop questions never used before (166 unused development questions and 400 unused training questions; ``fresh'' below means unused, not a new dataset). M1-iter (iterative) beat M1-ctrl (one-shot) by 0.055 recall@5 (0.500 vs 0.445, CI $[0.007, 0.102]$, $p=0.035$), positive in both sources but heterogeneous ($+0.139$, $p=0.006$, and $+0.020$, not significant) and positive for all three seeds. On all 1,017 fresh development questions (exploratory), the gain was about zero on two-hop questions, $+0.078$ on three-hop ($p=0.010$) and $+0.139$ on four-hop questions ($p=0.006$).
+ 62: 
+ 63: A cascade that runs the one-shot ranker for every question and the iterative one only for questions predicted to be four-hop did not help: it routed 29\% of questions, reached 0.702 recall@5 with 41.5 passes, against 0.693 for one-shot (20 passes) and 0.745 for always-iterative (74 passes), and failed both pre-registered tests. The router predicted hop count reasonably (four-hop recall 0.76, precision 0.43), but not the questions where iteration actually helps.
+ 64: 
+ 65: \section{Answer quality}
+ 66: \label{sec:res_f1}
+ 67: 
+ 68: A final pre-registered test asked whether the recall gain reaches the reader's answers. \texttt{gpt-5.4-mini} answered the 1,017 unused development questions from the top-5 sets of M1-ctrl and M1-iter, with the passages in a fixed order so that only the selected set differs (Table~\ref{tab:f1}). On questions with three or more hops (the pre-registered primary, $n=488$, averaged over two reader draws), M1-iter's evidence improved answer F1 by 0.076 (CI $[0.041, 0.112]$). Over all questions the difference was $+0.038$ (CI $[0.011, 0.064]$), and on two-hop questions it was non-inferior (exploratory). Both five-paragraph contexts gave higher F1 than sending all paragraphs, with 69\% fewer input tokens. The three-or-more-hop subgroup was chosen from the recall results on the same questions, which is declared in the protocol.
+ 69: 
+ 70: \begin{table}[htbp]
+ 71: \centering
+ 72: \caption{Answer quality on the 1,017 unused MuSiQue development questions (reader \texttt{gpt-5.4-mini}). Top-5 contexts are in paragraph-index order.}
+ 73: \label{tab:f1}
+ 74: \small
+ 75: \begin{tabular}{lrrrrr}
+ 76: \toprule
+ 77: Context & F1 & EM & Tokens & F1, 3-hop & F1, 4-hop \\
+ 78: \midrule
+ 79: All paragraphs ($\approx$20) & 0.506 & 0.394 & 2,525 & 0.518 & 0.502 \\
+ 80: M1-ctrl top 5 (one-shot) & 0.538 & 0.438 & 793 & 0.566 & 0.465 \\
+ 81: M1-iter top 5 (iterative) & 0.576 & 0.475 & 783 & 0.625 & 0.540 \\
+ 82: Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
+ 83: \bottomrule
+ 84: \end{tabular}
+ 85: \end{table}
+ 86: 
+ 87: \section{Summary}
+ 88: 
+ 89: Table~\ref{tab:claims} lists the claims and their status. The practical result is that a small in-domain selector with adaptive stopping is the cost-efficient choice. The research result is that the weight change behind chain-following in such a selector is functionally approximated at rank 2; conditioning-trained iteration improved the registered four-hop outcome, exploratory analyses suggest the gain extends to three-hop but not two-hop questions, and simple routing does not yet capture it.
+ 90: 
+ 91: \begin{table}[htbp]
+ 92: \centering
+ 93: \caption{Claims and their status (C = confirmed by a pre-registered test; N = null; E = exploratory).}
+ 94: \label{tab:claims}
+ 95: \small
+ 96: \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xll}
+ 97: \toprule
+ 98: Claim & Status & Section \\
+ 99: \midrule
+100: Small selector: 68--77\% fewer tokens at equal F1 (HotpotQA) & C & \ref{sec:res_selector} \\
+101: Adaptive stopping saves tokens at a recall target & C (HotpotQA; MuSiQue at 0.95 only) & \ref{sec:res_adaptive} \\
+102: Iteration beats one-shot at matched training data & N ($+0.040$, $p=0.11$) & \ref{sec:res_matched} \\
+103: A rank-2 graft recovers the conditioning change & C (86.8\%) & \ref{sec:res_rank}, \ref{sec:res_matched} \\
+104: Iteration helps four-hop chains & C ($+0.055$, heterogeneous) & \ref{sec:res_long} \\
+105: Iteration helps three-hop chains, not two-hop & E & \ref{sec:res_long} \\
+106: The long-chain recall gain improves answer F1 & C ($+0.076$) & \ref{sec:res_f1} \\
+107: A hop-count router gives a useful cascade & N & \ref{sec:res_long} \\
+108: \bottomrule
+109: \end{tabularx}
+110: \end{table}
+
+===== 06_plan.tex =====
+  1: \chapter{Research Plan}
+  2: \label{chap:plan}
+  3: 
+  4: \section{Expected contribution}
+  5: 
+  6: The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
+  7: \begin{enumerate}
+  8:   \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
+  9:   \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that lets the one-shot selector run iteratively, so a single base model serves both modes. Its value must be shown where iteration helps (long chains): the extracted rank-2 graft restored iterative use but did not beat one-shot ranking overall;
+ 10:   \item a router that decides, per question, whether to activate the adapter;
+ 11:   \item an evaluation script that reports tokens, passes, full-support recall and answer quality against fixed top-$k$, Adaptive-$k$ and always-iterative baselines.
+ 12: \end{enumerate}
+ 13: The adapter saves memory and deployment complexity, not passes: activating it still costs iterative inference. Savings in passes depend on the router.
+ 14: 
+ 15: \begin{figure}[htbp]
+ 16: \centering
+ 17: \resizebox{\textwidth}{!}{\input{figures/pipeline}}
+ 18: \caption{Planned system. The cheap one-shot selector runs for every question; the router activates the rank-2 chain adapter only where iteration is expected to help; adaptive stopping decides how many paragraphs reach the LLM.}
+ 19: \label{fig:pipeline}
+ 20: \end{figure}
+ 21: 
+ 22: \section{Remaining work}
+ 23: 
+ 24: \begin{description}
+ 25:   \item[W1. Train the adapter directly.] So far the rank-2 change was extracted from a full fine-tuning run. Training a rank-1, 2 and 4 LoRA \cite{hu2022lora} on the same pairs will show whether the artifact can be built directly, and how it compares with the extracted one \cite{biderman2024loralearnsless,shuttleworth2025illusion}.
+ 26:   \item[W2. Router trained on benefit.] The hop-count router failed (Section~\ref{sec:res_long}). A router trained to predict, per question, whether iteration improves the top five is pre-registered and waiting for GPU time.
+ 27:   \item[W3. Answer quality.] Repeat the answer-quality test with the chain adapter and the router, and with a second reader model.
+ 28:   \item[W4. Geometry with noise baselines.] Singular-value energy, stable rank and principal angles of the conditioning change, compared with seed-to-seed differences and random matrices \cite{altaf2026noisebaseline}, to separate functional rank from spectral structure.
+ 29:   \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and evaluate on 2WikiMultiHopQA \cite{ho2020twowiki}. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
+ 30: \end{description}
+ 31: 
+ 32: \section{Threats to validity}
+ 33: 
+ 34: \begin{itemize}
+ 35:   \item \textbf{Effect size.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources.
+ 36:   \item \textbf{Single architecture and data source.} All selectors are MiniLM-L6 and all evaluation questions come from MuSiQue (and HotpotQA for the first results). W5 addresses this.
+ 37:   \item \textbf{Evaluation sets.} MuSiQue test labels are not public; evaluation uses disjoint subsets of the development split, and one fresh set has been used twice (with the second use declared in advance).
+ 38:   \item \textbf{Multiplicity.} Each experiment has a single primary test; across experiments no correction is applied. The headline claims will be re-tested on a locked set before the defence.
+ 39: \end{itemize}
+ 40: 
+ 41: \section{Research questions and evidence}
+ 42: 
+ 43: Table~\ref{tab:rq} maps the research questions of Chapter~\ref{chap:intro} to the evidence so far and to the remaining work.
+ 44: 
+ 45: \begin{table}[htbp]
+ 46: \centering
+ 47: \caption{Research questions, current evidence and remaining work.}
+ 48: \label{tab:rq}
+ 49: \small
+ 50: \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.2cm}}
+ 51: \toprule
+ 52: RQ & Evidence so far & Remaining \\
+ 53: \midrule
+ 54: RQ1 & 68--77\% fewer tokens on HotpotQA; top-5 selection beats sending all paragraphs on MuSiQue answers with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
+ 55: RQ2 & Ranking quality limits cost on MuSiQue (Section~\ref{sec:res_bottleneck}) & --- \\
+ 56: RQ3 & Small overall effect, not significant; confirmed gains on long chains in recall and answer F1 (Sections~\ref{sec:res_matched}, \ref{sec:res_long}, \ref{sec:res_f1}) & W2 \\
+ 57: RQ4 & Functionally rank 2 (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}) & W1, W4, W5 \\
+ 58: \bottomrule
+ 59: \end{tabularx}
+ 60: \end{table}
+ 61: 
+ 62: \section{Proposed dissertation outline}
+ 63: 
+ 64: \begin{enumerate}
+ 65:   \item Introduction: cost of evidence in multi-hop RAG, research questions, contributions.
+ 66:   \item Background and related work.
+ 67:   \item Cheap evidence selection: small selectors and adaptive stopping (RQ1, RQ2).
+ 68:   \item Chain-following as a low-rank change: grafting, matched control, long-chain effect (RQ3, RQ4).
+ 69:   \item The chain adapter: direct low-rank training, routing, transfer and answer quality.
+ 70:   \item Conclusion and limitations.
+ 71: \end{enumerate}
+ 72: 
+ 73: \section{Schedule}
+ 74: 
+ 75: Table~\ref{tab:schedule} lists the planned activities by month after the qualification exam. \todo[inline]{Author: replace month numbers with calendar months once the qualification date is set.}
+ 76: 
+ 77: \begin{table}[htbp]
+ 78: \centering
+ 79: \caption{Schedule (months after the qualification exam).}
+ 80: \label{tab:schedule}
+ 81: \small
+ 82: \begin{tabular}{lc}
+ 83: \toprule
+ 84: Activity & Months \\
+ 85: \midrule
+ 86: W1 adapter trained directly; W3 answer quality & 1--2 \\
+ 87: W2 benefit router and cascade & 1--3 \\
+ 88: W4 geometry with noise baselines & 3--4 \\
+ 89: W5 transfer across rerankers and to 2WikiMultiHopQA & 4--7 \\
+ 90: Locked-set confirmation of the headline claims & 7--8 \\
+ 91: Paper submission & 8 \\
+ 92: Dissertation writing & 7--11 \\
+ 93: Deposit and defence & 12 \\
+ 94: \bottomrule
+ 95: \end{tabular}
+ 96: \end{table}
+
+===== A_experiment_index.tex =====
+  1: \chapter{Experiment Index}
+  2: \label{app:index}
+  3: 
+  4: All experiments are in the project repository, each with a pre-registered protocol and a results report. Experiments not used in the main text are kept for later work.
+  5: 
+  6: \begin{table}[htbp]
+  7: \centering
+  8: \small
+  9: \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}Xl}
+ 10: \toprule
+ 11: ID & Question and outcome & In text \\
+ 12: \midrule
+ 13: exp01 & Training-free second-hop threshold on embeddings: 6--10\% fewer tokens than Noise-Gate & no \\
+ 14: exp02 & Fine-tuned 22.7M selector: 68--77\% fewer tokens at equal F1 & \ref{sec:res_selector} \\
+ 15: exp03 & Linear probe for multi-hop relevance in A0: probe failed (not evidence of absence) & no \\
+ 16: exp04 & LLM agents editing the selector's weights: compression ties magnitude pruning; no repair & no \\
+ 17: exp05 & Failure analysis: missed paragraphs are bridge paragraphs that do not name the question's entity & no \\
+ 18: exp06 & A1 $-$ A0 is low-rank (rank 4: 80\%) and mid-layer; sparse grafts fail & \ref{sec:res_rank} \\
+ 19: exp07 & Adaptive stopping on HotpotQA: $-57$ / $-71$ tokens & \ref{sec:res_adaptive} \\
+ 20: exp08 & A1 on MuSiQue: top-10 recall 0.68; planned comparison not testable & \ref{sec:res_bottleneck} \\
+ 21: exp09 & In-domain and iterative fine-tuning: recall@5 0.682 / 0.750 (confounded) & \ref{sec:res_bottleneck} \\
+ 22: exp10 & Adaptive stopping on the iterative ranker; Adaptive-$k$ addendum & \ref{sec:res_adaptive} \\
+ 23: exp11 & The iteration change is rank 2 (84.7\%) & \ref{sec:res_rank} \\
+ 24: exp12 & Pair-matched control: $+0.040$ (n.s.); conditioning change rank 2 (86.8\%) & \ref{sec:res_matched} \\
+ 25: exp13 & Fresh four-hop confirmation ($+0.055$); hop-count cascade fails & \ref{sec:res_long} \\
+ 26: exp14 & Router trained on benefit (pre-registered; pending) & Ch.~\ref{chap:plan} \\
+ 27: exp15 & Answer F1 on $\ge$3-hop questions: $+0.076$; top 5 beats all paragraphs & \ref{sec:res_f1} \\
+ 28: \bottomrule
+ 29: \end{tabularx}
+ 30: \end{table}
+
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command 'foreach($name in '"'03_related_work.tex','04_method.tex','05_results.tex'){ "'$f=Join-Path '"'quali/chapters' "'$name; "`n===== $name ====="; $i=0; Get-Content $f | ForEach-Object { $i++; "{0,3}: {1}" -f $i,$_ } }' in C:\code\qualiusp2026
+ succeeded in 948ms:
+
+===== 03_related_work.tex =====
+  1: \chapter{Related Work}
+  2: \label{chap:related}
+  3: 
+  4: This chapter positions the work against three lines of research: context selection for RAG, multi-hop retrieval, and the structure of fine-tuning updates. Table~\ref{tab:positioning} summarizes what is known and what this work adds.
+  5: 
+  6: \section{Context selection and compression for RAG}
+  7: 
+  8: Several methods reduce what the LLM reads. RECOMP \cite{xu2024recomp} trains compressors that summarize retrieved documents; LongLLMLingua \cite{jiang2024longllmlingua} prunes tokens; FILCO \cite{wang2023filco} filters context at the span level; Provence \cite{chirkova2025provence} prunes sentences with a trained cross-encoder; and CompAct \cite{yoon2024compact} compresses iteratively. Adaptive methods decide how much to retrieve: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores and adds a buffer of extra passages (five by default). Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
+  9: 
+ 10: Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a careful cost accounting of a very small selector at matched recall and answer quality, and the finding that on harder multi-hop data the ranker, not the stopping rule, is the bottleneck.
+ 11: 
+ 12: \section{Multi-hop retrieval}
+ 13: 
+ 14: Multi-hop dense retrieval \cite{xiong2021mdr} and Baleen \cite{khattab2021baleen} retrieve iteratively, conditioning each step on what was found before. IRCoT \cite{trivedi2023ircot} interleaves retrieval with chain-of-thought reasoning by an LLM, and EfficientRAG \cite{zhuang2024efficientrag} replaces some LLM calls with small models. Beam Retrieval \cite{zhang2024beamretrieval} is the closest method to the iterative reranker studied here: a cross-encoder scores each candidate together with the question and the passages already chosen, with beam search. It reports high support recall on MuSiQue with much larger encoders (DeBERTa base and large).
+ 15: 
+ 16: The iterative reranker in this work is therefore not a new method. What is new is (i) its evaluation at 22.7M parameters with a pair-matched control that separates the effect of conditioning from the effect of more training data, and (ii) the analysis of the weight change it requires.
+ 17: 
+ 18: \section{Structure of fine-tuning updates}
+ 19: 
+ 20: The low intrinsic dimension of fine-tuning \cite{li2018intrinsic,aghajanyan2021intrinsic} and the success of low-rank adapters \cite{hu2022lora} are well established. PHLoRA \cite{vasani2025phlora} extracts low-rank adapters from full fine-tuning checkpoints with truncated SVD, the same operation used here. Localization studies find that task skills concentrate in few parameters or layers \cite{panigrahi2023skilllocalization}, including the middle layers of a large reranker \cite{perlman2026emergence}. LoRA updates differ structurally from full fine-tuning \cite{biderman2024loralearnsless,shuttleworth2025illusion}, and rank measures of updates need a noise baseline before they are interpreted \cite{altaf2026noisebaseline}.
+ 21: 
+ 22: Behaviours, not only domains, can sit in very low-rank updates. Rank-1 adapters suffice to induce emergent misalignment in an LLM, and the induced direction transfers across fine-tunes \cite{turner2025modelorganisms,soligo2025convergent}. Reasoning gains from reinforcement learning can be recovered with tiny adapters, while supervised fine-tuning needs much larger updates \cite{morris2026tinylora,ye2026rlvrlowrank}. Task arithmetic transfers domain knowledge between rerankers \cite{braga2025taskarithmetic}.
+ 23: 
+ 24: Against this background, a low-rank fine-tuning update is not surprising in itself. The specific claim tested here is narrower: a \emph{retrieval behaviour} (using already-selected evidence in the query) in a small reranker is a rank-2 change, isolated with a pair-matched control and norm-matched random controls, and it pays off on long chains.
+ 25: 
+ 26: \begin{table}[htbp]
+ 27: \centering
+ 28: \caption{Positioning: what is known and what this work adds.}
+ 29: \label{tab:positioning}
+ 30: \small
+ 31: \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}X>{\raggedright\arraybackslash}p{4.2cm}}
+ 32: \toprule
+ 33: Topic & Known & Added here \\
+ 34: \midrule
+ 35: Small selector saves tokens & Trained selectors and compressors cut tokens at equal quality \cite{xu2024recomp,chirkova2025provence} & Matched-recall and matched-F1 accounting at 22.7M parameters \\
+ 36: Adaptive stopping & Adaptive-$k$, DynamicRAG, Self-RAG & Learned stopping on cross-encoder scores; Adaptive-$k$ is weak on these scores \\
+ 37: Iterative reranking & Beam Retrieval, MDR, Baleen & Pair-matched control: part of the gain was more training data \\
+ 38: Low-rank updates & LoRA, PHLoRA, intrinsic dimension & A retrieval behaviour is a rank-2 change, with random and matched controls \\
+ 39: Behaviour in tiny adapters & Rank-1 behaviours in LLMs \cite{soligo2025convergent} & The same in a small encoder, for a retrieval behaviour \\
+ 40: \bottomrule
+ 41: \end{tabularx}
+ 42: \end{table}
+
+===== 04_method.tex =====
+  1: \chapter{Materials and Methods}
+  2: \label{chap:method}
+  3: 
+  4: \section{Data}
+  5: 
+  6: \textbf{HotpotQA} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
+  7: 
+  8: \textbf{MuSiQue-Ans} \cite{trivedi2022musique} is used for the multi-hop experiments. The official test labels are not public, so all evaluation sets are drawn from the labelled development split, disjoint from each other and fixed in advance:
+  9: \begin{itemize}
+ 10:   \item a 400-question test set and a 300-question tuning set (\texttt{dev300}), used up to the matched-control experiment;
+ 11:   \item a \emph{fresh} set of all 1,017 development questions not used before (529, 322 and 166 two-, three- and four-hop), used for the confirmation experiment.
+ 12: \end{itemize}
+ 13: Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. Every split was written to a file and committed before any model was scored on it.
+ 14: 
+ 15: \section{Models}
+ 16: 
+ 17: All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, the query side is truncated (if a paragraph alone exceeds the limit, both sides are truncated).
+ 18: 
+ 19: \begin{table}[htbp]
+ 20: \centering
+ 21: \caption{Selectors. All share the MiniLM-L6 architecture (22.7M parameters).}
+ 22: \label{tab:models}
+ 23: \small
+ 24: \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+ 25: \toprule
+ 26: Name & Training \\
+ 27: \midrule
+ 28: A0 & Off-the-shelf MS MARCO reranker (\texttt{ms-marco-MiniLM-L6-v2}) \\
+ 29: A1 & A0 fine-tuned on about 90,000 HotpotQA training questions \\
+ 30: M1 & A1 fine-tuned on 1,000 MuSiQue questions; query = question only (8,338 pairs) \\
+ 31: M1-iter & A1 fine-tuned on the same questions with one example per reasoning step: query = question + the supporting paragraphs of the previous steps; positives = the supporting paragraphs not yet in the query (18,101 pairs) \\
+ 32: M1-ctrl & Pair-matched control: exactly M1-iter's pairs, in the same order, with the query reduced to the question (18,101 pairs) \\
+ 33: \bottomrule
+ 34: \end{tabularx}
+ 35: \end{table}
+ 36: 
+ 37: \textbf{The confound and its control.} M1-iter sees about 2.2 times as many training pairs as M1, so a comparison of the two mixes the effect of conditioning with the effect of more training. M1-ctrl removes this confound: it receives the same paragraphs, labels, order, number of steps and learning-rate schedule as M1-iter, and differs only in the query text. M1-iter and M1-ctrl were trained with three seeds each.
+ 38: 
+ 39: \section{Inference}
+ 40: 
+ 41: \textbf{One-shot.} Every paragraph is scored against the question and the list is sorted; this costs one pass per paragraph (about 20 on MuSiQue).
+ 42: 
+ 43: \textbf{Iterative.} For four greedy steps, the remaining paragraphs are scored against a query made of the question followed by the paragraphs selected so far (most recent first, separated by a special token), and the highest-scoring paragraph is selected. The remaining paragraphs are then ordered by their scores in the last step. This costs about $20+19+18+17 = 74$ passes per question.
+ 44: 
+ 45: \textbf{Adaptive stopping.} Instead of a fixed $k$, a logistic regression estimates, for each $k$, the probability that the top $k$ contains all supporting paragraphs, from features of the selector's scores (the sorted scores, the score at position $k$ and $k{+}1$, and their gap). The system sends the smallest $k$ whose probability exceeds a threshold $\tau$; $\tau$ is chosen on a tuning set as the value with the fewest tokens that reaches a recall target (0.90 or 0.95), and applied once to the test set.
+ 46: 
+ 47: \section{Delta grafting}
+ 48: 
+ 49: To study the structure of a fine-tuning update, the difference between two models is \emph{grafted}, partly, onto the first one. Given a base model with weights $\{W^{(b)}\}$ and a target model $\{W^{(t)}\}$, the delta of each weight matrix is $\Delta = W^{(t)} - W^{(b)}$. A rank-$r$ graft replaces every two-dimensional $\Delta$ by its truncated SVD $\Delta_r$ (Equation~\ref{eq:svd}) and keeps one-dimensional parameters (biases, layer norms) in full. A layer graft adds the full delta of a single Transformer layer only. The effect of a graft $g$ is summarized by its \emph{recovery},
+ 50: \begin{equation}
+ 51: \mathrm{rec}(g) = \frac{R(g) - R(\text{base})}{R(\text{target}) - R(\text{base})},
+ 52: \label{eq:recovery}
+ 53: \end{equation}
+ 54: where $R$ is full-support recall@5 under the target's inference mode. As a control, each $\Delta_r$ is replaced by a random rank-$r$ matrix with the same Frobenius norm; if random matrices recovered as much, ``low-rank'' would be indistinguishable from ``any perturbation of that size''. The graft is chosen without looking at data, so the tuning set can be used to select the smallest rank with at least 80\% recovery, which is then confirmed once on a held-out set with a paired bootstrap confidence interval for the recovery ratio.
+ 55: 
+ 56: \section{Research protocol}
+ 57: \label{sec:protocol}
+ 58: 
+ 59: Every experiment was pre-registered: its question, data splits, metrics, decision rules and budget were committed to version control before any model was scored on evaluation data \cite{nosek2018preregistration}, and deviations were recorded. Each experiment has one primary test; exploratory results are reported as such and are not promoted to confirmed claims without a new registered test on unused data. Recent protocols also state the minimum detectable effect \cite{card2020power}. Because the project uses AI tools for coding, analysis and drafting, each protocol was reviewed before running by an independent model instructed to argue for the null hypothesis, every citation was checked against its official source, and results copied between machines were recomputed and compared. Code, protocols, results and a ledger of all claims are kept in the project repository.
+
+===== 05_results.tex =====
+  1: \chapter{Preliminary Results}
+  2: \label{chap:results}
+  3: 
+  4: Each section states the pre-registered question, the result and its status. All numbers are on held-out questions. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
+  5: 
+  6: \section{A small selector saves most of the tokens (HotpotQA)}
+  7: \label{sec:res_selector}
+  8: 
+  9: A1, the fine-tuned 22.7M cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set. The reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. Table~\ref{tab:hotpot} shows that all A1 rules used 68--77\% fewer prompt tokens, with small F1 differences whose 95\% CIs included zero; no non-inferiority margin was registered for this comparison, so it does not establish equivalence. The gold-paragraphs oracle is better than $k=10$ by 0.040 F1 (CI $[0.017, 0.064]$), so distractors actively hurt the reader.
+ 10: 
+ 11: \begin{table}[htbp]
+ 12: \centering
+ 13: \caption{HotpotQA test (400 questions): answer quality and prompt tokens. $\Delta$F1 is paired against $k=10$.}
+ 14: \label{tab:hotpot}
+ 15: \small
+ 16: \begin{tabular}{lrrrl}
+ 17: \toprule
+ 18: Context & F1 & EM & Tokens & $\Delta$F1 [95\% CI] \\
+ 19: \midrule
+ 20: All 10 paragraphs ($k=10$) & 0.782 & 0.620 & 1,448 & --- \\
+ 21: A1, threshold for recall 0.95 & 0.796 & 0.630 & 467 ($-68\%$) & $+0.014$ $[-0.013, +0.043]$ \\
+ 22: A1, threshold for recall 0.90 & 0.778 & 0.623 & 397 ($-73\%$) & $-0.004$ $[-0.033, +0.026]$ \\
+ 23: A1, top-2 & 0.780 & 0.628 & 330 ($-77\%$) & $-0.001$ $[-0.033, +0.030]$ \\
+ 24: Gold paragraphs (oracle) & 0.822 & 0.670 & 329 & $+0.040$ $[+0.017, +0.064]$ \\
+ 25: \bottomrule
+ 26: \end{tabular}
+ 27: \end{table}
+ 28: 
+ 29: \section{Adaptive stopping saves further tokens}
+ 30: \label{sec:res_adaptive}
+ 31: 
+ 32: On HotpotQA, choosing between two and four paragraphs per question with a learned stopping rule saved 57 and 71 tokens per question against A1's threshold at recall targets 0.90 and 0.95 (CIs $[-71, -44]$ and $[-91, -53]$), with recall differences not significant. On MuSiQue, adaptive stopping beat the pre-registered fixed-$k$ policy of the iterative ranker at recall 0.95 ($-244$ tokens, CI $[-296, -192]$) but not at 0.90 ($-43$, CI $[-95, +9]$), and the iterative ranker's scores were not a better stopping signal than one-shot scores (a refuted secondary). Descriptively, adaptive stopping on the one-shot in-domain ranker reached recall 0.95 with 1,554 tokens and 20 passes per question, against 2,535 tokens for sending all paragraphs. Adaptive-$k$ \cite{taguchi2025adaptivek} with its default buffer of five paragraphs, applied to the same cross-encoder scores, spent the same tokens as the learned rule but recovered fewer complete chains (0.815 vs 0.868; exploratory, test set); without the buffer it cut after 3.7 paragraphs on average (recall 0.50). This agrees with its failure on cosine scores in \citeonline{lavado2027noisegate}.
+ 33: 
+ 34: \section{On MuSiQue, ranking quality limits cost}
+ 35: \label{sec:res_bottleneck}
+ 36: 
+ 37: With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets; the pre-registered comparison was declared not testable. The results below, from later experiments, suggest that ranking quality is the main limiting factor. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised full-support recall@5 from 0.355 to 0.682, and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). That comparison, however, was confounded by the amount of training data (Section~\ref{sec:res_matched}).
+ 38: 
+ 39: \section{The iteration change is functionally rank 2}
+ 40: \label{sec:res_rank}
+ 41: 
+ 42: The weight difference $\Delta = \text{M1-iter} - \text{M1}$ was grafted onto M1 at ranks 1 to 16 (Equation~\ref{eq:recovery}), and the model was run iteratively. These are the CPU-trained models of the iterative-reranking experiment, so $\Delta$ here still includes the training-data confound addressed in Section~\ref{sec:res_matched}. Without the graft, M1 run iteratively reached recall@5 of 0.45 on the tuning set (\texttt{dev300}), against 0.74 for M1-iter. Recovery was 74\% at rank 1 and 95\% at rank 2, and stayed flat at higher ranks (97\% at ranks 4 and 8). A random rank-4 change of the same norm (one draw, tuning set) recovered 9\%. On the test set, the rank-2 graft recovered 84.7\% of the gain (CI $[73.6\%, 96.2\%]$); it remained below the full model (14 vs 31 discordant questions, $p=0.016$). Grafting single layers showed that layers 3 and 4 contribute most (43\% and 40\%), but layers 0--2 also contribute about 30\% each, a flatter profile than for the HotpotQA skill (A1 $-$ A0), where a rank-4 graft recovered 80\% of a token-based measure of the gain and the middle layers dominated. Ranks 2 to 8 differ by about two questions on \texttt{dev300}; the result is a plateau from rank 2, not a strict ordering.
+ 43: 
+ 44: \section{Pair-matched control}
+ 45: \label{sec:res_matched}
+ 46: 
+ 47: Figure~\ref{fig:matched} illustrates the design. With identical training pairs, M1-iter run iteratively beat M1-ctrl run one-shot by 0.040 recall@5 on the test set (0.7475 vs 0.7075, CI $[-0.005, 0.085]$, $p=0.11$): the pre-registered primary test failed. All three seed estimates were positive ($+0.040$, $+0.028$, $+0.033$; re-trainings evaluated on the same questions, not independent replications), but the primary test did not establish an overall gain; with a minimum detectable effect of about 0.07, it cannot exclude a small one either. Training on more pairs alone accounted for about 0.025 of the original gain (M1-ctrl vs M1, $p=0.013$, descriptive).
+ 48: 
+ 49: \begin{figure}[htbp]
+ 50: \centering
+ 51: \input{figures/matched_control}
+ 52: \caption{Pair-matched control. Both models start from A1 and see the same paragraphs, labels and order; only the query differs. Each is evaluated in the inference mode it was trained for, and their weight difference $\Delta$ is analysed by grafting.}
+ 53: \label{fig:matched}
+ 54: \end{figure}
+ 55: 
+ 56: The pre-registered secondary test asked whether the pure conditioning change, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is also low-rank. Grafted onto M1-ctrl at rank 2, it recovered 86.8\% of the gap between M1-ctrl run iteratively and M1-iter on the test set (CI $[77.7\%, 95.8\%]$), while a random rank-2 change of the same norm recovered 7\% (one draw, tuning set). Without this change, M1-ctrl collapses when run iteratively (recall@5 of 0.41), so $\Delta$ encodes the ability to \emph{read} a conditioned query. Recovery is measured from that collapsed baseline: overall, the grafted model run iteratively (0.7025) did not beat M1-ctrl run one-shot (0.7075). On the 64 four-hop test questions it reached 0.500, between one-shot (0.391) and the full M1-iter (0.578) (descriptive).
+ 57: 
+ 58: \section{The effect is concentrated on long chains}
+ 59: \label{sec:res_long}
+ 60: 
+ 61: An exploratory reading of the matched control suggested that the gain was concentrated on four-hop questions. This was tested on 566 four-hop questions never used before (166 unused development questions and 400 unused training questions; ``fresh'' below means unused, not a new dataset). M1-iter (iterative) beat M1-ctrl (one-shot) by 0.055 recall@5 (0.500 vs 0.445, CI $[0.007, 0.102]$, $p=0.035$), positive in both sources but heterogeneous ($+0.139$, $p=0.006$, and $+0.020$, not significant) and positive for all three seeds. On all 1,017 fresh development questions (exploratory), the gain was about zero on two-hop questions, $+0.078$ on three-hop ($p=0.010$) and $+0.139$ on four-hop questions ($p=0.006$).
+ 62: 
+ 63: A cascade that runs the one-shot ranker for every question and the iterative one only for questions predicted to be four-hop did not help: it routed 29\% of questions, reached 0.702 recall@5 with 41.5 passes, against 0.693 for one-shot (20 passes) and 0.745 for always-iterative (74 passes), and failed both pre-registered tests. The router predicted hop count reasonably (four-hop recall 0.76, precision 0.43), but not the questions where iteration actually helps.
+ 64: 
+ 65: \section{Answer quality}
+ 66: \label{sec:res_f1}
+ 67: 
+ 68: A final pre-registered test asked whether the recall gain reaches the reader's answers. \texttt{gpt-5.4-mini} answered the 1,017 unused development questions from the top-5 sets of M1-ctrl and M1-iter, with the passages in a fixed order so that only the selected set differs (Table~\ref{tab:f1}). On questions with three or more hops (the pre-registered primary, $n=488$, averaged over two reader draws), M1-iter's evidence improved answer F1 by 0.076 (CI $[0.041, 0.112]$). Over all questions the difference was $+0.038$ (CI $[0.011, 0.064]$), and on two-hop questions it was non-inferior (exploratory). Both five-paragraph contexts gave higher F1 than sending all paragraphs, with 69\% fewer input tokens. The three-or-more-hop subgroup was chosen from the recall results on the same questions, which is declared in the protocol.
+ 69: 
+ 70: \begin{table}[htbp]
+ 71: \centering
+ 72: \caption{Answer quality on the 1,017 unused MuSiQue development questions (reader \texttt{gpt-5.4-mini}). Top-5 contexts are in paragraph-index order.}
+ 73: \label{tab:f1}
+ 74: \small
+ 75: \begin{tabular}{lrrrrr}
+ 76: \toprule
+ 77: Context & F1 & EM & Tokens & F1, 3-hop & F1, 4-hop \\
+ 78: \midrule
+ 79: All paragraphs ($\approx$20) & 0.506 & 0.394 & 2,525 & 0.518 & 0.502 \\
+ 80: M1-ctrl top 5 (one-shot) & 0.538 & 0.438 & 793 & 0.566 & 0.465 \\
+ 81: M1-iter top 5 (iterative) & 0.576 & 0.475 & 783 & 0.625 & 0.540 \\
+ 82: Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
+ 83: \bottomrule
+ 84: \end{tabular}
+ 85: \end{table}
+ 86: 
+ 87: \section{Summary}
+ 88: 
+ 89: Table~\ref{tab:claims} lists the claims and their status. The practical result is that a small in-domain selector with adaptive stopping is the cost-efficient choice. The research result is that the weight change behind chain-following in such a selector is functionally approximated at rank 2; conditioning-trained iteration improved the registered four-hop outcome, exploratory analyses suggest the gain extends to three-hop but not two-hop questions, and simple routing does not yet capture it.
+ 90: 
+ 91: \begin{table}[htbp]
+ 92: \centering
+ 93: \caption{Claims and their status (C = confirmed by a pre-registered test; N = null; E = exploratory).}
+ 94: \label{tab:claims}
+ 95: \small
+ 96: \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xll}
+ 97: \toprule
+ 98: Claim & Status & Section \\
+ 99: \midrule
+100: Small selector: 68--77\% fewer tokens at equal F1 (HotpotQA) & C & \ref{sec:res_selector} \\
+101: Adaptive stopping saves tokens at a recall target & C (HotpotQA; MuSiQue at 0.95 only) & \ref{sec:res_adaptive} \\
+102: Iteration beats one-shot at matched training data & N ($+0.040$, $p=0.11$) & \ref{sec:res_matched} \\
+103: A rank-2 graft recovers the conditioning change & C (86.8\%) & \ref{sec:res_rank}, \ref{sec:res_matched} \\
+104: Iteration helps four-hop chains & C ($+0.055$, heterogeneous) & \ref{sec:res_long} \\
+105: Iteration helps three-hop chains, not two-hop & E & \ref{sec:res_long} \\
+106: The long-chain recall gain improves answer F1 & C ($+0.076$) & \ref{sec:res_f1} \\
+107: A hop-count router gives a useful cascade & N & \ref{sec:res_long} \\
+108: \bottomrule
+109: \end{tabularx}
+110: \end{table}
+
+exec
+"C:\\Users\\devar\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe" -Command '$b=Get-Content quali/bibli.bib -Raw; [regex]::Matches($b,'"'@\\w+\\s*\\{\\s*(["'^,'"\\s]+)') | ForEach-Object { "'$_.Groups[1].Value }; "--- citation keys in chapters ---"; $t=(Get-Content quali/chapters/*.tex -Raw) -join "`n"; [regex]::Matches($t,'"'\\\\cite(?:online)?(?:\\[["'^'"\\]]*\\])?\\{(["'^}]+)'"\\}') | ForEach-Object { "'$_.Groups[1].Value -split '"',' } | Sort-Object -Unique" in C:\code\qualiusp2026
+ succeeded in 1111ms:
+pmlr-v119-guu20a
+3495724.3496517
+asai2024reliableadaptableattributablelanguage
+jin-etal-2025-rag
+Smithies_Berman_Taiuru_Spychal_Moore_2026
+reimers2019sentence
+liu2026unifieddefinitionhallucinationits
+Guo_2025
+lambert2025tulu3pushingfrontiers
+lavado2027noisegate
+takehi2026weightspace
+ahmed2026weightspaceaudit
+li2026tokeneconomizer
+charakorn2025texttolora
+liang2025draganddrop
+jeong2025ecorag
+zhang2025utilityselector
+zhu2025contextpicker
+li2025brief
+zhou2026dynakrag
+chirkova2025provence
+xu2024recomp
+jiang2024longllmlingua
+cheng2024xrag
+xiong2021mdr
+zhang2024beamretrieval
+taguchi2025adaptivek
+lee2025setr
+alain2016probes
+hewitt2019controltasks
+belinkov2022probing
+marks2023geometrytruth
+arditi2024refusal
+michel2019sixteenheads
+voita2019heads
+sun2024wanda
+sajjad2023droppinglayers
+gromov2024deeperlayers
+panigrahi2023skilllocalization
+yin2024lofit
+hase2023localization
+wu2024reft
+vast2026mice
+java2026frugalrag
+vasani2025phlora
+li2018intrinsic
+aghajanyan2021intrinsic
+hu2022lora
+ilharco2023taskarithmetic
+yadav2023ties
+liu2024bitdelta
+ping2024deltacome
+biderman2024loralearnsless
+shuttleworth2025illusion
+mukherjee2025rlsubnetworks
+morris2026tinylora
+ye2026rlvrlowrank
+lu2025pathway
+perlman2026emergence
+braga2025taskarithmetic
+xia2025crosslora
+farhadzadeh2025lorax
+asai2020pathretriever
+khattab2021baleen
+trivedi2023ircot
+zhuang2024efficientrag
+erker2026grithopper
+jain2025contextualutility
+meng2025dps
+schlatt2025setencoder
+liu2024lostinthemiddle
+wang2023filco
+asai2024selfrag
+jeong2024adaptiverag
+yoon2024compact
+sun2025dynamicrag
+sun2023rankgpt
+pradeep2023rankzephyr
+yoon2024listt5
+trivedi2022musique
+card2020power
+gargiulo2025tsv
+huang2024chatvector
+cao2025paramdelta
+zbeeb2025reasoningvectors
+tang2026past
+rinaldi2026gradientsign
+turner2025modelorganisms
+soligo2025convergent
+altaf2026noisebaseline
+fleshman2024readaptir
+kebir2026convmerging
+yang2018hotpotqa
+ho2020twowiki
+wang2020minilm
+nogueira2019passage
+bajaj2016msmarco
+devlin2019bert
+mcnemar1947
+efron1979bootstrap
+dror2018hitchhiker
+nosek2018preregistration
+vaswani2017attention
+--- citation keys in chapters ---
+3495724.3496517
+aghajanyan2021intrinsic
+altaf2026noisebaseline
+asai2024selfrag
+bajaj2016msmarco
+biderman2024loralearnsless
+braga2025taskarithmetic
+card2020power
+chirkova2025provence
+dror2018hitchhiker
+efron1979bootstrap
+ho2020twowiki
+hu2022lora
+ilharco2023taskarithmetic
+jeong2024adaptiverag
+jiang2024longllmlingua
+khattab2021baleen
+lavado2027noisegate
+li2018intrinsic
+liu2024lostinthemiddle
+liu2026unifieddefinitionhallucinationits
+mcnemar1947
+morris2026tinylora
+nogueira2019passage
+nosek2018preregistration
+panigrahi2023skilllocalization
+perlman2026emergence
+pmlr-v119-guu20a
+pradeep2023rankzephyr
+reimers2019sentence
+shuttleworth2025illusion
+soligo2025convergent
+sun2023rankgpt
+sun2025dynamicrag
+taguchi2025adaptivek
+trivedi2022musique
+trivedi2023ircot
+turner2025modelorganisms
+vasani2025phlora
+vaswani2017attention
+wang2020minilm
+wang2023filco
+xiong2021mdr
+xu2024recomp
+yadav2023ties
+yang2018hotpotqa
+ye2026rlvrlowrank
+yoon2024compact
+zhang2024beamretrieval
+zhuang2024efficientrag
+
+codex
+## 1. Uncited strong claims and result strength
+
+Ranked by risk of misleading the reader.
+
+1. **[05_results.tex:100] “Small selector: 68--77% fewer tokens at equal F1” is too strong.** The text at [05_results.tex:9] says the F1 confidence intervals include zero, but also says no non-inferiority margin was registered. That does not establish equal F1. **Fix:** “Small selector: 68--77% fewer tokens; F1 differences were small and not statistically significant.”
+
+2. **[05_results.tex:9] “distractors actively hurt the reader” overstates what the comparison establishes.** Gold paragraphs change both relevance and context length, so this is not an isolated test of distractor harm. **Fix:** “The gold-paragraphs condition had 0.040 higher F1 than \(k=10\) (95% CI [0.017, 0.064]); this is consistent with irrelevant context reducing answer quality.”
+
+3. **[03_related_work.tex:10] “matched recall and answer quality” implies equivalence.** The HotpotQA results do not establish equivalent answer quality. **Fix:** “cost accounting at specified recall targets, with answer-F1 differences and confidence intervals reported.”
+
+4. **[01_introduction.tex:8] “A selector that scores each passage against the question alone tends to rank such bridge passages low” is a factual claim without a citation or supporting result in the main text.** **(c)** Soften to “can rank such bridge passages low,” or report the relevant experiment and cite it.
+
+5. **[02_background.tex:18] “It is more accurate” (cross-encoders versus bi-encoders) lacks a direct citation.** **(a)** Add the existing `\cite{nogueira2019passage}` to that sentence, or **(c)** soften to “can model interactions between the question and paragraph, at the cost of one forward pass per pair.”
+
+6. **[04_method.tex:6] HotpotQA’s distractor setting and its “two supporting” paragraphs are uncited.** **(a)** Add `\cite{yang2018hotpotqa}` to the dataset description.
+
+7. **[01_introduction.tex:6] “This makes answers easier to update and to verify” is uncited at the point of the claim.** **(a)** Attach the existing RAG citation `\cite{3495724.3496517}` to that sentence.
+
+8. **[03_related_work.tex:36--38] The “Known” cells list Adaptive-\(k\), DynamicRAG, Self-RAG, Beam Retrieval, MDR, Baleen, LoRA, and PHLoRA without citations in the table.** The prose above cites these works, but the table should stand on its own. **Fix:** Add the relevant existing keys to each cell: `taguchi2025adaptivek`, `sun2025dynamicrag`, `asai2024selfrag`; `zhang2024beamretrieval`, `xiong2021mdr`, `khattab2021baleen`; and `hu2022lora`, `vasani2025phlora`.
+
+Other result wording to tighten: **[05_results.tex:37]** says M1-iter “reached 0.750” after “raised” to 0.682; the comparison is confounded by training-data volume. Say “The un-matched M1-iter model reached 0.750; this comparison is confounded…”. **[05_results.tex:56]** “\(\Delta\) encodes the ability to read a conditioned query” is stronger than a functional graft result. Say “The result supports the interpretation that \(\Delta\) helps the model use a conditioned query.” **[05_results.tex:89]** calls the selector “the cost-efficient choice” without qualifying the tested datasets, reader, or compute budget. Limit the claim to those conditions.
+
+## 2. Purpose and relevance
+
+- **Abstract [00_abstract.tex:10--14] and introduction [01_introduction.tex:6--12]** make the token-cost and multi-hop problem clear. The scientific question—what fine-tuning changes—is clearest in [01_introduction.tex:18, 23]. Add one sentence to the introduction tying the two stakes together: *“The practical question is whether a small selector can reduce reader context cost without losing evidence; the scientific question is what change lets it follow evidence across hops.”*
+- **Background [02_background.tex:4]** lists topics but not why they matter. Add: *“These concepts define the cost, evidence, and model changes measured in the experiments.”*
+- **Related Work [03_related_work.tex:4]** says it positions the work, but delays the gap until [03_related_work.tex:10, 16, 24]. Add an opening sentence: *“Existing work reduces context or retrieves iteratively, but leaves open whether a small reranker can follow evidence chains and whether that behavior can be isolated in its weights.”*
+- **Materials and Methods [04_method.tex:1--4]** has no chapter-opening rationale; it starts directly with data. Add: *“This chapter specifies the controlled comparisons needed to separate token savings, iterative conditioning, and training-data effects.”*
+- **Preliminary Results [05_results.tex:4]** opens with test procedures, not the reader’s question. Add: *“The results first measure context savings, then test whether conditioning helps multi-hop evidence selection and answer quality.”*
+- **Research Plan [06_plan.tex:6--13]** describes an artifact, but the deployment value is buried in line 13. Lead with: *“The remaining work tests whether one small selector can serve short questions cheaply and activate iterative selection only when it improves long-chain evidence.”*
+
+## 3. Writing style: eight priority rewrites
+
+1. **[03_related_work.tex:8]** The long catalogue is hard to scan. Split after the compression methods and adaptive methods; give each sentence one category and a short comparison.
+2. **[05_results.tex:32]** Split the sentence into HotpotQA findings, MuSiQue findings, and the Adaptive-\(k\) comparison. Define “complete chains” as “all annotated supporting paragraphs” on first use.
+3. **[05_results.tex:42]** Too many results and comparisons are packed together. Separate the rank-2 result, random control, layer analysis, and plateau interpretation into four sentences.
+4. **[05_results.tex:56]** Define “recovery” in plain language here, since readers encounter it earlier in the abstract: *“Recovery is the fraction of the performance gap from the collapsed iterative baseline to M1-iter that the graft closes.”* Replace “encodes the ability” as noted above.
+5. **[05_results.tex:61]** “Fresh” needs repeated qualification, and the sentence mixes sources, heterogeneity, seeds, and exploratory subgroup results. Report the registered four-hop test first; move the exploratory development-set pattern to a separate sentence.
+6. **[05_results.tex:68]** The reader setup, primary subgroup, all-question result, two-hop result, token comparison, and selection caveat make this paragraph dense. Separate the primary finding from exploratory results and the subgroup-selection caveat.
+7. **[00_abstract.tex:12]** “pair-matched,” “graft,” and “recovery” appear before explanation. Replace with plain language at first mention, e.g. *“a control trained on the same examples”* and *“a rank-2 weight update restored 86.8% of the measured performance gap.”*
+8. **[02_background.tex:34]** “Full-support recall” is defined, but “matches what a reader needs to answer” overgeneralizes because readers may answer without every annotated support paragraph. Replace with: *“This measures whether the selected set contains every annotated support paragraph; it is stricter than per-paragraph recall.”*
+
+Across the text, use **“supporting paragraphs”** consistently instead of alternating among “evidence,” “support,” and “chain” when referring to annotated paragraphs. Define **“conditioning”** on first use as adding already-selected paragraphs to the query, and use **“rank-2 graft”** consistently for the extracted update.
+tokens used
+37,808
+## 1. Uncited strong claims and result strength
+
+Ranked by risk of misleading the reader.
+
+1. **[05_results.tex:100] “Small selector: 68--77% fewer tokens at equal F1” is too strong.** The text at [05_results.tex:9] says the F1 confidence intervals include zero, but also says no non-inferiority margin was registered. That does not establish equal F1. **Fix:** “Small selector: 68--77% fewer tokens; F1 differences were small and not statistically significant.”
+
+2. **[05_results.tex:9] “distractors actively hurt the reader” overstates what the comparison establishes.** Gold paragraphs change both relevance and context length, so this is not an isolated test of distractor harm. **Fix:** “The gold-paragraphs condition had 0.040 higher F1 than \(k=10\) (95% CI [0.017, 0.064]); this is consistent with irrelevant context reducing answer quality.”
+
+3. **[03_related_work.tex:10] “matched recall and answer quality” implies equivalence.** The HotpotQA results do not establish equivalent answer quality. **Fix:** “cost accounting at specified recall targets, with answer-F1 differences and confidence intervals reported.”
+
+4. **[01_introduction.tex:8] “A selector that scores each passage against the question alone tends to rank such bridge passages low” is a factual claim without a citation or supporting result in the main text.** **(c)** Soften to “can rank such bridge passages low,” or report the relevant experiment and cite it.
+
+5. **[02_background.tex:18] “It is more accurate” (cross-encoders versus bi-encoders) lacks a direct citation.** **(a)** Add the existing `\cite{nogueira2019passage}` to that sentence, or **(c)** soften to “can model interactions between the question and paragraph, at the cost of one forward pass per pair.”
+
+6. **[04_method.tex:6] HotpotQA’s distractor setting and its “two supporting” paragraphs are uncited.** **(a)** Add `\cite{yang2018hotpotqa}` to the dataset description.
+
+7. **[01_introduction.tex:6] “This makes answers easier to update and to verify” is uncited at the point of the claim.** **(a)** Attach the existing RAG citation `\cite{3495724.3496517}` to that sentence.
+
+8. **[03_related_work.tex:36--38] The “Known” cells list Adaptive-\(k\), DynamicRAG, Self-RAG, Beam Retrieval, MDR, Baleen, LoRA, and PHLoRA without citations in the table.** The prose above cites these works, but the table should stand on its own. **Fix:** Add the relevant existing keys to each cell: `taguchi2025adaptivek`, `sun2025dynamicrag`, `asai2024selfrag`; `zhang2024beamretrieval`, `xiong2021mdr`, `khattab2021baleen`; and `hu2022lora`, `vasani2025phlora`.
+
+Other result wording to tighten: **[05_results.tex:37]** says M1-iter “reached 0.750” after “raised” to 0.682; the comparison is confounded by training-data volume. Say “The un-matched M1-iter model reached 0.750; this comparison is confounded…”. **[05_results.tex:56]** “\(\Delta\) encodes the ability to read a conditioned query” is stronger than a functional graft result. Say “The result supports the interpretation that \(\Delta\) helps the model use a conditioned query.” **[05_results.tex:89]** calls the selector “the cost-efficient choice” without qualifying the tested datasets, reader, or compute budget. Limit the claim to those conditions.
+
+## 2. Purpose and relevance
+
+- **Abstract [00_abstract.tex:10--14] and introduction [01_introduction.tex:6--12]** make the token-cost and multi-hop problem clear. The scientific question—what fine-tuning changes—is clearest in [01_introduction.tex:18, 23]. Add one sentence to the introduction tying the two stakes together: *“The practical question is whether a small selector can reduce reader context cost without losing evidence; the scientific question is what change lets it follow evidence across hops.”*
+- **Background [02_background.tex:4]** lists topics but not why they matter. Add: *“These concepts define the cost, evidence, and model changes measured in the experiments.”*
+- **Related Work [03_related_work.tex:4]** says it positions the work, but delays the gap until [03_related_work.tex:10, 16, 24]. Add an opening sentence: *“Existing work reduces context or retrieves iteratively, but leaves open whether a small reranker can follow evidence chains and whether that behavior can be isolated in its weights.”*
+- **Materials and Methods [04_method.tex:1--4]** has no chapter-opening rationale; it starts directly with data. Add: *“This chapter specifies the controlled comparisons needed to separate token savings, iterative conditioning, and training-data effects.”*
+- **Preliminary Results [05_results.tex:4]** opens with test procedures, not the reader’s question. Add: *“The results first measure context savings, then test whether conditioning helps multi-hop evidence selection and answer quality.”*
+- **Research Plan [06_plan.tex:6--13]** describes an artifact, but the deployment value is buried in line 13. Lead with: *“The remaining work tests whether one small selector can serve short questions cheaply and activate iterative selection only when it improves long-chain evidence.”*
+
+## 3. Writing style: eight priority rewrites
+
+1. **[03_related_work.tex:8]** The long catalogue is hard to scan. Split after the compression methods and adaptive methods; give each sentence one category and a short comparison.
+2. **[05_results.tex:32]** Split the sentence into HotpotQA findings, MuSiQue findings, and the Adaptive-\(k\) comparison. Define “complete chains” as “all annotated supporting paragraphs” on first use.
+3. **[05_results.tex:42]** Too many results and comparisons are packed together. Separate the rank-2 result, random control, layer analysis, and plateau interpretation into four sentences.
+4. **[05_results.tex:56]** Define “recovery” in plain language here, since readers encounter it earlier in the abstract: *“Recovery is the fraction of the performance gap from the collapsed iterative baseline to M1-iter that the graft closes.”* Replace “encodes the ability” as noted above.
+5. **[05_results.tex:61]** “Fresh” needs repeated qualification, and the sentence mixes sources, heterogeneity, seeds, and exploratory subgroup results. Report the registered four-hop test first; move the exploratory development-set pattern to a separate sentence.
+6. **[05_results.tex:68]** The reader setup, primary subgroup, all-question result, two-hop result, token comparison, and selection caveat make this paragraph dense. Separate the primary finding from exploratory results and the subgroup-selection caveat.
+7. **[00_abstract.tex:12]** “pair-matched,” “graft,” and “recovery” appear before explanation. Replace with plain language at first mention, e.g. *“a control trained on the same examples”* and *“a rank-2 weight update restored 86.8% of the measured performance gap.”*
+8. **[02_background.tex:34]** “Full-support recall” is defined, but “matches what a reader needs to answer” overgeneralizes because readers may answer without every annotated support paragraph. Replace with: *“This measures whether the selected set contains every annotated support paragraph; it is stricter than per-paragraph recall.”*
+
+Across the text, use **“supporting paragraphs”** consistently instead of alternating among “evidence,” “support,” and “chain” when referring to annotated paragraphs. Define **“conditioning”** on first use as adding already-selected paragraphs to the query, and use **“rank-2 graft”** consistently for the extracted update.
+DONE
