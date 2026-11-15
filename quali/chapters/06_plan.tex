@@ -6,7 +6,7 @@
 The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
 \begin{enumerate}
   \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
-  \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that turns the one-shot selector into an iterative one. A single base model then serves both modes;
+  \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that lets the one-shot selector run iteratively, so a single base model serves both modes. Its value must be shown where iteration helps (long chains): the extracted rank-2 graft restored iterative use but did not beat one-shot ranking overall;
   \item a router that decides, per question, whether to activate the adapter;
   \item an evaluation script that reports tokens, passes, full-support recall and answer quality against fixed top-$k$, Adaptive-$k$ and always-iterative baselines.
 \end{enumerate}
@@ -38,26 +38,59 @@ The adapter saves memory and deployment complexity, not passes: activating it st
   \item \textbf{Multiplicity.} Each experiment has a single primary test; across experiments no correction is applied. The headline claims will be re-tested on a locked set before the defence.
 \end{itemize}
 
-\section{Schedule}
+\section{Research questions and evidence}
 
-Table~\ref{tab:schedule} lists the planned activities by quarter.
+Table~\ref{tab:rq} maps the research questions of Chapter~\ref{chap:intro} to the evidence so far and to the remaining work.
 
 \begin{table}[htbp]
 \centering
-\caption{Schedule (quarters from the qualification).}
+\caption{Research questions, current evidence and remaining work.}
+\label{tab:rq}
+\small
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.2cm}}
+\toprule
+RQ & Evidence so far & Remaining \\
+\midrule
+RQ1 & 68--77\% fewer tokens on HotpotQA; adaptive stopping saves more (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}) & W3 (MuSiQue answers) \\
+RQ2 & Ranking quality limits cost on MuSiQue (Section~\ref{sec:res_bottleneck}) & --- \\
+RQ3 & Small overall effect, not significant; confirmed gain on four-hop chains (Sections~\ref{sec:res_matched}, \ref{sec:res_long}) & W2, W3 \\
+RQ4 & Functionally rank 2 (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}) & W1, W4, W5 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Proposed dissertation outline}
+
+\begin{enumerate}
+  \item Introduction: cost of evidence in multi-hop RAG, research questions, contributions.
+  \item Background and related work.
+  \item Cheap evidence selection: small selectors and adaptive stopping (RQ1, RQ2).
+  \item Chain-following as a low-rank change: grafting, matched control, long-chain effect (RQ3, RQ4).
+  \item The chain adapter: direct low-rank training, routing, transfer and answer quality.
+  \item Conclusion and limitations.
+\end{enumerate}
+
+\section{Schedule}
+
+Table~\ref{tab:schedule} lists the planned activities by month after the qualification exam. \todo[inline]{Author: replace month numbers with calendar months once the qualification date is set.}
+
+\begin{table}[htbp]
+\centering
+\caption{Schedule (months after the qualification exam).}
 \label{tab:schedule}
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lc}
 \toprule
-Activity & Q1 & Q2 & Q3 & Q4 \\
+Activity & Months \\
 \midrule
-W1 adapter trained directly; W3 answer quality & $\bullet$ & & & \\
-W2 benefit router and cascade & $\bullet$ & $\bullet$ & & \\
-W4 geometry with noise baselines & & $\bullet$ & & \\
-W5 transfer across rerankers and to 2WikiMultiHopQA & & $\bullet$ & $\bullet$ & \\
-Paper submission & & & $\bullet$ & \\
-Locked-set confirmation of the headline claims & & & $\bullet$ & \\
-Dissertation writing and defence & & & $\bullet$ & $\bullet$ \\
+W1 adapter trained directly; W3 answer quality & 1--2 \\
+W2 benefit router and cascade & 1--3 \\
+W4 geometry with noise baselines & 3--4 \\
+W5 transfer across rerankers and to 2WikiMultiHopQA & 4--7 \\
+Locked-set confirmation of the headline claims & 7--8 \\
+Paper submission & 8 \\
+Dissertation writing & 7--11 \\
+Deposit and defence & 12 \\
 \bottomrule
 \end{tabular}
 \end{table}

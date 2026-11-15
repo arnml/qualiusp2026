@@ -20,14 +20,14 @@ This work studies \emph{cheap evidence selection} for multi-hop RAG: a small mod
 
 \section{Hypothesis}
 
-The central hypothesis is that \textbf{chain-following in a small reranker is a separable, low-rank skill that matters mainly for long reasoning chains}. If it holds, the skill can be shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap.
+The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap. The preliminary results support the first part functionally (by grafting an extracted change); training the adapter directly is part of the remaining work.
 
 \section{Contributions so far}
 
 \begin{enumerate}
-  \item An evaluation of a 22.7M-parameter cross-encoder as an evidence selector, with token accounting at matched recall and answer F1 (HotpotQA, MuSiQue).
+  \item An evaluation of a 22.7M-parameter cross-encoder as an evidence selector: token accounting at fixed recall targets (HotpotQA, MuSiQue) and answer F1 on HotpotQA; answer quality on MuSiQue is being measured.
   \item Evidence that, on MuSiQue, the one-shot ranker rather than the stopping rule limits cost, and a pair-matched control showing that part of the apparent benefit of iterative reranking came from additional training data.
-  \item Evidence that the ability to use a conditioned query is a rank-2 weight change (about 85\% of its effect recovered, random controls 7--9\%), and a pre-registered confirmation that it helps four-hop chains.
+  \item Evidence that the weight change behind the ability to use a conditioned query is functionally approximated at rank 2 (about 85\% of its effect recovered, random controls 7--9\%), and a pre-registered test showing that conditioning-trained iteration helps four-hop chains.
   \item A research protocol for an AI-assisted project: pre-registration of every decision rule in version control, paired statistics, adversarial review of each protocol before running it, and a claim ledger that records null results (Section~\ref{sec:protocol}).
 \end{enumerate}
 

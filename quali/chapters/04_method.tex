@@ -14,7 +14,7 @@ Training questions come from the MuSiQue training split: 1,000 questions for fin
 
 \section{Models}
 
-All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, only the query side is truncated.
+All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, the query side is truncated (if a paragraph alone exceeds the limit, both sides are truncated).
 
 \begin{table}[htbp]
 \centering
@@ -56,12 +56,4 @@ where $R$ is full-support recall@5 under the target's inference mode. As a contr
 \section{Research protocol}
 \label{sec:protocol}
 
-The project is carried out with substantial assistance from AI tools, which makes a strict protocol necessary \cite{nosek2018preregistration}. The following rules were applied to every experiment.
-
-\begin{enumerate}
-  \item \textbf{Pre-registration.} Each experiment has its own directory and environment. Its protocol (question, data splits, metrics, decision rules, budget rule and honest priors) is committed to version control \emph{before} any model is scored on the evaluation data. Deviations are recorded with their reason.
-  \item \textbf{Paired statistics and power.} Comparisons use exact McNemar tests or paired bootstrap intervals; recent protocols state the minimum detectable effect and a minimum worthwhile effect in advance \cite{card2020power}.
-  \item \textbf{Adversarial review before running.} Since the matched-control experiment, each protocol is reviewed before it runs by an independent model from another provider, instructed to argue for the null hypothesis. Its findings changed several designs, for example by requiring a hardware-matched comparator and coded analysis scripts.
-  \item \textbf{Claim ledger.} Every claim is recorded as confirmed, confirmed with a known threat, null, exploratory or known in the literature. Exploratory findings must be re-tested on fresh data before they are claimed.
-  \item \textbf{Verification.} Each citation is checked against its official page before it enters the text; data and model files are verified by checksums; results copied between machines are re-computed and compared.
-\end{enumerate}
+Every experiment was pre-registered: its question, data splits, metrics, decision rules and budget were committed to version control before any model was scored on evaluation data \cite{nosek2018preregistration}, and deviations were recorded. Each experiment has one primary test; exploratory results are reported as such and are not promoted to confirmed claims without a new registered test on unused data. Recent protocols also state the minimum detectable effect \cite{card2020power}. Because the project uses AI tools for coding, analysis and drafting, each protocol was reviewed before running by an independent model instructed to argue for the null hypothesis, every citation was checked against its official source, and results copied between machines were recomputed and compared. Code, protocols, results and a ledger of all claims are kept in the project repository.

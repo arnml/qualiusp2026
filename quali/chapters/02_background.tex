@@ -5,7 +5,7 @@ This chapter introduces the concepts the rest of the text relies on: retrieval-a
 
 \section{Parametric and non-parametric knowledge}
 
-A Transformer language model \cite{vaswani2017attention} stores what it learned in its weights. This \emph{parametric} knowledge is implicit: it cannot be inspected or updated piece by piece, and the model may produce fluent but unsupported statements. \citeonline{liu2026unifieddefinitionhallucinationits} define such hallucinations as failures of the model's internal world model and propose a taxonomy of errors. Recent post-training methods improve reasoning, for example reinforcement learning with verifiable rewards \cite{Guo_2025,lambert2025tulu3pushingfrontiers}, but they do not remove the need for up-to-date, attributable evidence.
+A Transformer language model \cite{vaswani2017attention} stores what it learned in its weights. This \emph{parametric} knowledge is implicit: it cannot be inspected or updated piece by piece, and the model may produce fluent but unsupported statements, which \citeonline{liu2026unifieddefinitionhallucinationits} analyse as failures of the model's world model.
 
 Retrieval-augmented models add a \emph{non-parametric} memory. REALM \cite{pmlr-v119-guu20a} trains a retriever jointly with a masked language model; RAG \cite{3495724.3496517} conditions a generator on passages from a dense retriever. In the systems studied here the LLM is used as a fixed reader: a retriever returns candidate paragraphs, a selector chooses some of them, and the LLM answers from the selected ones.
 
@@ -26,7 +26,7 @@ Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$
 \Delta_r = \sum_{i=1}^{r} \sigma_i u_i v_i^\top,
 \label{eq:svd}
 \end{equation}
-where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors \cite{vasani2025phlora}. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
+where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors (the Eckart--Young theorem). PHLoRA \cite{vasani2025phlora} uses this operation to extract adapters from fine-tuned checkpoints. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
 
 \section{Metrics}
 
@@ -39,4 +39,4 @@ where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and 
 
 \section{Statistical tests}
 
-All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. Claims of ``no worse'' are tested as non-inferiority with a margin fixed in advance, never as a non-significant difference \cite{card2020power}.
+All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. A non-significant difference is not evidence of equivalence \cite{card2020power}; the later experiments therefore test ``no worse'' claims as non-inferiority with a margin fixed in advance, while the early ones report the interval only.
