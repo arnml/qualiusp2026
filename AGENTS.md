@@ -7,7 +7,7 @@ Instructions for any AI agent working here (Claude Code, Codex, subagents).
 - **`quali/` is the source of truth** for the master's qualification text. It is self-contained: `main.tex`, the class files, `bibli.bib`, `chapters/` and `figures/`.
 - **Never render LaTeX locally.** All LaTeX builds happen in Overleaf, in the browser:
   - project `qualiusp2026`, folder `quali/`
-  - main document `quali/main.tex`
+  - main document: the root file `quali_main.tex`, an editable 3-line entry point that inputs `quali/main.tex`. Overleaf only allows an editable document as the main file, and linked files are not editable
   - compiler pdfLaTeX
 - **Keep Overleaf in sync with the repo.** After any change to `quali/`:
   1. commit and push

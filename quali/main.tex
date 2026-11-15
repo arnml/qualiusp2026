@@ -1,6 +1,7 @@
-% Master's qualification text (EPUSP / PPGEE). Self-contained folder for Overleaf:
-% upload or sync the whole quali/ directory; main document = main.tex; compiler = pdfLaTeX; bibliography = BibTeX.
-\documentclass[]{politex-xico}
+% Master's qualification text (EPUSP / PPGEE). Compiled only in Overleaf (see AGENTS.md).
+% In Overleaf the entry point is the root file quali_main.tex, which sets \input@path to quali/ and inputs this file;
+% the class and bibliography are then taken from quali/ (the project root holds older copies).
+\IfFileExists{quali/politex-xico.cls}{\documentclass[]{quali/politex-xico}}{\documentclass[]{politex-xico}}
 
 % ========== Packages ==========
 \usepackage[utf8]{inputenc}
@@ -44,7 +45,7 @@
 \input{chapters/05_results}
 \input{chapters/06_plan}
 
-\bibliography{bibli}
+\IfFileExists{quali/bibli.bib}{\bibliography{quali/bibli}}{\bibliography{bibli}}
 
 \appendix
 \input{chapters/A_experiment_index}
