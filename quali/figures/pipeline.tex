@@ -1,0 +1,18 @@
+% Planned system: cheap selector, router and rank-2 chain adapter (TikZ).
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, minimum height=1.0cm, font=\small},
+  arr/.style={-{Latex[length=2mm]}, thick},
+  node distance=0.6cm and 0.9cm]
+  \node[box, minimum width=2.2cm] (q) {question +\\$\sim$20 paragraphs};
+  \node[box, right=of q, fill=gray!10, minimum width=2.8cm] (sel) {small selector\\one-shot, 20 passes};
+  \node[box, right=of sel, minimum width=2.0cm] (rt) {router};
+  \node[box, above right=0.4cm and 0.9cm of rt, fill=orange!15, minimum width=3.2cm] (ad) {selector + chain adapter\\(rank 2), iterative};
+  \node[box, below right=0.4cm and 0.9cm of rt, minimum width=3.2cm] (keep) {keep one-shot ranking};
+  \node[box, right=4.6cm of rt, fill=blue!8, minimum width=2.4cm] (llm) {adaptive stop\\$\rightarrow$ LLM reader};
+  \draw[arr] (q) -- (sel);
+  \draw[arr] (sel) -- (rt);
+  \draw[arr] (rt) |- node[pos=0.75, above, font=\footnotesize] {long / hard} (ad);
+  \draw[arr] (rt) |- node[pos=0.75, below, font=\footnotesize] {otherwise} (keep);
+  \draw[arr] (ad) -| (llm);
+  \draw[arr] (keep) -| (llm);
+\end{tikzpicture}

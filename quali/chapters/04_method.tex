@@ -1,0 +1,67 @@
+\chapter{Materials and Methods}
+\label{chap:method}
+
+\section{Data}
+
+\textbf{HotpotQA} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
+
+\textbf{MuSiQue-Ans} \cite{trivedi2022musique} is used for the multi-hop experiments. The official test labels are not public, so all evaluation sets are drawn from the labelled development split, disjoint from each other and fixed in advance:
+\begin{itemize}
+  \item a 400-question test set and a 300-question tuning set (\texttt{dev300}), used up to the matched-control experiment;
+  \item a \emph{fresh} set of all 1,017 development questions not used before (529, 322 and 166 two-, three- and four-hop), used for the confirmation experiment.
+\end{itemize}
+Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. Every split was written to a file and committed before any model was scored on it.
+
+\section{Models}
+
+All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, only the query side is truncated.
+
+\begin{table}[htbp]
+\centering
+\caption{Selectors. All share the MiniLM-L6 architecture (22.7M parameters).}
+\label{tab:models}
+\small
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
+\toprule
+Name & Training \\
+\midrule
+A0 & Off-the-shelf MS MARCO reranker (\texttt{ms-marco-MiniLM-L6-v2}) \\
+A1 & A0 fine-tuned on about 90,000 HotpotQA training questions \\
+M1 & A1 fine-tuned on 1,000 MuSiQue questions; query = question only (8,338 pairs) \\
+M1-iter & A1 fine-tuned on the same questions with one example per reasoning step: query = question + the supporting paragraphs of the previous steps; positives = the supporting paragraphs not yet in the query (18,101 pairs) \\
+M1-ctrl & Pair-matched control: exactly M1-iter's pairs, in the same order, with the query reduced to the question (18,101 pairs) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{The confound and its control.} M1-iter sees about 2.2 times as many training pairs as M1, so a comparison of the two mixes the effect of conditioning with the effect of more training. M1-ctrl removes this confound: it receives the same paragraphs, labels, order, number of steps and learning-rate schedule as M1-iter, and differs only in the query text. M1-iter and M1-ctrl were trained with three seeds each.
+
+\section{Inference}
+
+\textbf{One-shot.} Every paragraph is scored against the question and the list is sorted; this costs one pass per paragraph (about 20 on MuSiQue).
+
+\textbf{Iterative.} For four greedy steps, the remaining paragraphs are scored against a query made of the question followed by the paragraphs selected so far (most recent first, separated by a special token), and the highest-scoring paragraph is selected. The remaining paragraphs are then ordered by their scores in the last step. This costs about $20+19+18+17 = 74$ passes per question.
+
+\textbf{Adaptive stopping.} Instead of a fixed $k$, a logistic regression estimates, for each $k$, the probability that the top $k$ contains all supporting paragraphs, from features of the selector's scores (the sorted scores, the score at position $k$ and $k{+}1$, and their gap). The system sends the smallest $k$ whose probability exceeds a threshold $\tau$; $\tau$ is chosen on a tuning set as the value with the fewest tokens that reaches a recall target (0.90 or 0.95), and applied once to the test set.
+
+\section{Delta grafting}
+
+To study the structure of a fine-tuning update, the difference between two models is \emph{grafted}, partly, onto the first one. Given a base model with weights $\{W^{(b)}\}$ and a target model $\{W^{(t)}\}$, the delta of each weight matrix is $\Delta = W^{(t)} - W^{(b)}$. A rank-$r$ graft replaces every two-dimensional $\Delta$ by its truncated SVD $\Delta_r$ (Equation~\ref{eq:svd}) and keeps one-dimensional parameters (biases, layer norms) in full. A layer graft adds the full delta of a single Transformer layer only. The effect of a graft $g$ is summarized by its \emph{recovery},
+\begin{equation}
+\mathrm{rec}(g) = \frac{R(g) - R(\text{base})}{R(\text{target}) - R(\text{base})},
+\label{eq:recovery}
+\end{equation}
+where $R$ is full-support recall@5 under the target's inference mode. As a control, each $\Delta_r$ is replaced by a random rank-$r$ matrix with the same Frobenius norm; if random matrices recovered as much, ``low-rank'' would be indistinguishable from ``any perturbation of that size''. The graft is chosen without looking at data, so the tuning set can be used to select the smallest rank with at least 80\% recovery, which is then confirmed once on a held-out set with a paired bootstrap confidence interval for the recovery ratio.
+
+\section{Research protocol}
+\label{sec:protocol}
+
+The project is carried out with substantial assistance from AI tools, which makes a strict protocol necessary \cite{nosek2018preregistration}. The following rules were applied to every experiment.
+
+\begin{enumerate}
+  \item \textbf{Pre-registration.} Each experiment has its own directory and environment. Its protocol (question, data splits, metrics, decision rules, budget rule and honest priors) is committed to version control \emph{before} any model is scored on the evaluation data. Deviations are recorded with their reason.
+  \item \textbf{Paired statistics and power.} Comparisons use exact McNemar tests or paired bootstrap intervals; recent protocols state the minimum detectable effect and a minimum worthwhile effect in advance \cite{card2020power}.
+  \item \textbf{Adversarial review before running.} Since the matched-control experiment, each protocol is reviewed before it runs by an independent model from another provider, instructed to argue for the null hypothesis. Its findings changed several designs, for example by requiring a hardware-matched comparator and coded analysis scripts.
+  \item \textbf{Claim ledger.} Every claim is recorded as confirmed, confirmed with a known threat, null, exploratory or known in the literature. Exploratory findings must be re-tested on fresh data before they are claimed.
+  \item \textbf{Verification.} Each citation is checked against its official page before it enters the text; data and model files are verified by checksums; results copied between machines are re-computed and compared.
+\end{enumerate}

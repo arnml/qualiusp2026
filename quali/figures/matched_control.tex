@@ -1,0 +1,17 @@
+% Pair-matched control design (TikZ). Requires \usepackage{tikz} and \usetikzlibrary{positioning,arrows.meta}.
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, minimum width=3.4cm, minimum height=1.0cm, font=\small},
+  arr/.style={-{Latex[length=2mm]}, thick},
+  node distance=0.7cm and 1.4cm]
+  \node[box, fill=gray!10] (a1) {A1\\(HotpotQA selector)};
+  \node[box, below left=of a1] (iter) {M1-iter\\query: question + selected};
+  \node[box, below right=of a1] (ctrl) {M1-ctrl\\query: question only};
+  \node[box, below=of iter, fill=blue!8] (ei) {iterative inference\\$\approx$74 passes};
+  \node[box, below=of ctrl, fill=blue!8] (ec) {one-shot inference\\20 passes};
+  \draw[arr] (a1) -- node[left, font=\footnotesize, align=right] {same 18,101 pairs,\\same order} (iter);
+  \draw[arr] (a1) -- (ctrl);
+  \draw[arr] (iter) -- (ei);
+  \draw[arr] (ctrl) -- (ec);
+  \draw[<->, thick, dashed] (iter) -- node[above, font=\footnotesize] {$\Delta$ (rank-2 graft)} (ctrl);
+  \draw[<->, thick] (ei) -- node[above, font=\footnotesize] {primary test} (ec);
+\end{tikzpicture}

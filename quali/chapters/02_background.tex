@@ -1,0 +1,42 @@
+\chapter{Background}
+\label{chap:background}
+
+This chapter introduces the concepts the rest of the text relies on: retrieval-augmented generation, multi-hop question answering, cross-encoder reranking, the structure of fine-tuning updates, and the evaluation metrics and statistical tests used.
+
+\section{Parametric and non-parametric knowledge}
+
+A Transformer language model \cite{vaswani2017attention} stores what it learned in its weights. This \emph{parametric} knowledge is implicit: it cannot be inspected or updated piece by piece, and the model may produce fluent but unsupported statements. \citeonline{liu2026unifieddefinitionhallucinationits} define such hallucinations as failures of the model's internal world model and propose a taxonomy of errors. Recent post-training methods improve reasoning, for example reinforcement learning with verifiable rewards \cite{Guo_2025,lambert2025tulu3pushingfrontiers}, but they do not remove the need for up-to-date, attributable evidence.
+
+Retrieval-augmented models add a \emph{non-parametric} memory. REALM \cite{pmlr-v119-guu20a} trains a retriever jointly with a masked language model; RAG \cite{3495724.3496517} conditions a generator on passages from a dense retriever. In the systems studied here the LLM is used as a fixed reader: a retriever returns candidate paragraphs, a selector chooses some of them, and the LLM answers from the selected ones.
+
+\section{Multi-hop question answering}
+
+A question is \emph{multi-hop} when its answer requires combining several pieces of evidence. HotpotQA \cite{yang2018hotpotqa} provides two-hop questions with ten candidate paragraphs each, two of them supporting and eight distractors. MuSiQue \cite{trivedi2022musique} composes two- to four-hop questions from single-hop ones and filters out questions that can be answered by shortcuts; each question has about twenty candidate paragraphs. In both datasets the supporting paragraphs are annotated, so evidence recall can be measured without an LLM. 2WikiMultiHopQA \cite{ho2020twowiki} is a third, related benchmark planned for the remaining work.
+
+\section{Cross-encoder reranking}
+
+A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. It is more accurate but needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. Scoring the twenty paragraphs of a MuSiQue question takes twenty forward passes.
+
+\textbf{One-shot and iterative reranking.} A one-shot reranker scores every paragraph against the question once and sorts them. An \emph{iterative} reranker selects one paragraph at a time and re-scores the remaining ones with a query that contains the question and the paragraphs already selected. Iterative selection can follow a chain from one piece of evidence to the next, at the cost of more passes \cite{xiong2021mdr,zhang2024beamretrieval}.
+
+\section{Structure of fine-tuning updates}
+
+Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$ into $W_1 = W_0 + \Delta$. Several lines of work show that useful updates are often well approximated in a low-dimensional subspace. \citeonline{aghajanyan2021intrinsic} measure a low intrinsic dimension of fine-tuning, and LoRA \cite{hu2022lora} trains only a low-rank update $\Delta = BA$ with $B \in \mathbb{R}^{m \times r}$, $A \in \mathbb{R}^{r \times n}$ and small $r$. Given a full update, its best rank-$r$ approximation in the Frobenius norm is the truncated singular value decomposition,
+\begin{equation}
+\Delta_r = \sum_{i=1}^{r} \sigma_i u_i v_i^\top,
+\label{eq:svd}
+\end{equation}
+where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors \cite{vasani2025phlora}. Task vectors, the differences between fine-tuned and base weights, can also be added or subtracted to transfer behaviour between models \cite{ilharco2023taskarithmetic,yadav2023ties}.
+
+\section{Metrics}
+
+\begin{description}
+  \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than the usual per-paragraph recall, and matches what a reader needs to answer a multi-hop question.
+  \item[Tokens.] The number of input tokens of the reader's prompt with the selected paragraphs, counted with the reader's tokenizer (\texttt{o200k\_base}) or as reported by the API.
+  \item[Passes.] Cross-encoder forward passes per question, the selector's compute cost.
+  \item[Answer F1 and EM.] Token-level F1 and exact match between the reader's answer and the reference answer (maximum over aliases), after standard normalization.
+\end{description}
+
+\section{Statistical tests}
+
+All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. Claims of ``no worse'' are tested as non-inferiority with a margin fixed in advance, never as a non-significant difference \cite{card2020power}.

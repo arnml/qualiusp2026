@@ -1,0 +1,52 @@
+% Master's qualification text (EPUSP / PPGEE). Self-contained folder for Overleaf:
+% upload or sync the whole quali/ directory; main document = main.tex; compiler = pdfLaTeX; bibliography = BibTeX.
+\documentclass[]{politex-xico}
+
+% ========== Packages ==========
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,mathtools}
+\usepackage{graphicx,enumerate}
+\usepackage{multirow}
+\usepackage{booktabs,tabularx}
+\usepackage[normalem]{ulem}
+\usepackage[alf,abnt-etal-list=0]{abntex2cite-xico}
+\usepackage[english]{babel}
+\usepackage[table]{xcolor}
+\usepackage{todonotes}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\recallk}[1]{\mathrm{R@}#1}
+
+% ========== Document data ==========
+\titulo{Chain-Following as a Low-Rank Skill: Cheap Evidence Selection for Multi-Hop Retrieval-Augmented Generation}
+\autor{ARNOLD ALVARO MOYA LAVADO}
+\orientador{Prof. Dr. Anna Helena Reali Costa}
+\qualificacaoMestrado{Electrical Engineering}
+\departamento{Computação e Sistemas Digitais - PCS}
+\areaConcentracao{Computer Engineering}
+\local{São Paulo}
+\data{2026}
+
+\begin{document}
+\capa
+\falsafolhaderosto
+\folhaderosto
+
+\input{chapters/00_abstract}
+
+\tableofcontents
+
+\input{chapters/01_introduction}
+\input{chapters/02_background}
+\input{chapters/03_related_work}
+\input{chapters/04_method}
+\input{chapters/05_results}
+\input{chapters/06_plan}
+
+\bibliography{bibli}
+
+\appendix
+\input{chapters/A_experiment_index}
+
+\end{document}

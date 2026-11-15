@@ -1,0 +1,63 @@
+\chapter{Research Plan}
+\label{chap:plan}
+
+\section{Expected contribution}
+
+The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
+\begin{enumerate}
+  \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
+  \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that turns the one-shot selector into an iterative one. A single base model then serves both modes;
+  \item a router that decides, per question, whether to activate the adapter;
+  \item an evaluation script that reports tokens, passes, full-support recall and answer quality against fixed top-$k$, Adaptive-$k$ and always-iterative baselines.
+\end{enumerate}
+The adapter saves memory and deployment complexity, not passes: activating it still costs iterative inference. Savings in passes depend on the router.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{figures/pipeline}}
+\caption{Planned system. The cheap one-shot selector runs for every question; the router activates the rank-2 chain adapter only where iteration is expected to help; adaptive stopping decides how many paragraphs reach the LLM.}
+\label{fig:pipeline}
+\end{figure}
+
+\section{Remaining work}
+
+\begin{description}
+  \item[W1. Train the adapter directly.] So far the rank-2 change was extracted from a full fine-tuning run. Training a rank-1, 2 and 4 LoRA \cite{hu2022lora} on the same pairs will show whether the artifact can be built directly, and how it compares with the extracted one \cite{biderman2024loralearnsless,shuttleworth2025illusion}.
+  \item[W2. Router trained on benefit.] The hop-count router failed (Section~\ref{sec:res_long}). A router trained to predict, per question, whether iteration improves the top five is pre-registered and waiting for GPU time.
+  \item[W3. Answer quality.] Whether the recall gain on long chains reaches the reader's answers (Section~\ref{sec:res_f1}).
+  \item[W4. Geometry with noise baselines.] Singular-value energy, stable rank and principal angles of the conditioning change, compared with seed-to-seed differences and random matrices \cite{altaf2026noisebaseline}, to separate functional rank from spectral structure.
+  \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and evaluate on 2WikiMultiHopQA \cite{ho2020twowiki}. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
+\end{description}
+
+\section{Threats to validity}
+
+\begin{itemize}
+  \item \textbf{Effect size.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources.
+  \item \textbf{Single architecture and data source.} All selectors are MiniLM-L6 and all evaluation questions come from MuSiQue (and HotpotQA for the first results). W5 addresses this.
+  \item \textbf{Evaluation sets.} MuSiQue test labels are not public; evaluation uses disjoint subsets of the development split, and one fresh set has been used twice (with the second use declared in advance).
+  \item \textbf{Multiplicity.} Each experiment has a single primary test; across experiments no correction is applied. The headline claims will be re-tested on a locked set before the defence.
+\end{itemize}
+
+\section{Schedule}
+
+Table~\ref{tab:schedule} lists the planned activities by quarter.
+
+\begin{table}[htbp]
+\centering
+\caption{Schedule (quarters from the qualification).}
+\label{tab:schedule}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Activity & Q1 & Q2 & Q3 & Q4 \\
+\midrule
+W1 adapter trained directly; W3 answer quality & $\bullet$ & & & \\
+W2 benefit router and cascade & $\bullet$ & $\bullet$ & & \\
+W4 geometry with noise baselines & & $\bullet$ & & \\
+W5 transfer across rerankers and to 2WikiMultiHopQA & & $\bullet$ & $\bullet$ & \\
+Paper submission & & & $\bullet$ & \\
+Locked-set confirmation of the headline claims & & & $\bullet$ & \\
+Dissertation writing and defence & & & $\bullet$ & $\bullet$ \\
+\bottomrule
+\end{tabular}
+\end{table}

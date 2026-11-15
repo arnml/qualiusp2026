@@ -1,0 +1,10 @@
+% ========== Abstract ==========
+\begin{abstract}
+Retrieval-augmented generation (RAG) lets a large language model (LLM) answer from external evidence, but every retrieved paragraph sent to the LLM costs tokens, and distractors can lower answer quality. For multi-hop questions the problem is harder, because later evidence is often only weakly related to the question itself. This work studies \emph{cheap evidence selection}: a small cross-encoder (22.7M parameters) decides which paragraphs the LLM sees.
+
+Preliminary results support three findings. First, a fine-tuned small selector sends 68--77\% fewer prompt tokens than sending the ten retrieved paragraphs, at statistically indistinguishable answer F1 on HotpotQA; adaptive stopping saves further tokens on HotpotQA and MuSiQue. Second, on MuSiQue the one-shot ranker is the bottleneck, and re-scoring with the question plus the paragraphs already selected (iterative reranking) appeared to help. A pair-matched control, however, showed that part of that gain came from additional training data. Third, the ability to use such a conditioned query is a \emph{separable, low-rank} change: a rank-2 approximation of the weight difference recovers about 85\% of its effect, against 7--9\% for norm-matched random controls, and it helps long chains. On 566 fresh four-hop questions, conditioning-trained iteration improves full-support recall@5 by 0.055 (95\% CI $[0.007, 0.102]$), while a router that predicts hop count does not yield a useful cascade.
+
+All experiments were pre-registered in a version-controlled repository, with paired statistical tests and an explicit record of null results. The remaining work turns the findings into a reusable artifact: a rank-2 \emph{chain adapter} trained directly as a low-rank update, a router that decides when to activate it, a transfer test across rerankers and datasets, and an evaluation of answer quality.
+
+\textbf{Keywords:} retrieval-augmented generation, multi-hop question answering, evidence selection, cross-encoder reranking, low-rank adaptation.
+\end{abstract}

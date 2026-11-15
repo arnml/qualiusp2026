@@ -1,0 +1,30 @@
+\chapter{Experiment Index}
+\label{app:index}
+
+All experiments are in the project repository, each with a pre-registered protocol and a results report. Experiments not used in the main text are kept for later work.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}Xl}
+\toprule
+ID & Question and outcome & In text \\
+\midrule
+exp01 & Training-free second-hop threshold on embeddings: 6--10\% fewer tokens than Noise-Gate & no \\
+exp02 & Fine-tuned 22.7M selector: 68--77\% fewer tokens at equal F1 & \ref{sec:res_selector} \\
+exp03 & Linear probe for multi-hop relevance in A0: probe failed (not evidence of absence) & no \\
+exp04 & LLM agents editing the selector's weights: compression ties magnitude pruning; no repair & no \\
+exp05 & Failure analysis: missed paragraphs are bridge paragraphs that do not name the question's entity & no \\
+exp06 & A1 $-$ A0 is low-rank (rank 4: 80\%) and mid-layer; sparse grafts fail & \ref{sec:res_rank} \\
+exp07 & Adaptive stopping on HotpotQA: $-57$ / $-71$ tokens & \ref{sec:res_adaptive} \\
+exp08 & A1 on MuSiQue: top-10 recall 0.68; planned comparison not testable & \ref{sec:res_bottleneck} \\
+exp09 & In-domain and iterative fine-tuning: recall@5 0.682 / 0.750 (confounded) & \ref{sec:res_bottleneck} \\
+exp10 & Adaptive stopping on the iterative ranker; Adaptive-$k$ addendum & \ref{sec:res_adaptive} \\
+exp11 & The iteration change is rank 2 (84.7\%) & \ref{sec:res_rank} \\
+exp12 & Pair-matched control: $+0.040$ (n.s.); conditioning change rank 2 (86.8\%) & \ref{sec:res_matched} \\
+exp13 & Fresh four-hop confirmation ($+0.055$); hop-count cascade fails & \ref{sec:res_long} \\
+exp14 & Router trained on benefit (pre-registered; pending) & Ch.~\ref{chap:plan} \\
+exp15 & Answer F1 on long chains (running) & \ref{sec:res_f1} \\
+\bottomrule
+\end{tabularx}
+\end{table}

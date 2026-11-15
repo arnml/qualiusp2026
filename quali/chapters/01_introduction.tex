@@ -1,0 +1,36 @@
+\chapter{Introduction}
+\label{chap:intro}
+
+\section{Context}
+
+Large language models store knowledge in their parameters, but this \emph{parametric} knowledge is hard to update, hard to attribute and prone to errors \cite{pmlr-v119-guu20a,3495724.3496517,liu2026unifieddefinitionhallucinationits}. Retrieval-augmented generation (RAG) adds a \emph{non-parametric} memory: a retriever finds passages, and the LLM conditions its answer on them \cite{3495724.3496517,pmlr-v119-guu20a}. This makes answers easier to update and to verify, but it moves part of the cost to the prompt. Every passage sent to the LLM is paid for in input tokens, and passages that do not support the answer can mislead the model \cite{liu2024lostinthemiddle,wang2023filco}.
+
+Multi-hop questions make this trade-off sharper. In a question such as ``In which city was the founder of the company that makes product $X$ born?'', the second and third pieces of evidence share little vocabulary with the question; they are related to the evidence found in the previous step \cite{yang2018hotpotqa,trivedi2022musique}. A selector that scores each passage against the question alone tends to rank such \emph{bridge} passages low, so a system either sends many passages, which is expensive, or risks losing the chain.
+
+\section{Problem and research questions}
+
+This work studies \emph{cheap evidence selection} for multi-hop RAG: a small model, much cheaper than the LLM, decides which retrieved paragraphs the LLM sees. The cost of interest is the LLM's input tokens, plus the selector's own compute, measured as cross-encoder forward passes. The questions are:
+
+\begin{description}
+  \item[RQ1] How many prompt tokens can a small fine-tuned cross-encoder save at equal evidence recall and answer quality?
+  \item[RQ2] On harder multi-hop data, is the limit the stopping rule (how many passages to send) or the ranker itself?
+  \item[RQ3] Does conditioning the ranker on the passages already selected (iterative reranking) help, once confounds such as the amount of training data are controlled?
+  \item[RQ4] What is the structure of the weight change that gives a small reranker this chain-following ability, and can it be isolated as a small, reusable component?
+\end{description}
+
+\section{Hypothesis}
+
+The central hypothesis is that \textbf{chain-following in a small reranker is a separable, low-rank skill that matters mainly for long reasoning chains}. If it holds, the skill can be shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap.
+
+\section{Contributions so far}
+
+\begin{enumerate}
+  \item An evaluation of a 22.7M-parameter cross-encoder as an evidence selector, with token accounting at matched recall and answer F1 (HotpotQA, MuSiQue).
+  \item Evidence that, on MuSiQue, the one-shot ranker rather than the stopping rule limits cost, and a pair-matched control showing that part of the apparent benefit of iterative reranking came from additional training data.
+  \item Evidence that the ability to use a conditioned query is a rank-2 weight change (about 85\% of its effect recovered, random controls 7--9\%), and a pre-registered confirmation that it helps four-hop chains.
+  \item A research protocol for an AI-assisted project: pre-registration of every decision rule in version control, paired statistics, adversarial review of each protocol before running it, and a claim ledger that records null results (Section~\ref{sec:protocol}).
+\end{enumerate}
+
+\section{Organization}
+
+Chapter~\ref{chap:background} introduces RAG, multi-hop question answering, cross-encoder reranking and the structure of fine-tuning updates. Chapter~\ref{chap:related} positions this work against related research. Chapter~\ref{chap:method} describes the models, data, inference procedures, analyses and the research protocol. Chapter~\ref{chap:results} reports the preliminary results. Chapter~\ref{chap:plan} presents the remaining work, the planned artifact and the schedule. Appendix~\ref{app:index} lists every experiment run so far, including those not used in this text.

@@ -1,0 +1,42 @@
+\chapter{Related Work}
+\label{chap:related}
+
+This chapter positions the work against three lines of research: context selection for RAG, multi-hop retrieval, and the structure of fine-tuning updates. Table~\ref{tab:positioning} summarizes what is known and what this work adds.
+
+\section{Context selection and compression for RAG}
+
+Several methods reduce what the LLM reads. RECOMP \cite{xu2024recomp} trains compressors that summarize retrieved documents; LongLLMLingua \cite{jiang2024longllmlingua} prunes tokens; FILCO \cite{wang2023filco} filters context at the span level; Provence \cite{chirkova2025provence} prunes sentences with a trained cross-encoder; and CompAct \cite{yoon2024compact} compresses iteratively. Adaptive methods decide how much to retrieve: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores. Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
+
+Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a careful cost accounting of a very small selector at matched recall and answer quality, and the finding that on harder multi-hop data the ranker, not the stopping rule, is the bottleneck.
+
+\section{Multi-hop retrieval}
+
+Multi-hop dense retrieval \cite{xiong2021mdr} and Baleen \cite{khattab2021baleen} retrieve iteratively, conditioning each step on what was found before. IRCoT \cite{trivedi2023ircot} interleaves retrieval with chain-of-thought reasoning by an LLM, and EfficientRAG \cite{zhuang2024efficientrag} replaces some LLM calls with small models. Beam Retrieval \cite{zhang2024beamretrieval} is the closest method to the iterative reranker studied here: a cross-encoder scores each candidate together with the question and the passages already chosen, with beam search. It reports high support recall on MuSiQue with much larger encoders (DeBERTa base and large).
+
+The iterative reranker in this work is therefore not a new method. What is new is (i) its evaluation at 22.7M parameters with a pair-matched control that separates the effect of conditioning from the effect of more training data, and (ii) the analysis of the weight change it requires.
+
+\section{Structure of fine-tuning updates}
+
+The low intrinsic dimension of fine-tuning \cite{li2018intrinsic,aghajanyan2021intrinsic} and the success of low-rank adapters \cite{hu2022lora} are well established. PHLoRA \cite{vasani2025phlora} extracts low-rank adapters from full fine-tuning checkpoints with truncated SVD, the same operation used here. Localization studies find that task skills concentrate in few parameters or layers \cite{panigrahi2023skilllocalization}, including the middle layers of a large reranker \cite{perlman2026emergence}. LoRA updates differ structurally from full fine-tuning \cite{biderman2024loralearnsless,shuttleworth2025illusion}, and rank measures of updates need a noise baseline before they are interpreted \cite{altaf2026noisebaseline}.
+
+Behaviours, not only domains, can sit in very low-rank updates. Rank-1 adapters suffice to induce emergent misalignment in an LLM, and the induced direction transfers across fine-tunes \cite{turner2025modelorganisms,soligo2025convergent}. Reasoning gains from reinforcement learning can be recovered with tiny adapters, while supervised fine-tuning needs much larger updates \cite{morris2026tinylora,ye2026rlvrlowrank}. Task arithmetic transfers domain knowledge between rerankers \cite{braga2025taskarithmetic}.
+
+Against this background, a low-rank fine-tuning update is not surprising in itself. The specific claim tested here is narrower: a \emph{retrieval behaviour} (using already-selected evidence in the query) in a small reranker is a rank-2 change, isolated with a pair-matched control and norm-matched random controls, and it pays off on long chains.
+
+\begin{table}[htbp]
+\centering
+\caption{Positioning: what is known and what this work adds.}
+\label{tab:positioning}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.6cm}X>{\raggedright\arraybackslash}p{4.2cm}}
+\toprule
+Topic & Known & Added here \\
+\midrule
+Small selector saves tokens & Trained selectors and compressors cut tokens at equal quality \cite{xu2024recomp,chirkova2025provence} & Matched-recall and matched-F1 accounting at 22.7M parameters \\
+Adaptive stopping & Adaptive-$k$, DynamicRAG, Self-RAG & Learned stopping on cross-encoder scores; Adaptive-$k$ is weak on these scores \\
+Iterative reranking & Beam Retrieval, MDR, Baleen & Pair-matched control: part of the gain was more training data \\
+Low-rank updates & LoRA, PHLoRA, intrinsic dimension & A retrieval behaviour is a rank-2 change, with random and matched controls \\
+Behaviour in tiny adapters & Rank-1 behaviours in LLMs \cite{soligo2025convergent} & The same in a small encoder, for a retrieval behaviour \\
+\bottomrule
+\end{tabularx}
+\end{table}
