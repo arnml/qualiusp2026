@@ -15,7 +15,10 @@ drive.mount('/content/drive')
 import os, subprocess, hashlib, pathlib
 PIN = '{PIN}'
 OUT = f'/content/drive/MyDrive/qualiusp2026/exp16_{{PIN[:7]}}'
-A1 = '/content/drive/MyDrive/qualiusp2026/exp02_results/full/model'
+A1_CANDIDATES = ['/content/drive/MyDrive/qualiusp2026/exp02_results/full/model', '/content/drive/MyDrive/qualiusp2026/exp12_inputs/a1']  # deviation 1: either Google account
+A1 = next((p for p in A1_CANDIDATES if os.path.exists(f'{p}/model.safetensors')), None)
+assert A1, 'A1 not found on this Drive: upload it to one of ' + str(A1_CANDIDATES)
+print('A1 from', A1)
 pathlib.Path(OUT, 'models').mkdir(parents=True, exist_ok=True); pathlib.Path(OUT, 'results').mkdir(exist_ok=True)
 if not os.path.exists('/content/qualiusp2026'):
     !git clone -q https://github.com/arnml/qualiusp2026.git /content/qualiusp2026

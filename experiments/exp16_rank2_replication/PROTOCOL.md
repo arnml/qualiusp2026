@@ -100,3 +100,7 @@ The **rank is fixed at 2 in advance**, which is the claim being replicated; ther
    - recovery at fixed recall@5 (the same k on every dataset)
 7. **Scope:** HotpotQA is reported as *adaptation of A1*, since A1 was fine-tuned on HotpotQA train. 2WikiMultiHopQA, which A1 never saw, is the cleaner replication. The claim is about the rank-2 component of one fitted delta per dataset (seed 0), checked against random and seed-noise nulls.
 8. **Power:** with 1,000 test questions and an expected gap of about 0.3 (MuSiQue: 0.34), a rank-2 recovery of 0.87 would have a CI of about ±0.09, comfortably above 0.5. A gap near 0.05 would make the ratio unstable, which the gap-CI rule guards against.
+
+## Deviation 1 (before any training): A1 location
+
+The free GPU quota of the first Google account was exhausted, so the run uses a second account. The notebook now looks for A1 in either `exp02_results/full/model` (first account) or `exp12_inputs/a1` (a copy placed earlier on the second account's Drive). The **sha256 check of A1 is unchanged** (`605c98…950d`). The experiment code is still the registration commit 353fcd8; only `make_notebook.py` / `exp16_colab.ipynb` changed.
