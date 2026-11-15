@@ -23,6 +23,10 @@ RES = Path(os.environ.get("RESULTS_DIR", HERE / "results"))
 B, KS, MAX_PASSES = 5000, (2, 3, 4, 5, 10, 15), 50.0
 WH = ("who", "what", "which", "where", "when", "how")
 SHA = {"iter_iter": "2c91c40f1310ca02", "ctrl_oneshot": "ed87244f462412f9", "iter_oneshot": "2c91c40f1310ca02", "ctrl_iter": "ed87244f462412f9"}
+# Deviation 1: the notebook writes the hashes of the models actually used (re-trained) to model_sha.json
+if (RES / "model_sha.json").exists():
+    _m = json.loads((RES / "model_sha.json").read_text())
+    SHA = {"iter_iter": _m["m1_iter_s0"][:16], "ctrl_oneshot": _m["m1_ctrl"][:16], "iter_oneshot": _m["m1_iter_s0"][:16], "ctrl_iter": _m["m1_ctrl"][:16]}
 CONFIGS = tuple(SHA)
 
 
@@ -83,7 +87,7 @@ def cascade(rows, R, route):
 
 
 def main():
-    rng, rep = np.random.default_rng(0), {}
+    rng, rep = np.random.default_rng(0), {"model_sha16": {"m1_iter_s0": SHA["iter_iter"], "m1_ctrl": SHA["ctrl_oneshot"]}, "models_registered": SHA["iter_iter"] == "2c91c40f1310ca02" and SHA["ctrl_oneshot"] == "ed87244f462412f9"}
     D = {sp: ranks(sp) for sp in ("b_train", "b_tune", "b_eval", "router_train")}
     gain = {sp: hits(rows, R["iter_iter"]["orders"]) - hits(rows, R["ctrl_oneshot"]["orders"]) for sp, (rows, R) in D.items() if sp != "router_train"}
 

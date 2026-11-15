@@ -87,3 +87,22 @@ Drawn from the 13,538 MuSiQue-Ans train questions **never used** in exp08–exp1
    - the bootstrap distribution of τ and routed fraction on `b_tune`
 6. **Gate:** if the gate fails, the effect and CI are still reported. A failed gate is not read as "benefit is unlearnable".
 7. **Not changed:** passes stay the cost unit (as in exp09–exp13). GPU seconds per configuration are logged by `rank.py`.
+
+## Deviation 1 (2026-11-16, before any exp14 ranking): models re-trained on the second Google account
+
+**Why:** the first Colab account's free GPU quota is exhausted, and its Drive (exp12 models `exp12_975371a/models`, exp13 rankings `exp13_d071b74/results`) is not readable from the second account, which has a GPU.
+
+**What changes:**
+1. **Models.** M1-ctrl and M1-iter seed 0 are re-trained on the second account's T4 with **exp12's own code at its registration commit `975371a`** (`train.py --mode ctrl|iter --seed 0 --n-questions 1000`), from A1 (sha `605c986e…`, checked) and exp12's training subset (sha `6259adbc…`, checked).
+2. **Identity check.** The notebook compares the new model hashes with the registered ones (`2c91c40f1310ca02`, `ed87244f462412f9`).
+   - If both match, the models are exp12's models and nothing else changes.
+   - If not (GPU kernels and library versions can differ), the models are **re-trainings with the same recipe**, not the exact exp12 models. `analyze.py` then asserts the new hashes (written by the notebook to `results/model_sha.json`) for every ranking line, and the report records which case applied.
+3. **Fidelity check (descriptive, before the analysis):** the new pair is evaluated on exp12's 400-question MuSiQue test set with exp12's `evaluate.py`; exp12 reported recall@5 0.7475 (iter_iter) and 0.7075 (ctrl_oneshot). The values are reported next to the exp14 results. They do not gate the analysis.
+4. **Reused exp13 rankings are recomputed.** `router_train` and `dev_fresh` are ranked with the new models (ctrl_oneshot and iter_iter), not copied from exp13. `dev_fresh` stays descriptive (re-used set).
+
+**Not changed:** splits, router, features, τ rule, gate, primary and secondary tests, decision rules, passes as the cost unit.
+
+**After the Codex review of this deviation** (`../reviews/codex_exp14_deviation1.md`, before any ranking):
+- The notebook **always** writes the hashes of the models actually used to `results/model_sha.json` (recomputed from the files on every run, so a resumed run cannot use stale hashes), and `analyze.py` asserts them on every ranking line. `rank.py` already refuses a ranking whose config exists with a different model hash. The output folder is new (new pinned commit).
+- Training failures stop the notebook (`pipefail` and a model-file assertion).
+- **Secondary a** (benefit router vs exp13's hop router) refits the hop router exactly as in exp13, but on `router_train` rankings from the re-trained one-shot model, not exp13's file. It was already exploratory; it is reported as such.
