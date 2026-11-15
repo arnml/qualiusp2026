@@ -99,3 +99,13 @@ The full reasoning, literature and review of the second LLM's roadmap are in git
   2. **Geometry with noise baselines (no training):** spectra, stable rank, principal angles across the 3 seed deltas (exp12) and D_it / D_dom / A1−A0; α-scaling.
   3. **Transplant:** graft the rank-2 conditioning delta onto other one-shot rerankers (A1-HotpotQA, ms-marco MiniLM, the seed-1/2 ctrl models).
   4. **Train LoRA rank 1–2 directly** (Colab) vs post-hoc SVD: functional vs trained rank (TinyLoRA contrast).
+
+## Update (2026-11-15, evening): exp13 done
+
+- **Confirmed:** iteration (the rank-2 conditioning skill) helps long chains: 4-hop +0.055 (pre-registered). On fresh dev, 3-hop +0.078 and 4-hop +0.139 (exploratory), 2-hop about 0.
+- **Failed:** the 4-hop cascade. Open problem: predict *iteration benefit*, not hop count.
+- **Next candidates:**
+  1. **Benefit router:** label = "iterative hit@5 > one-shot hit@5" from running both rankers on a training split (GPU, minutes), with a pre-registered cascade test on a fresh set.
+  2. **Pre-registered pooled test** of "iteration helps ≥ 3-hop, not 2-hop" on a new fresh sample (unused train questions).
+  3. **Geometry with noise baselines** (no training): seed deltas from exp12, spectra, principal angles.
+  4. **Answer F1** (gpt-5.4-mini) on ≥ 3-hop questions: does +0.05 to +0.14 recall@5 translate into answers?
