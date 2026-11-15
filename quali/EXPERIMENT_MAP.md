@@ -23,6 +23,7 @@
 | exp13 | Fresh 4-hop confirmation; 4-hop cascade | Ch. 5.6 | C (4-hop); N (cascade) | +0.055 [+0.007, +0.102] |
 | exp15 | Answer F1 on ≥ 3-hop (order-controlled) | Ch. 5.7 | C | +0.076 F1 [+0.041, +0.112]; top 5 beats all paragraphs with 69% fewer tokens |
 | exp14 | Benefit router | Ch. 6 (plan) | pre-registered, waiting for GPU | — |
+| exp16 | Rank-2 replication on 2Wiki + HotpotQA | Ch. 5 (new section once run) / Ch. 6 W5 | pre-registered, waiting for GPU (run before exp14) | — |
 
 ## Kept outside the text (for later)
 

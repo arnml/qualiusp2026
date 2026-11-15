@@ -39,6 +39,7 @@
 | exp12 | Pair-matched control: M1-ctrl = M1-iter's exact pairs, no query prefix (Colab T4, 3 seeds) | [`exp12_matched_control`](exp12_matched_control/README.md) | ✅ **done**. **Primary ✗:** iteration +0.040 [−0.005, +0.085], p = 0.11 (+0.03 in all 3 seeds); exp09's gain was partly more training (+0.025). **Secondary ✅:** pure conditioning delta rank 2 recovers 86.8% [78, 96] | 4-hop +0.19 (exploratory); M1-ctrl collapses run iteratively (0.41) |
 | exp13 | 4-hop confirmation (566 fresh questions) and a one-shot → iterative cascade (Colab T4) | [`exp13_cascade`](exp13_cascade/README.md) | ✅ **done**. **Primary ✅:** 4-hop +0.055 [+0.007, +0.102], p = 0.035. **Cascade ✗:** +0.009 vs one-shot, −0.043 vs iterative | Exploratory: fresh dev overall +0.052 (p = 0.0009), gains on 3- and 4-hop only |
 | exp15 | Answer F1 (gpt-5.4-mini), one-shot vs conditioning-trained top 5, order-controlled | [`exp15_answer_f1`](exp15_answer_f1/README.md) | ✅ **done**. **Primary ✅:** ≥ 3-hop F1 +0.076 [+0.041, +0.112]; all +0.038; 2-hop non-inferior | Top 5 beats all 20 paragraphs (0.54–0.58 vs 0.51 F1) with 69% fewer tokens; $1.29 |
+| exp16 | Rank-2 replication on 2WikiMultiHopQA and HotpotQA (matched pairs, fixed rank 2, random + seed-noise nulls; Colab T4) | [`exp16_rank2_replication`](exp16_rank2_replication/PROTOCOL.md) | ⏳ pre-registered (353fcd8), waiting for Colab GPU | Replication = holds on both datasets |
 | — | Sentence-level selection (gold sentences = 214 tok) | — | 💡 idea | — |
 | — | Transfer to 2Wiki without retraining (MuSiQue: exp08) | — | 💡 idea | — |
 
