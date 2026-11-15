@@ -1,0 +1,32 @@
+% Central hypothesis (TikZ): a rank-2 "chain adapter" on top of a cheap one-shot selector, switched on for long chains.
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, minimum height=0.9cm, font=\small},
+  mat/.style={draw, minimum width=1.1cm, minimum height=1.1cm, font=\small},
+  vec/.style={draw, fill=orange!25, font=\scriptsize},
+  arr/.style={-{Latex[length=2mm]}, thick},
+  node distance=0.5cm and 0.7cm]
+  % (a) weight view
+  \node[font=\small\bfseries, anchor=west] at (-0.6, 2.0) {(a) The change in each weight matrix};
+  \node[mat, fill=gray!15] (W) at (0, 0.7) {$W$};
+  \node at (0.95, 0.7) {$+$};
+  \node[mat, fill=orange!10] (D) at (1.9, 0.7) {$\Delta W$};
+  \node at (2.85, 0.7) {$\approx$};
+  \node[vec, minimum width=0.25cm, minimum height=1.1cm] (u1) at (3.4, 0.7) {};
+  \node[vec, minimum width=1.0cm, minimum height=0.25cm, anchor=west] (v1) at (3.6, 1.12) {};
+  \node at (4.85, 0.7) {$+$};
+  \node[vec, minimum width=0.25cm, minimum height=1.1cm] (u2) at (5.3, 0.7) {};
+  \node[vec, minimum width=1.0cm, minimum height=0.25cm, anchor=west] (v2) at (5.5, 1.12) {};
+  \node[font=\scriptsize, align=center] at (0, -0.3) {selector\\(one-shot)};
+  \node[font=\scriptsize, align=center] at (1.9, -0.3) {full change\\$\approx$147{,}000 numbers};
+  \node[font=\scriptsize, align=center] at (4.45, -0.3) {two directions (rank 2)\\$\approx$1{,}500 numbers: the \emph{chain adapter}};
+  % (b) use
+  \node[font=\small\bfseries, anchor=west] at (7.4, 2.0) {(b) Use: switch the adapter on only where it helps};
+  \node[box, minimum width=2.0cm] (q) at (8.4, 0.7) {question +\\paragraphs};
+  \node[box, fill=gray!15, minimum width=2.6cm] (short) at (11.6, 1.45) {selector, one-shot\\(cheap)};
+  \node[box, fill=orange!15, minimum width=2.6cm] (long) at (11.6, -0.05) {selector + adapter,\\iterative};
+  \node[box, fill=blue!8, minimum width=1.6cm] (llm) at (14.4, 0.7) {LLM\\reader};
+  \draw[arr] (q.east) -- node[above, sloped, font=\scriptsize] {short chain} (short.west);
+  \draw[arr] (q.east) -- node[below, sloped, font=\scriptsize] {long chain} (long.west);
+  \draw[arr] (short.east) -- (llm.west);
+  \draw[arr] (long.east) -- (llm.west);
+\end{tikzpicture}

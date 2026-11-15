@@ -9,7 +9,7 @@ Several methods reduce what the LLM reads by compressing the context. RECOMP \ci
 
 Other methods decide how much to retrieve or send: Self-RAG \cite{asai2024selfrag} and Adaptive-RAG \cite{jeong2024adaptiverag} use the LLM or a classifier to decide, DynamicRAG \cite{sun2025dynamicrag} learns the number of documents, and Adaptive-$k$ \cite{taguchi2025adaptivek} cuts the ranked list at the largest gap in similarity scores and adds a buffer of extra passages (five by default). Noise-Gate \cite{lavado2027noisegate}, the author's earlier work, selects paragraphs by embedding-similarity thresholds and reported 26--27\% fewer tokens on HotpotQA; in that study Adaptive-$k$ selected too few passages and lost answer quality. Listwise LLM rerankers \cite{sun2023rankgpt,pradeep2023rankzephyr} are accurate but far more expensive than a small cross-encoder.
 
-Compared with this line, the present work does not propose a new compression mechanism. Its practical contribution is a cost accounting of a very small selector at fixed recall targets, with answer-F1 differences and confidence intervals reported, and the finding that on harder multi-hop data ranking quality, rather than the stopping rule, limits cost.
+Compared with this line, the present work does not propose a new compression mechanism. Its contribution to this line is a cost accounting of a very small selector at fixed recall targets, with answer-F1 differences and confidence intervals reported, and the finding that on harder multi-hop data ranking quality, rather than the stopping rule, limits cost.
 
 \section{Multi-hop retrieval}
 

@@ -86,7 +86,7 @@ Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
 
 \section{Summary}
 
-Table~\ref{tab:claims} lists the claims and their status. The practical result is that, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the best cost found so far. The research result is that the weight change behind chain-following in such a selector is functionally approximated at rank 2; conditioning-trained iteration improved the registered four-hop outcome, exploratory analyses suggest the gain extends to three-hop but not two-hop questions, and simple routing does not yet capture it.
+Table~\ref{tab:claims} lists the claims and their status. The main result is that the weight change behind chain-following in a small selector is functionally approximated at rank 2. Conditioning-trained iteration improved the registered four-hop outcome and the reader's answers on questions with three or more hops; exploratory analyses suggest no gain on two-hop questions, and simple routing does not yet capture the benefit. On the cost side, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the lowest cost found so far.
 
 \begin{table}[htbp]
 \centering

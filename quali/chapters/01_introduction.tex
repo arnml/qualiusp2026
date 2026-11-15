@@ -7,7 +7,7 @@ Large language models store knowledge in their parameters, but this \emph{parame
 
 Multi-hop questions make this trade-off sharper. In a question such as ``In which city was the founder of the company that makes product $X$ born?'', the second and third pieces of evidence share little vocabulary with the question; they are related to the evidence found in the previous step \cite{yang2018hotpotqa,trivedi2022musique}. A selector that scores each passage against the question alone can therefore rank such \emph{bridge} passages low, so a system either sends many passages, which is expensive, or risks losing part of the evidence chain.
 
-Two questions follow. The practical one is whether a model much smaller than the LLM can choose the evidence, so that the LLM reads less without losing what it needs. The scientific one is what such a small model has to learn in order to follow evidence across hops, and whether that learned change can be isolated in its weights.
+This work asks whether a model much smaller than the LLM can choose the evidence for multi-hop questions, what such a model has to learn in order to follow evidence across hops, and whether that learned change can be isolated in its weights. Answering these questions also has a direct consequence for cost: the LLM could read less without losing the evidence it needs.
 
 \section{Problem and research questions}
 
@@ -22,7 +22,14 @@ This work studies \emph{cheap evidence selection} for multi-hop RAG: a small mod
 
 \section{Hypothesis}
 
-The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap. The preliminary results support the first part functionally (by grafting an extracted change); training the adapter directly is part of the remaining work.
+The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap (Figure~\ref{fig:hypothesis}). The preliminary results support the first part functionally (by grafting an extracted change); training the adapter directly is part of the remaining work.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{figures/hypothesis}}
+\caption{Central hypothesis. (a) The weight change that lets a small selector follow an evidence chain is approximated, in each weight matrix, by two directions of change (rank 2), about 1\% of the numbers of the full change. (b) This \emph{chain adapter} is switched on only for questions whose evidence chain is long; short questions keep the cheap one-shot selector.}
+\label{fig:hypothesis}
+\end{figure}
 
 \section{Contributions so far}
 
