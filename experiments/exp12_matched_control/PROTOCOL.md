@@ -92,6 +92,6 @@ All three reviews (`../reviews/SYNTHESIS.md`) flag the same confound in exp09 an
 
 The Drive folder used for inputs (`exp12_inputs`, written through this PC's Google Drive sync) belongs to a **different Google account** from the one Colab uses, so the first notebook run found no inputs and trained nothing. The notebook now reads its inputs elsewhere:
 - **A1:** from the Colab account's `exp02_results/full/model`. Its sha256 equals the local A1 (`605c98…950d`).
-- **MuSiQue:** from the official release (StonyBrookNLP/musique, Google Drive id `1tGdADlNjWFaHLeZZGShh2IRcpO6Lv24h`), filtered to exp09's train ids. The notebook asserts sha256 equality with the local files: dev `15fa63…bf3b`, train subset `aa5de9…8504`.
+- **MuSiQue:** from the official release (StonyBrookNLP/musique, Google Drive id `1tGdADlNjWFaHLeZZGShh2IRcpO6Lv24h`), filtered to exp09's train ids. The notebook asserts sha256 equality with the local files: dev `15fa63…bf3b`, train subset `6259ad…75f0` (LF line endings; the first hash recorded, `aa5de9…8504`, was of a Windows CRLF copy of the same rows, verified locally).
 
 Only `make_notebook.py` / `exp12_colab.ipynb` changed. The experiment code is still the pinned commit 975371a.

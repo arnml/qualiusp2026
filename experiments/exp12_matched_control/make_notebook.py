@@ -38,7 +38,7 @@ if not os.path.exists(f'{D}/musique_ans_v1.0_dev.jsonl'):
         for line in f:
             if json.loads(line)['id'] in ids: g.write(line)
 assert sha(f'{D}/musique_ans_v1.0_dev.jsonl') == '15fa63794d18a94ce12411aca6e2327e65b6e83b0b1490efab3f1962e48abf3b', 'dev file differs'
-assert sha(f'{D}/musique_ans_v1.0_train.jsonl') == 'aa5de924c61ff94f661312fabc55307e31722508f6534108583d1fa002a38504', 'train subset differs'
+assert sha(f'{D}/musique_ans_v1.0_train.jsonl') == '6259adbcb10bc4665e9f963e09b2fe549b6c0e3082c9d511af48544826ae75f0', 'train subset differs'
 print('inputs verified')
 os.environ.update(A1_DIR=A1, MODELS_DIR=f'{OUT}/models', RESULTS_DIR=f'{OUT}/results', TOKENIZERS_PARALLELISM='false')
 os.chdir('/content/qualiusp2026/experiments/exp12_matched_control')
