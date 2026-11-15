@@ -1,0 +1,18 @@
+[project]
+name = "exp15-answer-f1"
+version = "0.1.0"
+description = "Answer F1 (gpt-5.4-mini) for one-shot vs conditioning-trained iterative top-5 on fresh MuSiQue dev"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "datasets>=4.0",
+    "numpy>=1.26",
+    "openai>=3.50.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "tiktoken>=0.8",
+    "torch>=2.4",
+    "transformers>=4.45",
+]
+
+[tool.uv]
+package = false
