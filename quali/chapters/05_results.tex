@@ -65,7 +65,24 @@ A cascade that runs the one-shot ranker for every question and the iterative one
 \section{Answer quality}
 \label{sec:res_f1}
 
-A pre-registered experiment is measuring whether the recall gain on long chains reaches the reader's answers: \texttt{gpt-5.4-mini} answers from the top-5 sets of M1-ctrl and M1-iter on the 1,017 unused development questions, with the passages in a fixed order so that only the selected set differs. Results will be added to this section.
+A final pre-registered test asked whether the recall gain reaches the reader's answers. \texttt{gpt-5.4-mini} answered the 1,017 unused development questions from the top-5 sets of M1-ctrl and M1-iter, with the passages in a fixed order so that only the selected set differs (Table~\ref{tab:f1}). On questions with three or more hops (the pre-registered primary, $n=488$, averaged over two reader draws), M1-iter's evidence improved answer F1 by 0.076 (CI $[0.041, 0.112]$). Over all questions the difference was $+0.038$ (CI $[0.011, 0.064]$), and on two-hop questions it was non-inferior (exploratory). Both five-paragraph contexts gave higher F1 than sending all paragraphs, with 69\% fewer input tokens. The three-or-more-hop subgroup was chosen from the recall results on the same questions, which is declared in the protocol.
+
+\begin{table}[htbp]
+\centering
+\caption{Answer quality on the 1,017 unused MuSiQue development questions (reader \texttt{gpt-5.4-mini}). Top-5 contexts are in paragraph-index order.}
+\label{tab:f1}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+Context & F1 & EM & Tokens & F1, 3-hop & F1, 4-hop \\
+\midrule
+All paragraphs ($\approx$20) & 0.506 & 0.394 & 2,525 & 0.518 & 0.502 \\
+M1-ctrl top 5 (one-shot) & 0.538 & 0.438 & 793 & 0.566 & 0.465 \\
+M1-iter top 5 (iterative) & 0.576 & 0.475 & 783 & 0.625 & 0.540 \\
+Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Summary}
 
@@ -86,6 +103,7 @@ Iteration beats one-shot at matched training data & N ($+0.040$, $p=0.11$) & \re
 A rank-2 graft recovers the conditioning change & C (86.8\%) & \ref{sec:res_rank}, \ref{sec:res_matched} \\
 Iteration helps four-hop chains & C ($+0.055$, heterogeneous) & \ref{sec:res_long} \\
 Iteration helps three-hop chains, not two-hop & E & \ref{sec:res_long} \\
+The long-chain recall gain improves answer F1 & C ($+0.076$) & \ref{sec:res_f1} \\
 A hop-count router gives a useful cascade & N & \ref{sec:res_long} \\
 \bottomrule
 \end{tabularx}

@@ -24,7 +24,7 @@ The adapter saves memory and deployment complexity, not passes: activating it st
 \begin{description}
   \item[W1. Train the adapter directly.] So far the rank-2 change was extracted from a full fine-tuning run. Training a rank-1, 2 and 4 LoRA \cite{hu2022lora} on the same pairs will show whether the artifact can be built directly, and how it compares with the extracted one \cite{biderman2024loralearnsless,shuttleworth2025illusion}.
   \item[W2. Router trained on benefit.] The hop-count router failed (Section~\ref{sec:res_long}). A router trained to predict, per question, whether iteration improves the top five is pre-registered and waiting for GPU time.
-  \item[W3. Answer quality.] Whether the recall gain on long chains reaches the reader's answers (Section~\ref{sec:res_f1}).
+  \item[W3. Answer quality.] Repeat the answer-quality test with the chain adapter and the router, and with a second reader model.
   \item[W4. Geometry with noise baselines.] Singular-value energy, stable rank and principal angles of the conditioning change, compared with seed-to-seed differences and random matrices \cite{altaf2026noisebaseline}, to separate functional rank from spectral structure.
   \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and evaluate on 2WikiMultiHopQA \cite{ho2020twowiki}. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
 \end{description}
@@ -51,9 +51,9 @@ Table~\ref{tab:rq} maps the research questions of Chapter~\ref{chap:intro} to th
 \toprule
 RQ & Evidence so far & Remaining \\
 \midrule
-RQ1 & 68--77\% fewer tokens on HotpotQA; adaptive stopping saves more (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}) & W3 (MuSiQue answers) \\
+RQ1 & 68--77\% fewer tokens on HotpotQA; top-5 selection beats sending all paragraphs on MuSiQue answers with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
 RQ2 & Ranking quality limits cost on MuSiQue (Section~\ref{sec:res_bottleneck}) & --- \\
-RQ3 & Small overall effect, not significant; confirmed gain on four-hop chains (Sections~\ref{sec:res_matched}, \ref{sec:res_long}) & W2, W3 \\
+RQ3 & Small overall effect, not significant; confirmed gains on long chains in recall and answer F1 (Sections~\ref{sec:res_matched}, \ref{sec:res_long}, \ref{sec:res_f1}) & W2 \\
 RQ4 & Functionally rank 2 (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}) & W1, W4, W5 \\
 \bottomrule
 \end{tabularx}

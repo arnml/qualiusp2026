@@ -1,0 +1,135 @@
+{
+ "ctrl_idx": {
+  "f1": 0.5379,
+  "em": 0.4376,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   792.8,
+   549.0,
+   1082.4
+  ],
+  "cost_usd": 0.1671,
+  "by_hops_f1": {
+   "2": 0.5434,
+   "3": 0.5664,
+   "4": 0.4648
+  },
+  "reader_draw_agreement_ge3hop": 0.8361
+ },
+ "iter_idx": {
+  "f1": 0.5759,
+  "em": 0.4749,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   783.1,
+   540.0,
+   1084.4
+  ],
+  "cost_usd": 0.1651,
+  "by_hops_f1": {
+   "2": 0.5578,
+   "3": 0.6245,
+   "4": 0.5395
+  },
+  "reader_draw_agreement_ge3hop": 0.8258
+ },
+ "ctrl_top5": {
+  "f1": 0.5355,
+  "em": 0.4336,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   792.8,
+   549.0,
+   1082.4
+  ],
+  "cost_usd": 0.1671,
+  "by_hops_f1": {
+   "2": 0.5411,
+   "3": 0.5679,
+   "4": 0.4552
+  }
+ },
+ "iter_top5": {
+  "f1": 0.5844,
+  "em": 0.473,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   783.1,
+   540.0,
+   1084.4
+  ],
+  "cost_usd": 0.1652,
+  "by_hops_f1": {
+   "2": 0.5827,
+   "3": 0.626,
+   "4": 0.509
+  }
+ },
+ "gold": {
+  "f1": 0.7156,
+  "em": 0.6028,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   462.5,
+   275.6,
+   683.0
+  ],
+  "cost_usd": 0.1,
+  "by_hops_f1": {
+   "2": 0.7202,
+   "3": 0.7361,
+   "4": 0.6609
+  }
+ },
+ "all": {
+  "f1": 0.506,
+  "em": 0.3943,
+  "blank_answers": 0,
+  "input_tokens_mean_p10_p90": [
+   2525.1,
+   1888.0,
+   3205.0
+  ],
+  "cost_usd": 0.5194,
+  "by_hops_f1": {
+   "2": 0.5,
+   "3": 0.518,
+   "4": 0.5017
+  }
+ },
+ "primary_ge3hop_order_controlled": {
+  "n": 488,
+  "diff": 0.0759,
+  "ci95": [
+   0.040764701785024775,
+   0.11211239299748288
+  ],
+  "success": true
+ },
+ "secondary_ge3hop_native_order": {
+  "diff": 0.0566,
+  "ci95": [
+   0.019375542672089466,
+   0.09591907691309313
+  ]
+ },
+ "secondary_all_order_controlled": {
+  "n": 1017,
+  "diff": 0.0381,
+  "ci95": [
+   0.011360401625612188,
+   0.06386980046649436
+  ]
+ },
+ "secondary_2hop_noninferiority": {
+  "n": 529,
+  "diff": 0.0144,
+  "ci95": [
+   -0.020642110885109824,
+   0.048000276224731464
+  ],
+  "one_sided_95_lower": -0.01477939948493654,
+  "noninferior": true
+ },
+ "label": "secondaries exploratory; the >=3-hop primary subgroup was chosen from exp13 recall on this same set"
+}

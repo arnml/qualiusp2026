@@ -23,5 +23,6 @@
 | H10 | The iteration change sits in L3–L4 like H3 | exp11 | C (dev300 rule), flatter profile | no | keep-only grafts overlap (sum ≈ 180%) |
 | H6-4hop | On ≥ 4-hop chains, conditioning-trained iteration beats matched one-shot | exp13 | **C** (+0.055 [+0.007, +0.102], p = 0.035, n = 566; strata +0.139 / +0.020) | 3 seeds positive | heterogeneous; 3-hop gain on fresh dev is E |
 | H11 | A 4-hop router on one-shot features makes a useful cascade | exp13 | **N** (vs one-shot +0.009 n.s.; vs iterative −0.043) | – | the router predicts hop count, not iteration benefit |
+| H13 | The long-chain recall gain reaches the answers (F1, ≥ 3-hop, order-controlled) | exp15 | **C** (+0.076 [+0.041, +0.112]) | 2 reader draws | subgroup chosen from exp13 recall on the same set |
 
 **Multiplicity:** about 12 confirmatory primaries so far, and every one was a declared single primary per experiment. No correction has been applied. For the thesis, the headline claims (at most 3) will be re-confirmed on a locked set.

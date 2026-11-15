@@ -21,7 +21,7 @@
 | exp11 | The iteration change is rank 2 | Ch. 5.4 | C | 84.7% [74, 96] |
 | exp12 | Pair-matched control; pure conditioning change is rank 2 | Ch. 5.5 | primary N, secondary C | +0.040 n.s.; rank 2 → 86.8% |
 | exp13 | Fresh 4-hop confirmation; 4-hop cascade | Ch. 5.6 | C (4-hop); N (cascade) | +0.055 [+0.007, +0.102] |
-| exp15 | Answer F1 on ≥ 3-hop (order-controlled) | Ch. 5.7 | running | — |
+| exp15 | Answer F1 on ≥ 3-hop (order-controlled) | Ch. 5.7 | C | +0.076 F1 [+0.041, +0.112]; top 5 beats all paragraphs with 69% fewer tokens |
 | exp14 | Benefit router | Ch. 6 (plan) | pre-registered, waiting for GPU | — |
 
 ## Kept outside the text (for later)
