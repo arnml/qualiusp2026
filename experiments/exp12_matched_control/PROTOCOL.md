@@ -87,3 +87,11 @@ All three reviews (`../reviews/SYNTHESIS.md`) flag the same confound in exp09 an
 4. **Pinned code:** the notebook checks out the registration commit and writes to a fresh Drive folder named by that commit.
 5. **Assertions:** ctrl pairs equal iter pairs (train.py), the splits are disjoint, and evaluation IDs equal the split IDs.
 6. **Error rates are per claim** (H6 primary, H9 secondary), with no family-wise correction. Three seeds are descriptive, not a powered replication.
+
+## Deviation 1 (before any training): input staging
+
+The Drive folder used for inputs (`exp12_inputs`, written through this PC's Google Drive sync) belongs to a **different Google account** from the one Colab uses, so the first notebook run found no inputs and trained nothing. The notebook now reads its inputs elsewhere:
+- **A1:** from the Colab account's `exp02_results/full/model`. Its sha256 equals the local A1 (`605c98…950d`).
+- **MuSiQue:** from the official release (StonyBrookNLP/musique, Google Drive id `1tGdADlNjWFaHLeZZGShh2IRcpO6Lv24h`), filtered to exp09's train ids. The notebook asserts sha256 equality with the local files: dev `15fa63…bf3b`, train subset `aa5de9…8504`.
+
+Only `make_notebook.py` / `exp12_colab.ipynb` changed. The experiment code is still the pinned commit 975371a.
