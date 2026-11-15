@@ -1,0 +1,8 @@
+Adversarial audit of a master's qualification text (Escola Politécnica da USP, Computer Engineering). Read-only; do not modify files or run anything long.
+Read quali/main.tex and all quali/chapters/*.tex and quali/figures/*.tex. To check facts, compare against the experiment reports: experiments/HYPOTHESES.md, experiments/EXPERIMENTS.md, and experiments/exp02_cross_encoder/README.md, exp06_skill_size/README.md, exp07_chain_selector/README.md, exp08_musique/README.md, exp09_iterative_rerank/README.md, exp10_adaptive_iterative/README.md, exp11_iteration_skill/README.md, exp12_matched_control/README.md, exp13_cascade/README.md; and quali/bibli.bib for citations.
+Your role: a skeptical examiner. Report, ranked by severity, with file:line:
+1. CORRECTNESS: any number, CI, p value, sample size, model description or claim in the text that does not match the reports; any claim stronger than the evidence (overclaiming, causal language, "confirmed" for exploratory results); missing caveats.
+2. CITATIONS: any \cite whose key is missing from bibli.bib, or that is used for a claim the cited paper does not make (flag what you suspect; say when unsure).
+3. PLAGIARISM / ORIGINALITY RISK: passages that look copied or closely paraphrased from known papers or abstracts, or self-plagiarism risk from the author's BRACIS paper (Noise-Gate); generic boilerplate.
+4. ACADEMIC WRITING: structure for a qualification (problem, hypothesis, preliminary results, plan, schedule), clarity, undefined terms/acronyms, tense consistency, hedging, figure/table referencing, anything an examiner would criticise. Also flag content that is not valuable and could be cut (the author wants a lean text).
+Max ~90 lines. Be specific; propose concrete rewrites for the top issues.
