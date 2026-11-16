@@ -94,6 +94,6 @@ Every repeated number matches the results files. The following were fixed:
 
 ## Open items for the author
 
-- Replace the schedule's month numbers with calendar months (`\todo` in Chapter 6).
+- Optional: give the schedule in calendar months once the exam date is set (the in-text reminder was removed on 2026-11-16).
 - Review the Portuguese resumo.
 - Optional: Portuguese hyphenation for the resumo (`babel` with `portuguese`), if the class does not already set it.
