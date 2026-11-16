@@ -92,6 +92,19 @@ Every repeated number matches the results files. The following were fixed:
   - All files compile.
   - The exp14 analysis was re-run from the rankings stored in the repository and compared with its saved output.
 
+## Round 5, 2026-11-16: figures
+
+- **Figure 1** keeps only the routing panel: one-shot selector, router, and either one-shot selection or the rank-2 adapter with iterative selection. The parameter counts it used to show are in the abstract and Section 2.5.
+- **New Figure (Section 5.4): the MiniLM-L6 cross-encoder.**
+  - It shows where the graft changes the weights: the four attention matrices and two feed-forward matrices of every layer, the embeddings, and the biases and normalization in full.
+  - It shows the single-layer recoveries of exp11: L0 33%, L1 31%, L2 30%, L3 43%, L4 40%, L5 8%.
+  - The values were checked against `experiments/exp11_iteration_skill/results/results.json`. A draft note claimed L2 = 44%; the results file does not support it.
+- **Section 5.4 text** now says that:
+  - the layer grafts add a layer's full change and were measured on the tuning set;
+  - the single-layer recoveries overlap (they sum to about 180%);
+  - attention and feed-forward have not been separated.
+- **Follow-up W4** now includes attention-only, feed-forward-only and single-layer grafts of the conditioning change.
+
 ## Open items for the author
 
 - Optional: give the schedule in calendar months once the exam date is set (the in-text reminder was removed on 2026-11-16).
