@@ -6,7 +6,7 @@
   \node[box, fill=gray!10] (a1) {A1\\(HotpotQA selector)};
   \node[box, below left=of a1] (iter) {M1-iter\\query: question + selected};
   \node[box, below right=of a1] (ctrl) {M1-ctrl\\query: question only};
-  \node[box, below=of iter, fill=blue!8] (ei) {iterative inference\\$\approx$74 passes};
+  \node[box, below=of iter, fill=blue!8] (ei) {iterative inference\\74 passes};
   \node[box, below=of ctrl, fill=blue!8] (ec) {one-shot inference\\20 passes};
   \draw[arr] (a1) -- node[left, font=\footnotesize, align=right] {same 18,101 pairs,\\same order} (iter);
   \draw[arr] (a1) -- (ctrl);

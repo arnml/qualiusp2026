@@ -6,7 +6,7 @@ This chapter turns the preliminary results into the plan for the dissertation. S
 \section{Expected contribution}
 \label{sec:plan_contrib}
 
-The dissertation will test the hypothesis of Chapter~\ref{chap:intro} in full: that the ability of a small selector to use already-selected evidence is carried by a low-rank weight change, that this change can be learned and reused as a separate module, and that it improves selection where a router predicts a benefit. It will evaluate a selection system built on these results (Figure~\ref{fig:pipeline}):
+The dissertation will test the hypothesis of Chapter~\ref{chap:intro} in full: that the ability of a small selector to use already-selected evidence is carried by a low-rank weight change, that this ability improves selection on a subset of questions (on average, those with long evidence chains) that can be identified before iterative selection is run, and that the change can be learned and reused as a separate module. It will evaluate a selection system built on these results (Figure~\ref{fig:pipeline}):
 \begin{enumerate}
   \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
   \item a \emph{chain adapter}: a rank-2 update of about 180,000 parameters (under 1\% of the model) that lets the one-shot selector run iteratively, so that a single base model serves both selection modes. Its benefit is expected where iteration helps: the extracted rank-2 graft restored iterative selection but did not outperform one-shot selection over all questions;
@@ -67,7 +67,7 @@ Transfer if recovery $\ge 0.5$ with lower bound $>0.25$ and above both controls,
 Transfer across datasets; weaker onto A0. \\
 \addlinespace
 Locked-set confirmation &
-Do the headline claims hold on data frozen now and not inspected before? &
+Do the main claims hold on data frozen now and not inspected before? &
 Freeze the identifiers of all still-unused MuSiQue training questions and of unused 2WikiMultiHopQA and HotpotQA development questions; test at most three claims: rank-2 recovery, benefit cascade and long-chain gain. &
 The original decision rules, with a Holm correction over the three claims. &
 Rank-2 recovery holds; the long-chain test may be underpowered (about 200 four-hop questions). \\
@@ -79,12 +79,12 @@ Rank-2 recovery holds; the long-chain test may be underpowered (about 200 four-h
 \label{sec:threats}
 
 \begin{itemize}
-  \item \textbf{Effect size and multiplicity.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources. About twelve experiments each had one pre-registered primary test, and no correction is applied across experiments. Under a Bonferroni correction over these tests, the four-hop recall gain ($p=0.035$) would not remain significant, whereas the rank-2 recoveries, the answer-F1 gain and the benefit cascade would. The four-hop claim is therefore treated as supported but awaiting the locked-set confirmation.
-  \item \textbf{One architecture.} All selectors are MiniLM-L6. The rank-2 result holds on three datasets, but the benefit of iteration was measured on MuSiQue only. W5 tests transfer across rerankers of the same architecture; other architectures are outside the planned scope.
+  \item \textbf{Effect size and multiplicity.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources. About twelve pre-registered primary tests have been run, one per experiment, and no correction is applied across them. Under a Bonferroni correction over these tests, the four-hop recall gain ($p=0.035$) would not remain significant, whereas the rank-2 recoveries, the answer-F1 gain and the benefit cascade would. The four-hop claim is therefore treated as supported but awaiting the locked-set confirmation.
+  \item \textbf{One architecture.} All selectors are MiniLM-L6. The rank-2 result holds on three datasets, but a benefit of iteration was found only on MuSiQue; on the mostly two-hop 2WikiMultiHopQA and HotpotQA there was none. W5 tests transfer across rerankers of the same architecture; other architectures are outside the planned scope.
   \item \textbf{One seed per analysed change, single control draws.} The grafting analyses use the seed-0 models, and the random and seed-noise controls are single draws on the tuning sets. W4 adds the remaining seeds and repeated draws.
   \item \textbf{One-dimensional changes.} Each graft adds the bias and normalization changes in full (about 30,000 parameters). The random and seed-noise controls keep them too, so they bound their contribution indirectly; W4 adds a direct test (rank-0 graft).
   \item \textbf{Truncation.} Iterative queries can exceed the 512-token limit (28\% of iterative queries on 2WikiMultiHopQA, 6\% on HotpotQA); in the benefit-router experiment the gain over one-shot selection was negative on such questions.
-  \item \textbf{Evaluation data.} MuSiQue test labels are not public. Evaluation uses disjoint subsets of the development split, which is now exhausted, and later experiments use unused training questions, whose distribution differs (mostly two-hop). One unused development set was used twice, with the second use declared in advance.
+  \item \textbf{Evaluation data.} MuSiQue test labels are not public. Evaluation uses disjoint subsets of the development split, which is now exhausted, and later experiments use unused training questions, whose distribution differs (mostly two-hop). The 1,017 unused development questions were used by three experiments (recall, answer F1 and a descriptive cascade check); each later use was declared in advance.
   \item \textbf{Construct validity.} Full-support recall depends on the annotated supporting paragraphs; iterative selection could find valid evidence that is not annotated.
   \item \textbf{One reader.} Answer quality was measured with one closed API model; W3 adds a second, open-weight reader.
   \item \textbf{Sequential design.} Later experiments were designed after earlier results (for example, the benefit router after the hop-count router). Pre-registration controls each test, and the locked-set confirmation addresses the sequence as a whole.
@@ -107,7 +107,7 @@ RQ & Evidence so far & Follow-up \\
 RQ1 & 68--77\% fewer tokens on HotpotQA without a significant F1 change; top-5 selection improves on sending all paragraphs on MuSiQue with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
 RQ2 & Ranking quality, not the stopping rule, limits cost on MuSiQue (exploratory; Section~\ref{sec:res_bottleneck}) & --- \\
 RQ3 & No significant overall gain at matched training data; confirmed gains on long chains in recall and answer F1; a benefit router improves on one-shot selection with 55\% of the passes of always-iterative selection (Sections~\ref{sec:res_matched}, \ref{sec:res_long}--\ref{sec:res_cascade}) & W2, W3, locked set \\
-RQ4 & Functional rank at most two on three datasets, rank 1 on two of them (Sections~\ref{sec:res_rank}--\ref{sec:res_replication}) & W1, W4, W5, locked set \\
+RQ4 & Functionally rank 2 on three datasets; $r^*_{0.8}=1$ on the tuning sets of two of them (not yet confirmed) (Sections~\ref{sec:res_rank}--\ref{sec:res_replication}) & W1, W4, W5, locked set \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -143,7 +143,7 @@ W1 adapter trained directly; W4 geometry with noise baselines & 1--3 \\
 W2 better benefit predictor & 2--4 \\
 W3 answer quality with the adapter, the router and a second reader & 4--5 \\
 W5 transfer across datasets and rerankers & 4--7 \\
-Locked-set confirmation of the headline claims & 7--8 \\
+Locked-set confirmation of the main claims & 7--8 \\
 Paper submission & 8 \\
 Dissertation writing & 7--11 \\
 Deposit and defence & 12 \\

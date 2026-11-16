@@ -1,7 +1,7 @@
 \chapter{Experiment Index}
 \label{app:index}
 
-Table~\ref{tab:index} lists every experiment carried out so far, in the order in which it was run. Each experiment answers one question. Its protocol was registered in the project repository before the evaluation data were scored, and its report is kept with the code (directory \texttt{experiments/expNN}). The status column follows Table~\ref{tab:claims}: \emph{confirmed} means the pre-registered primary test succeeded, \emph{null} that it failed, \emph{exploratory} that the result was not the registered primary test, and \emph{context} that the experiment motivated later work but is not used as evidence. Experiments marked ``---'' in the last column are not used in the main text.
+Table~\ref{tab:index} lists every experiment carried out so far, in the order in which it was run. Each experiment answers one question. From experiment 3 onward, its protocol was registered in the project repository before the evaluation data were scored; every report is kept with the code (directory \texttt{experiments/expNN}). The status column follows Table~\ref{tab:claims}: \emph{confirmed} means that a pre-registered test with a fixed decision rule succeeded (the primary test unless marked secondary), \emph{null} that it failed, \emph{exploratory} that the result was not a registered test or the experiment was not pre-registered, and \emph{context} that the experiment motivated later work but is not used as evidence. Experiments marked ``---'' in the last column are not used in the main text.
 
 \begin{table}[htbp]
 \centering
@@ -13,17 +13,17 @@ Table~\ref{tab:index} lists every experiment carried out so far, in the order in
 No. & Question & Answer (status) & Section \\
 \midrule
 1 & Can a training-free embedding threshold select the second-hop paragraph? & Slightly: 6--10\% fewer tokens than Noise-Gate (context) & --- \\
-2 & How many prompt tokens does a small fine-tuned selector save on HotpotQA? & 68--77\% fewer tokens; F1 differences not significant (confirmed) & \ref{sec:res_selector} \\
+2 & How many prompt tokens does a small fine-tuned selector save on HotpotQA? & 68--77\% fewer tokens; F1 differences not significant (exploratory: not pre-registered) & \ref{sec:res_selector} \\
 3 & Does the off-the-shelf reranker already encode multi-hop relevance (linear probe)? & The probe failed, which does not show that the information is absent (context) & --- \\
 4 & Can LLM agents edit the selector's weights to compress or repair it? & Compression matched magnitude pruning; no repair was found (context) & --- \\
 5 & Which supporting paragraphs does the selector miss? & Bridge paragraphs that do not name the question's entity (context) & --- \\
 6 & Is the HotpotQA fine-tuning change low-rank or sparse? & Low-rank: rank 4 recovers 80\%, mostly in the middle layers; sparse changes fail (confirmed) & \ref{sec:res_rank} \\
 7 & Does a learned stopping rule save tokens on HotpotQA? & Yes: 57 and 71 fewer tokens per question at recall 0.90 and 0.95 (confirmed) & \ref{sec:res_adaptive} \\
-8 & Does the HotpotQA selector transfer to MuSiQue? & Only partly: the top ten contain all supporting paragraphs for 68\% of questions; the planned test was not testable & \ref{sec:res_bottleneck} \\
+8 & Does the HotpotQA selector transfer to MuSiQue? & Only partly: the top ten contain all supporting paragraphs for 68\% of questions; the planned test was not testable (exploratory) & \ref{sec:res_bottleneck} \\
 9 & Do in-domain and iterative fine-tuning improve MuSiQue selection? & Recall@5 0.682 and 0.750; the comparison is confounded by training data (confirmed, confounded) & \ref{sec:res_bottleneck} \\
-10 & Does adaptive stopping reduce the cost of the iterative ranker? & At recall 0.95 yes, at 0.90 no; iterative scores are not a better stopping signal (mixed) & \ref{sec:res_adaptive} \\
+10 & Does adaptive stopping reduce the cost of the iterative ranker? & At recall 0.95 yes, at 0.90 no; iterative scores are not a better stopping signal (confirmed at 0.95; null at 0.90 and for the secondary test) & \ref{sec:res_adaptive} \\
 11 & Is the weight change behind iteration low-rank? & A rank-2 graft recovers 84.7\% of its effect (confirmed) & \ref{sec:res_rank} \\
-12 & With identical training data, does iteration beat one-shot ranking, and is the conditioning change rank 2? & No significant overall gain ($+0.040$, null); a rank-2 graft recovers 86.8\% (confirmed) & \ref{sec:res_matched} \\
+12 & With identical training data, does iteration beat one-shot ranking, and is the conditioning change rank 2? & No significant overall gain ($+0.040$, null); a rank-2 graft recovers 86.8\% (confirmed, secondary test) & \ref{sec:res_matched} \\
 13 & Does iteration help four-hop chains, and does a hop-count router make a useful cascade? & Four-hop gain $+0.055$ (confirmed); the hop-count cascade did not pass its tests (null) & \ref{sec:res_long}, \ref{sec:res_cascade} \\
 14 & Does a router trained on iteration benefit make a useful cascade? & $+0.027$ over one-shot selection with 55\% of the passes of always-iterative selection; models re-trained with the same recipe (confirmed) & \ref{sec:res_cascade} \\
 15 & Does the evidence gain improve the reader's answers? & Answer F1 $+0.076$ on questions with three or more hops (confirmed) & \ref{sec:res_f1} \\
