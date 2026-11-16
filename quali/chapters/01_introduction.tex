@@ -22,7 +22,7 @@ This work studies \emph{cheap evidence selection} for multi-hop RAG: a small mod
 
 \section{Hypothesis}
 
-The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap (Figure~\ref{fig:hypothesis}). The preliminary results support the first part functionally (by grafting an extracted change); a router trained on benefit already switches iteration on for about a quarter of the questions without losing its gain, and training the adapter directly is part of the remaining work.
+The central hypothesis is that \textbf{chain-following in a small reranker can be isolated as a low-rank weight change that matters mainly for long reasoning chains}. If it holds, the change can be trained and shipped as a small adapter on top of a cheap one-shot selector and switched on only where it helps, keeping short questions cheap (Figure~\ref{fig:hypothesis}). The preliminary results support the first part functionally (by grafting an extracted change); a router trained on benefit already switches iteration on for about a quarter of the questions and improves on one-shot ranking, and training the adapter directly is part of the remaining work.
 
 \begin{figure}[htbp]
 \centering
