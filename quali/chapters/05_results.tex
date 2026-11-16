@@ -45,7 +45,14 @@ With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting p
 
 The weight change $\Delta = \text{M1-iter} - \text{M1}$ was grafted onto M1 at ranks 1 to 16 (Equation~\ref{eq:recovery}), and the grafted model was run iteratively. Because M1 and M1-iter are the models of Section~\ref{sec:res_bottleneck}, this $\Delta$ still includes the effect of the additional training data. On the tuning set (\texttt{dev300}), M1 run iteratively reached recall@5 of 0.45, against 0.74 for M1-iter. Recovery was 74\% at rank 1, 95\% at rank 2 and 97\% at ranks 4 and 8, so $r^*_{0.8}=2$; ranks 2 to 8 differ by about two questions, which indicates a plateau from rank 2 rather than a strict ordering. A random rank-4 change of the same norm (one draw, tuning set) recovered 9\%. On the test set, the rank-2 graft recovered 84.7\% of the gain (CI $[73.6\%, 96.2\%]$) and remained below the full model (14 vs 31 discordant questions, $p=0.016$).
 
-\textbf{Where the change is located.} Grafting the full change of single layers showed that layers 3 and 4 contribute most (43\% and 40\%), while layers 0--2 contribute about 30\% each. This profile is flatter than for the change learned on HotpotQA ($\text{A1}-\text{A0}$), where the middle layers dominated and a rank-4 graft recovered 80\% of the token saving at recall 0.90.
+\textbf{Where the change is located.} The rank-2 graft changes every two-dimensional weight matrix of the model: the four attention matrices and the two feed-forward matrices of each of the six layers, and the embedding matrices (Figure~\ref{fig:architecture}). To locate the effect, the full change of a single layer was added at a time (tuning set). Layers 3 and 4 contributed most (43\% and 40\%), layers 0--2 about 30\% each and layer 5 8\%. These single-layer recoveries add up to about 180\%, so the layers' contributions overlap and the effect is spread across the network rather than confined to one layer. This profile is flatter than for the change learned on HotpotQA ($\text{A1}-\text{A0}$), where the middle layers dominated and a rank-4 graft recovered 80\% of the token saving at recall 0.90. Attention and feed-forward matrices were not grafted separately, so their relative contributions are not yet known (follow-up W4). The layer analysis refers to the iteration change; the layer profile of the conditioning change has not yet been measured.
+
+\begin{figure}[htbp]
+\centering
+\resizebox{\textwidth}{!}{\input{figures/architecture}}
+\caption{The MiniLM-L6 cross-encoder (hidden size 384) and the parameters changed by a rank-2 graft. In every layer, the four self-attention matrices and the two feed-forward matrices receive the rank-2 truncation of their change; the embedding matrices (not drawn) are treated in the same way, and biases and layer-normalization parameters receive their full change. Percentages: recovery when only the full change of that layer is added (iteration change $\text{M1-iter}-\text{M1}$, MuSiQue tuning set); shaded layers contribute most.}
+\label{fig:architecture}
+\end{figure}
 
 \section{Pair-matched control}
 \label{sec:res_matched}

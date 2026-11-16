@@ -54,9 +54,9 @@ Repeat the answer-quality experiment with M1-ctrl plus the adapter and with the 
 Primary: F1 on questions with $\ge 3$ hops, cascade vs one-shot selection, confidence interval above 0. &
 The gain is retained, possibly smaller. \\
 \addlinespace
-W4. Geometry &
-Is the conditioning change also spectrally low-rank, and are its directions stable across seeds and datasets? &
-For each layer, dataset and seed: energy $E_r$, stable rank and principal angles between the rank-2 subspaces (Section~\ref{sec:bg_svd}). Baselines: seed-to-seed differences and Gaussian matrices of equal norm \cite{altaf2026noisebaseline}. A rank-0 graft (one-dimensional changes only). &
+W4. Geometry and location &
+Is the conditioning change also spectrally low-rank, are its directions stable across seeds and datasets, and is it located in attention or in the feed-forward matrices? &
+For each layer, dataset and seed: energy $E_r$, stable rank and principal angles between the rank-2 subspaces (Section~\ref{sec:bg_svd}). Baselines: seed-to-seed differences and Gaussian matrices of equal norm \cite{altaf2026noisebaseline}. A rank-0 graft (one-dimensional changes only), attention-only and feed-forward-only grafts, and single-layer grafts of the conditioning change. &
 Directions are shared if the first principal angle across seeds (and datasets) is smaller than the 5th percentile of the seed-noise baseline. The rank-0 graft recovers $<0.2$. &
 Shared across seeds, partly shared across datasets. \\
 \addlinespace

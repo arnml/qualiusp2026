@@ -1,0 +1,35 @@
+% MiniLM-L6 cross-encoder: where the graft changes the weights, and single-layer recoveries (exp11, iteration change, tuning set).
+\begin{tikzpicture}[
+  lay/.style={draw, rounded corners=2pt, minimum width=3.6cm, minimum height=0.62cm, font=\small, fill=gray!8},
+  hot/.style={lay, fill=teal!15, draw=teal!60!black, font=\small\bfseries},
+  mat/.style={draw=teal!60!black, rounded corners=2pt, fill=teal!8, minimum height=0.75cm, font=\small, align=center},
+  grp/.style={draw=teal!60!black, rounded corners=4pt, fill=teal!4},
+  arr/.style={-{Latex[length=2mm]}, thick, gray}]
+  % ---- left: the stack (bottom to top) ----
+  \node[lay] (in) at (0,0) {question + paragraph};
+  \node[lay] (emb) at (0,0.85) {embeddings};
+  \node[lay] (l0) at (0,1.70) {layer 0 \,$\cdot$\, 33\%};
+  \node[lay] (l1) at (0,2.55) {layer 1 \,$\cdot$\, 31\%};
+  \node[lay] (l2) at (0,3.40) {layer 2 \,$\cdot$\, 30\%};
+  \node[hot] (l3) at (0,4.25) {layer 3 \,$\cdot$\, 43\%};
+  \node[hot] (l4) at (0,5.10) {layer 4 \,$\cdot$\, 40\%};
+  \node[lay] (l5) at (0,5.95) {layer 5 \,$\cdot$\, 8\%};
+  \node[lay] (out) at (0,6.80) {relevance score};
+  \foreach \a/\b in {in/emb, emb/l0, l0/l1, l1/l2, l2/l3, l3/l4, l4/l5, l5/out}
+    \draw[-{Latex[length=1.5mm]}, gray] (\a.north) -- (\b.south);
+  % ---- right: inside every layer ----
+  \node[draw=gray!60, dashed, rounded corners=6pt, minimum width=8.6cm, minimum height=6.2cm] (box) at (7.6,3.55) {};
+  \node[font=\bfseries, anchor=north west] at ($(box.north west)+(0.25,-0.15)$) {Inside every layer};
+  \node[grp, minimum width=7.9cm, minimum height=2.0cm] (att) at (7.6,4.65) {};
+  \node[font=\small\bfseries, anchor=north] at ($(att.north)+(0,-0.1)$) {self-attention (12 heads)};
+  \node[mat, minimum width=1.6cm] at (4.80,4.35) {$W_Q$\\[-2pt]{\scriptsize $384{\times}384$}};
+  \node[mat, minimum width=1.6cm] at (6.67,4.35) {$W_K$\\[-2pt]{\scriptsize $384{\times}384$}};
+  \node[mat, minimum width=1.6cm] at (8.54,4.35) {$W_V$\\[-2pt]{\scriptsize $384{\times}384$}};
+  \node[mat, minimum width=1.6cm] at (10.41,4.35) {$W_O$\\[-2pt]{\scriptsize $384{\times}384$}};
+  \node[grp, minimum width=7.9cm, minimum height=1.75cm] (ff) at (7.6,2.35) {};
+  \node[font=\small\bfseries, anchor=north] at ($(ff.north)+(0,-0.1)$) {feed-forward};
+  \node[mat, minimum width=3.4cm] at (5.75,2.05) {$384 \rightarrow 1536$};
+  \node[mat, minimum width=3.4cm] at (9.45,2.05) {$1536 \rightarrow 384$};
+  \node[font=\small, text=gray!50!black] at (7.6,0.95) {biases and layer normalization: full change};
+  \draw[arr] (l3.east) -- (box.west |- l3.east);
+\end{tikzpicture}
