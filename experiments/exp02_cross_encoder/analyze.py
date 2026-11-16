@@ -15,7 +15,6 @@ import json
 
 import numpy as np
 import pandas as pd
-
 from data import build_retrieval_prompt, gold_mask, load_eval, n_tokens, paragraphs_of, results_dir
 
 
@@ -41,8 +40,7 @@ def metrics(items, scores, select):
         prec.append(hit / len(sel))
         npar.append(len(sel))
         tok.append(it["base"] + it["ptok"][sel].sum())
-    return {"full_recall": np.mean(full), "precision": np.mean(prec),
-            "n_paras": np.mean(npar), "tokens": np.mean(tok)}
+    return {"full_recall": np.mean(full), "precision": np.mean(prec), "n_paras": np.mean(npar), "tokens": np.mean(tok)}
 
 
 def topk(k):
@@ -54,6 +52,7 @@ def thresh(t):
         p = 1 / (1 + np.exp(-s))
         keep = np.where(p >= t)[0]
         return keep[np.argsort(-s[keep])] if len(keep) else np.argsort(-s)[:1]
+
     return f
 
 
@@ -68,11 +67,19 @@ def main():
         name = f.stem.removeprefix("scores_")
         sc = json.loads(f.read_text())
         for k in range(1, 6):
-            rows.append({"scorer": name, "rule": f"top{k}",
-                         **{f"test_{m}": v for m, v in metrics(items["test"], sc["test"], topk(k)).items()}})
-        grid = np.round(np.concatenate([
-            [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3],
-            np.arange(0.01, 0.1, 0.01), np.arange(0.1, 0.96, 0.025)]), 4)
+            rows.append(
+                {
+                    "scorer": name,
+                    "rule": f"top{k}",
+                    **{f"test_{m}": v for m, v in metrics(items["test"], sc["test"], topk(k)).items()},
+                }
+            )
+        grid = np.round(
+            np.concatenate(
+                [[1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3], np.arange(0.01, 0.1, 0.01), np.arange(0.1, 0.96, 0.025)]
+            ),
+            4,
+        )
         dev = pd.DataFrame([{"t": t, **metrics(items["dev"], sc["dev"], thresh(t))} for t in grid])
         dev.to_csv(rdir / f"dev_thresholds_{name}.csv", index=False)
         for target in (0.85, 0.90, 0.95):
@@ -80,14 +87,21 @@ def main():
             if not len(ok):
                 continue
             t = float(ok.sort_values("tokens").iloc[0].t)
-            rows.append({"scorer": name, "rule": f"thresh@{target} (t={t})",
-                         **{f"test_{m}": v for m, v in metrics(items["test"], sc["test"], thresh(t)).items()}})
+            rows.append(
+                {
+                    "scorer": name,
+                    "rule": f"thresh@{target} (t={t})",
+                    **{f"test_{m}": v for m, v in metrics(items["test"], sc["test"], thresh(t)).items()},
+                }
+            )
     df = pd.DataFrame(rows)
     df.to_csv(rdir / "summary.csv", index=False)
     pd.set_option("display.width", 200)
     print(df.round(3).to_string(index=False))
-    print("\nReference (exp01, test): k=10 1442 tok; Noise-Gate tau=0.20 0.928/1221 tok;"
-          " hop-gate 0.918/1089 tok; gold-only 323 tok")
+    print(
+        "\nReference (exp01, test): k=10 1442 tok; Noise-Gate tau=0.20 0.928/1221 tok;"
+        " hop-gate 0.918/1089 tok; gold-only 323 tok"
+    )
 
 
 if __name__ == "__main__":

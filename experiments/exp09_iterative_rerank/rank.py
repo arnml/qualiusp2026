@@ -12,13 +12,15 @@ import time
 from pathlib import Path
 
 import torch
+from data import encode, load, paragraphs_of, query
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from data import encode, load, paragraphs_of, query
-
 HERE = Path(__file__).resolve().parent
-MODELS = {"A1": HERE.parent / "exp04_astra_edit" / "models" / "a1", "M1": HERE / "models" / "m1" / "model",
-          "M1-iter": HERE / "models" / "m1_iter" / "model"}
+MODELS = {
+    "A1": HERE.parent / "exp04_astra_edit" / "models" / "a1",
+    "M1": HERE / "models" / "m1" / "model",
+    "M1-iter": HERE / "models" / "m1_iter" / "model",
+}
 MODELS["A1-iter"] = MODELS["A1"]
 STEPS = 4
 torch.set_num_threads(8)
@@ -52,8 +54,10 @@ def main():
                 passes += len(rest)
                 ranked = [i for _, i in sorted(zip(s, rest), key=lambda z: -z[0])]
                 if not iterative:
-                    sel = ranked; break
-                sel.append(ranked[0]); rest = ranked[1:]
+                    sel = ranked
+                    break
+                sel.append(ranked[0])
+                rest = ranked[1:]
             order = sel if not iterative else sel + rest  # rest is ordered by the last step's scores
             with open(path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps({"id": r["id"], "order": order, "passes": passes}) + "\n")

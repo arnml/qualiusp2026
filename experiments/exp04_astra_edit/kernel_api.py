@@ -10,11 +10,10 @@ import os
 import urllib.request
 from pathlib import Path
 
+import editlib as _el
 import numpy as np
 import torch
 from transformers import AutoTokenizer
-
-import editlib as _el
 
 RUN_DIR = Path(os.environ["RUN_DIR"])
 MODEL_DIR = Path(os.environ["MODEL_DIR"])
@@ -53,8 +52,14 @@ def load_original(name: str) -> torch.Tensor:
 
 def edited() -> dict:
     s = _state()
-    out = {"track": s.track, "heads_removed": sorted(s.heads), "neurons_removed": len(s.neurons),
-           "layers_removed": sorted(s.layers), "scalings": len(s.scales), "cost": s.cost()}
+    out = {
+        "track": s.track,
+        "heads_removed": sorted(s.heads),
+        "neurons_removed": len(s.neurons),
+        "layers_removed": sorted(s.layers),
+        "scalings": len(s.scales),
+        "cost": s.cost(),
+    }
     if s.raw:
         out["raw_changed_entries"] = {k: int((v != _BASE[k]).sum()) for k, v in s.raw.items()}
     return out
@@ -72,57 +77,80 @@ def reset_all():
 
 # ---------------------------------------------------------------- Track C: removals
 def remove_head(layer: int, head: int):
-    s = _state(); s.heads.add((int(layer), int(head))); _commit(s)
+    s = _state()
+    s.heads.add((int(layer), int(head)))
+    _commit(s)
 
 
 def restore_head(layer: int, head: int):
-    s = _state(); s.heads.discard((int(layer), int(head))); _commit(s)
+    s = _state()
+    s.heads.discard((int(layer), int(head)))
+    _commit(s)
 
 
 def remove_neurons(layer: int, idx):
-    s = _state(); s.neurons |= {(int(layer), int(i)) for i in np.atleast_1d(idx)}; _commit(s)
+    s = _state()
+    s.neurons |= {(int(layer), int(i)) for i in np.atleast_1d(idx)}
+    _commit(s)
 
 
 def restore_neurons(layer: int, idx):
-    s = _state(); s.neurons -= {(int(layer), int(i)) for i in np.atleast_1d(idx)}; _commit(s)
+    s = _state()
+    s.neurons -= {(int(layer), int(i)) for i in np.atleast_1d(idx)}
+    _commit(s)
 
 
 def remove_layer(layer: int):
-    s = _state(); s.layers.add(int(layer)); _commit(s)
+    s = _state()
+    s.layers.add(int(layer))
+    _commit(s)
 
 
 def restore_layer(layer: int):
-    s = _state(); s.layers.discard(int(layer)); _commit(s)
+    s = _state()
+    s.layers.discard(int(layer))
+    _commit(s)
 
 
 def scale_rows(name: str, rows, f: float):
     """Multiply rows of a kept weight/bias (output dimension) by f, e.g. to compensate a removal."""
-    s = _state(); s.scales.append({"name": name, "axis": "rows", "idx": [int(i) for i in np.atleast_1d(rows)], "f": float(f)}); _commit(s)
+    s = _state()
+    s.scales.append({"name": name, "axis": "rows", "idx": [int(i) for i in np.atleast_1d(rows)], "f": float(f)})
+    _commit(s)
 
 
 def scale_cols(name: str, cols, f: float):
     """Multiply columns of a kept weight (input dimension) by f."""
-    s = _state(); s.scales.append({"name": name, "axis": "cols", "idx": [int(i) for i in np.atleast_1d(cols)], "f": float(f)}); _commit(s)
+    s = _state()
+    s.scales.append({"name": name, "axis": "cols", "idx": [int(i) for i in np.atleast_1d(cols)], "f": float(f)})
+    _commit(s)
 
 
 def drop_scalings():
-    s = _state(); s.scales = []; _commit(s)
+    s = _state()
+    s.scales = []
+    _commit(s)
 
 
 # ---------------------------------------------------------------- Track R: raw edits
 def save_edit(name: str, tensor: torch.Tensor):
     if TRACK != "R":
         raise ValueError("save_edit is only available in Track R; use the removal functions")
-    s = _state(); s.raw[name] = tensor.detach().float().clone(); _commit(s)
+    s = _state()
+    s.raw[name] = tensor.detach().float().clone()
+    _commit(s)
 
 
 def drop_edit(name: str):
-    s = _state(); s.raw.pop(name, None); _commit(s)
+    s = _state()
+    s.raw.pop(name, None)
+    _commit(s)
 
 
 # ---------------------------------------------------------------- forward passes (budgeted)
-def forward(items=None, pairs=None, model: str = "edited", cls: bool = False,
-            mlp: bool = False, attn_n: int = 0) -> dict:
+def forward(
+    items=None, pairs=None, model: str = "edited", cls: bool = False, mlp: bool = False, attn_n: int = 0
+) -> dict:
     """Run the network. ONE call = ONE forward pass of the budget (any size up to the limits).
 
     items : list of (question_index, paragraph_index) into `practice` (<= 2048)
@@ -134,8 +162,9 @@ def forward(items=None, pairs=None, model: str = "edited", cls: bool = False,
     Returns numpy arrays: scores_<model>, and cls_<model>, mlp_<model>, attn_<model>, tokens.
     """
     req = {"items": items, "pairs": pairs, "model": model, "cls": cls, "mlp": mlp, "attn_n": attn_n}
-    r = urllib.request.Request(_FWD, data=json.dumps(req, default=int).encode(),
-                               headers={"Content-Type": "application/json"})
+    r = urllib.request.Request(
+        _FWD, data=json.dumps(req, default=int).encode(), headers={"Content-Type": "application/json"}
+    )
     with urllib.request.urlopen(r, timeout=1800) as resp:
         out = json.loads(resp.read())
     if not out.get("ok"):

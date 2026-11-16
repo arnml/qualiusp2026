@@ -13,10 +13,9 @@ import argparse
 import json
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import load_eval, paragraphs_of, results_dir
 from train import BASE
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
 def main():
@@ -44,8 +43,9 @@ def main():
         with torch.no_grad():
             for i in range(0, len(pairs), args.batch):
                 q, p = zip(*pairs[i : i + args.batch], strict=True)
-                enc = tok(list(q), list(p), truncation=True, max_length=args.max_len,
-                          padding=True, return_tensors="pt").to(dev)
+                enc = tok(
+                    list(q), list(p), truncation=True, max_length=args.max_len, padding=True, return_tensors="pt"
+                ).to(dev)
                 with torch.autocast(device_type=dev, dtype=torch.float16, enabled=dev == "cuda"):
                     logits += model(**enc).logits.squeeze(-1).float().cpu().tolist()
         per_q: dict[str, list[float]] = {}

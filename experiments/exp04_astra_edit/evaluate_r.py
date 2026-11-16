@@ -22,13 +22,12 @@ import json
 from math import ceil, comb
 from pathlib import Path
 
+import editlib as el
 import numpy as np
 import torch
-from transformers import AutoTokenizer
-
-import editlib as el
 from baselines import flatten, score
 from data import build_retrieval_prompt, gold_mask, load_eval, n_tokens, paragraphs_of
+from transformers import AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 A0 = HERE / "models" / "a0"
@@ -42,9 +41,14 @@ def prep(split):
     items = []
     for r in rows:
         _, paras = paragraphs_of(r)
-        items.append({"id": r["id"], "gold": np.array(gold_mask(r), bool),
-                      "base": n_tokens(build_retrieval_prompt(r["question"], [])),
-                      "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)])})
+        items.append(
+            {
+                "id": r["id"],
+                "gold": np.array(gold_mask(r), bool),
+                "base": n_tokens(build_retrieval_prompt(r["question"], [])),
+                "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)]),
+            }
+        )
     return rows, items
 
 
@@ -72,14 +76,18 @@ def per_q(items, S, t):
 
 def summary(items, S, t):
     tok, full, top3 = per_q(items, S, t)
-    return {"bg3": float(top3.mean()), "tok90": float(tok.mean()), "full_recall": float(full.mean()),
-            "threshold": float(t)}
+    return {
+        "bg3": float(top3.mean()),
+        "tok90": float(tok.mean()),
+        "full_recall": float(full.mean()),
+        "threshold": float(t),
+    }
 
 
 def mcnemar(a, b):
     x, y = int((a & ~b).sum()), int((~a & b).sum())
     n = x + y
-    p = min(1.0, 2 * sum(comb(n, i) for i in range(min(x, y) + 1)) / 2 ** n) if n else 1.0
+    p = min(1.0, 2 * sum(comb(n, i) for i in range(min(x, y) + 1)) / 2**n) if n else 1.0
     return {"a_only": x, "b_only": y, "p": p}
 
 
@@ -130,9 +138,15 @@ def main():
         run = HERE / "runs" / args.run
         sd, errs, st = score_edit(run, dev_rows)
         S["edit"] = {"dev": sd}
-        out |= {"run": args.run, "valid": not errs, "errors": errs,
-                "changed_entries": sum(int((t != el.load_base(Path(json.loads((run / 'config.json').read_text())['model_dir']))[n]).sum())
-                                       for n, t in st.raw.items())}
+        out |= {
+            "run": args.run,
+            "valid": not errs,
+            "errors": errs,
+            "changed_entries": sum(
+                int((t != el.load_base(Path(json.loads((run / "config.json").read_text())["model_dir"]))[n]).sum())
+                for n, t in st.raw.items()
+            ),
+        }
         names.append("edit")
     for name in names:
         out["dev1000"][name] = summary(dev, S[name]["dev"], thr90(need(dev, S[name]["dev"])))
@@ -142,8 +156,10 @@ def main():
         out["paired_dev1000"] = {}
         for ref in ("A0", "A2_n200"):
             _, _, r3 = per_q(dev, S[ref]["dev"], np.inf)
-            out["paired_dev1000"][ref] = {"bg3_mcnemar_edit_vs_ref": mcnemar(e3, r3),
-                                          "tok90_diff_ci95_edit_minus_ref": boot_tok_diff(dev, S["edit"]["dev"], S[ref]["dev"])}
+            out["paired_dev1000"][ref] = {
+                "bg3_mcnemar_edit_vs_ref": mcnemar(e3, r3),
+                "tok90_diff_ci95_edit_minus_ref": boot_tok_diff(dev, S["edit"]["dev"], S[ref]["dev"]),
+            }
             print(ref, out["paired_dev1000"][ref], flush=True)
     if args.test:
         test_rows, test = prep("test")

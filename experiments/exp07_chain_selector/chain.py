@@ -25,22 +25,65 @@ from __future__ import annotations
 import json
 import re
 from itertools import combinations
-from math import ceil
 from pathlib import Path
 
 import numpy as np
 import torch
+from data import _load, build_retrieval_prompt, gold_mask, n_tokens, paragraphs_of
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
-
-from data import _load, build_retrieval_prompt, gold_mask, n_tokens, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
 CACHE = HERE.parent / "exp05_failure_anatomy" / "cache"
 WORD = re.compile(r"[a-z0-9]+")
 CAP = re.compile(r"\b[A-Z][a-zA-Z0-9]+")
-STOP = set("the a an of in on and or to for is was were be by with as at from which what who whom whose when where "
-           "how that this these those it its did does do are has have had than both same".split())
+STOP = set(
+    [
+        "the",
+        "a",
+        "an",
+        "of",
+        "in",
+        "on",
+        "and",
+        "or",
+        "to",
+        "for",
+        "is",
+        "was",
+        "were",
+        "be",
+        "by",
+        "with",
+        "as",
+        "at",
+        "from",
+        "which",
+        "what",
+        "who",
+        "whom",
+        "whose",
+        "when",
+        "where",
+        "how",
+        "that",
+        "this",
+        "these",
+        "those",
+        "it",
+        "its",
+        "did",
+        "does",
+        "do",
+        "are",
+        "has",
+        "have",
+        "had",
+        "than",
+        "both",
+        "same",
+    ]
+)
 torch.manual_seed(0)
 
 
@@ -73,9 +116,19 @@ def load_split(split, rows):
         g = np.array(gold_mask(r), bool)
         if len(s) != len(paras):
             continue
-        out.append({"id": str(qid), "q": r["question"], "titles": titles, "paras": paras, "s": s, "h": h, "gold": g,
-                    "base": n_tokens(build_retrieval_prompt(r["question"], [])),
-                    "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)])})
+        out.append(
+            {
+                "id": str(qid),
+                "q": r["question"],
+                "titles": titles,
+                "paras": paras,
+                "s": s,
+                "h": h,
+                "gold": g,
+                "base": n_tokens(build_retrieval_prompt(r["question"], [])),
+                "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)]),
+            }
+        )
     return out
 
 
@@ -86,9 +139,21 @@ def pair_feats(x):
         i, j = order[a], order[b]
         ti, tj, pi, pj = x["titles"][i], x["titles"][j], x["paras"][i], x["paras"][j]
         ci, cj = set(CAP.findall(pi)) - {ti}, set(CAP.findall(pj)) - {tj}
-        txt = [x["s"][i], x["s"][j], x["s"][i] - x["s"][j], a + 1, b + 1,
-               contains(pi, tj), contains(pj, ti), contains(x["q"], ti), contains(x["q"], tj),
-               jac(pi, pj), jac(x["q"], pi), jac(x["q"], pj), len(ci & cj) / 10]
+        txt = [
+            x["s"][i],
+            x["s"][j],
+            x["s"][i] - x["s"][j],
+            a + 1,
+            b + 1,
+            contains(pi, tj),
+            contains(pj, ti),
+            contains(x["q"], ti),
+            contains(x["q"], tj),
+            jac(pi, pj),
+            jac(x["q"], pi),
+            jac(x["q"], pj),
+            len(ci & cj) / 10,
+        ]
         vec = np.concatenate([x["h"][i] + x["h"][j], x["h"][i] * x["h"][j], np.abs(x["h"][i] - x["h"][j])])
         rows.append((np.array(txt, np.float32), vec))
         pairs.append((i, j))
@@ -102,30 +167,38 @@ def matrices(data):
         rows, pairs, y = pair_feats(x)
         x["pairs"] = pairs
         for (t, v), yy in zip(rows, y):
-            T.append(t); V.append(v); Y.append(yy); Q.append(k)
+            T.append(t)
+            V.append(v)
+            Y.append(yy)
+            Q.append(k)
     return np.array(T), np.array(V), np.array(Y), np.array(Q)
 
 
 class MLP(torch.nn.Module):
     def __init__(self, d):
         super().__init__()
-        self.net = torch.nn.Sequential(torch.nn.Linear(d, 64), torch.nn.ReLU(), torch.nn.Dropout(0.2),
-                                       torch.nn.Linear(64, 1))
+        self.net = torch.nn.Sequential(
+            torch.nn.Linear(d, 64), torch.nn.ReLU(), torch.nn.Dropout(0.2), torch.nn.Linear(64, 1)
+        )
 
     def forward(self, x):
         return self.net(x).squeeze(-1)
 
 
 def fit_mlp(Xtr, ytr, Xva, yva, epochs=60):
-    m = MLP(Xtr.shape[1]); opt = torch.optim.AdamW(m.parameters(), lr=1e-3, weight_decay=1e-2)
+    m = MLP(Xtr.shape[1])
+    opt = torch.optim.AdamW(m.parameters(), lr=1e-3, weight_decay=1e-2)
     Xt, yt, Xv, yv = map(torch.tensor, (Xtr, ytr, Xva, yva))
     best, best_state, bad = 1e9, None, 0
-    for ep in range(epochs):
-        m.train(); perm = torch.randperm(len(Xt))
+    for ep in range(epochs):  # noqa: B007  (ep is reported after early stopping)
+        m.train()
+        perm = torch.randperm(len(Xt))
         for i in range(0, len(Xt), 256):
-            b = perm[i:i + 256]
+            b = perm[i : i + 256]
             loss = torch.nn.functional.binary_cross_entropy_with_logits(m(Xt[b]), yt[b])
-            opt.zero_grad(); loss.backward(); opt.step()
+            opt.zero_grad()
+            loss.backward()
+            opt.step()
         m.eval()
         with torch.no_grad():
             v = float(torch.nn.functional.binary_cross_entropy_with_logits(m(Xv), yv))
@@ -135,7 +208,8 @@ def fit_mlp(Xtr, ytr, Xva, yva, epochs=60):
             bad += 1
             if bad >= 8:
                 break
-    m.load_state_dict(best_state); m.eval()
+    m.load_state_dict(best_state)
+    m.eval()
     return m, {"val_bce": best, "epochs": ep + 1}
 
 
@@ -150,10 +224,15 @@ def full(x, sel):
 def policies(x, p):
     """Return per-question candidate sets for each policy family (thresholds applied later)."""
     order = np.argsort(-x["s"])
-    b = int(np.argmax(p)); i, j = x["pairs"][b]
+    b = int(np.argmax(p))
+    i, j = x["pairs"][b]
     nxt = next(k for k in order if k not in (i, j)) if len(order) > 2 else None
-    return {"best_pair": (i, j), "pair_plus1": (i, j, nxt) if nxt is not None else (i, j),
-            "top4": tuple(order[:4]), "p_best": float(p[b])}
+    return {
+        "best_pair": (i, j),
+        "pair_plus1": (i, j, nxt) if nxt is not None else (i, j),
+        "top4": tuple(order[:4]),
+        "p_best": float(p[b]),
+    }
 
 
 def evaluate(data, P):
@@ -177,12 +256,13 @@ def thresh_curve(data):
     need = np.array([x["s"][x["gold"]].min() for x in data])
     cands = np.unique(np.concatenate([np.sort(need)[::-1], [np.inf]]))
     out = []
-    for t in cands[::max(1, len(cands) // 400)]:
+    for t in cands[:: max(1, len(cands) // 400)]:
         rec, tok = [], []
         for x in data:
             keep = np.where(x["s"] >= t)[0]
             keep = keep if len(keep) else np.argsort(-x["s"])[:1]
-            rec.append(full(x, keep)); tok.append(sel_tokens(x, keep))
+            rec.append(full(x, keep))
+            tok.append(sel_tokens(x, keep))
         out.append((float(t), float(np.mean(rec)), float(np.mean(tok))))
     return out
 
@@ -191,7 +271,9 @@ def adaptive(res, tau2, tau3):
     rec, tok, size = [], [], []
     for r in res:
         key = "best_pair" if r["p_best"] >= tau2 else ("pair_plus1" if r["p_best"] >= tau3 else "top4")
-        rec.append(r[key][0]); tok.append(r[key][1]); size.append({"best_pair": 2, "pair_plus1": 3, "top4": 4}[key])
+        rec.append(r[key][0])
+        tok.append(r[key][1])
+        size.append({"best_pair": 2, "pair_plus1": 3, "top4": 4}[key])
     return float(np.mean(rec)), float(np.mean(tok)), float(np.mean(size))
 
 
@@ -215,10 +297,13 @@ def main():
     rows = {r["id"]: dict(r) for r in _load("validation")}
     pool, dev, test = (load_split(s, rows) for s in ("pool", "dev", "test"))
     rng = np.random.default_rng(0)
-    idx = rng.permutation(len(pool)); cut = int(0.8 * len(pool))
+    idx = rng.permutation(len(pool))
+    cut = int(0.8 * len(pool))
     tr, va = [pool[i] for i in idx[:cut]], [pool[i] for i in idx[cut:]]
-    Ttr, Vtr, Ytr, _ = matrices(tr); Tva, Vva, Yva, _ = matrices(va)
-    Tdv, Vdv, _, Qdv = matrices(dev); Tte, Vte, _, Qte = matrices(test)
+    Ttr, Vtr, Ytr, _ = matrices(tr)
+    Tva, Vva, Yva, _ = matrices(va)
+    Tdv, Vdv, _, Qdv = matrices(dev)
+    Tte, Vte, _, Qte = matrices(test)
     sc_t = StandardScaler().fit(Ttr)
     lr = LogisticRegression(max_iter=2000, C=1.0).fit(sc_t.transform(Ttr), Ytr)
     Xtr, Xva = np.hstack([Ttr, Vtr]), np.hstack([Tva, Vva])
@@ -242,12 +327,14 @@ def main():
         rep = {}
         for model in ("text", "full", "a1only"):
             res = evaluate(data, probs(model, T, V, Q, len(data)))
-            rep[model] = {"bg2_pair_best": float(np.mean([r["best_pair"][0] for r in res])),
-                          "bg2_a1_top2": float(np.mean([r["top2"][0] for r in res])),
-                          "tokens_pair_best": float(np.mean([r["best_pair"][1] for r in res])),
-                          "tokens_a1_top2": float(np.mean([r["top2"][1] for r in res])),
-                          "pair_best_only": int(sum(r["best_pair"][0] and not r["top2"][0] for r in res)),
-                          "a1_top2_only": int(sum(r["top2"][0] and not r["best_pair"][0] for r in res))}
+            rep[model] = {
+                "bg2_pair_best": float(np.mean([r["best_pair"][0] for r in res])),
+                "bg2_a1_top2": float(np.mean([r["top2"][0] for r in res])),
+                "tokens_pair_best": float(np.mean([r["best_pair"][1] for r in res])),
+                "tokens_a1_top2": float(np.mean([r["top2"][1] for r in res])),
+                "pair_best_only": int(sum(r["best_pair"][0] and not r["top2"][0] for r in res)),
+                "a1_top2_only": int(sum(r["top2"][0] and not r["best_pair"][0] for r in res)),
+            }
             rep[model]["_res"] = res
         rep["a1_curve"] = thresh_curve(data)
         report[split] = rep
@@ -264,11 +351,14 @@ def main():
             rec, tok, size = adaptive(report["test"][model]["_res"], b[3], b[4])
             row[f"adaptive_{model}"] = {"dev": b, "test_recall": rec, "test_tokens": tok, "test_mean_size": size}
         # oracle-on-test frontier (same procedure for both): tokens at the target on test itself
-        row["frontier_test"] = {"a1_thresh": best_thresh(report["test"]["a1_curve"], target),
-                                **{f"adaptive_{m}": best_adaptive(report["test"][m]["_res"], target) for m in ("text", "full", "a1only")}}
+        row["frontier_test"] = {
+            "a1_thresh": best_thresh(report["test"]["a1_curve"], target),
+            **{f"adaptive_{m}": best_adaptive(report["test"][m]["_res"], target) for m in ("text", "full", "a1only")},
+        }
         final[f"recall_{target:g}"] = row
     # paired statistics on test (dev-tuned thresholds): bootstrap over questions + McNemar for bg2
     from math import comb
+
     rng_b = np.random.default_rng(1)
     sels = {}
     for target in (0.90, 0.95):
@@ -292,12 +382,17 @@ def main():
             bs_t = [dt[rng_b.integers(0, len(dt), len(dt))].mean() for _ in range(2000)]
             bs_r = [dr[rng_b.integers(0, len(dr), len(dr))].mean() for _ in range(2000)]
             row[f"adaptive_{model}"]["paired_vs_a1_thresh"] = {
-                "tokens_diff_mean": float(dt.mean()), "tokens_diff_ci95": [float(np.percentile(bs_t, 2.5)), float(np.percentile(bs_t, 97.5))],
-                "recall_diff_mean": float(dr.mean()), "recall_diff_ci95": [float(np.percentile(bs_r, 2.5)), float(np.percentile(bs_r, 97.5))]}
+                "tokens_diff_mean": float(dt.mean()),
+                "tokens_diff_ci95": [float(np.percentile(bs_t, 2.5)), float(np.percentile(bs_t, 97.5))],
+                "recall_diff_mean": float(dr.mean()),
+                "recall_diff_ci95": [float(np.percentile(bs_r, 2.5)), float(np.percentile(bs_r, 97.5))],
+            }
     for model in ("text", "full", "a1only"):
         b_, c_ = report["test"][model]["pair_best_only"], report["test"][model]["a1_top2_only"]
         n_ = b_ + c_
-        report["test"][model]["bg2_mcnemar_p"] = min(1.0, 2 * sum(comb(n_, i) for i in range(min(b_, c_) + 1)) / 2 ** n_) if n_ else 1.0
+        report["test"][model]["bg2_mcnemar_p"] = (
+            min(1.0, 2 * sum(comb(n_, i) for i in range(min(b_, c_) + 1)) / 2**n_) if n_ else 1.0
+        )
     for split in ("dev", "test"):
         for model in ("text", "full", "a1only"):
             report[split][model].pop("_res")

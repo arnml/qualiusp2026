@@ -14,7 +14,6 @@ import json
 
 import numpy as np
 import pandas as pd
-
 from common import (
     RESULTS,
     build_retrieval_prompt,
@@ -107,9 +106,7 @@ def configs():
         yield (
             f"hop_{var}",
             {"tau1": float(t1), "tau2": float(t2), "n_anchor": na},
-            lambda it, v=var, a=na, t1=t1, t2=t2: select_hop_gate(
-                it["e"], it["paras"], t1, t2, variant=v, n_anchor=a
-            ),
+            lambda it, v=var, a=na, t1=t1, t2=t2: select_hop_gate(it["e"], it["paras"], t1, t2, variant=v, n_anchor=a),
         )
 
 
@@ -150,9 +147,7 @@ def fn_from(method, params):
         return lambda it: select_noise_gate(it["e"], it["paras"], p["tau"])
     if method.startswith("hop_"):
         v = method.split("_", 1)[1]
-        return lambda it: select_hop_gate(
-            it["e"], it["paras"], p["tau1"], p["tau2"], variant=v, n_anchor=p["n_anchor"]
-        )
+        return lambda it: select_hop_gate(it["e"], it["paras"], p["tau1"], p["tau2"], variant=v, n_anchor=p["n_anchor"])
     raise ValueError(method)
 
 

@@ -1,0 +1,7 @@
+# Per-experiment data, models and caches are ignored in each experiments/expNN/.gitignore.
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.playwright-mcp/
+.DS_Store

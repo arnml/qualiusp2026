@@ -15,9 +15,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import SPLIT_IDS, _load, gold_mask, paragraphs_of
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 A1 = HERE.parent / "exp04_astra_edit" / "models" / "a1"
@@ -57,19 +56,29 @@ def main():
             _, paras = paragraphs_of(r)
             g = gold_mask(r)
             for para, gi in zip(paras, g):
-                q.append(r["question"]); p.append(para); owner.append(k); gold.append(gi)
-        feats.clear(); scores = []
+                q.append(r["question"])
+                p.append(para)
+                owner.append(k)
+                gold.append(gi)
+        feats.clear()
+        scores = []
         t = time.time()
         for i in range(0, len(q), 64):
-            enc = tok(q[i:i + 64], p[i:i + 64], truncation=True, max_length=256, padding=True, return_tensors="pt")
+            enc = tok(q[i : i + 64], p[i : i + 64], truncation=True, max_length=256, padding=True, return_tensors="pt")
             scores.append(model(**enc).logits.squeeze(-1).numpy())
             if i % 6400 == 0:
                 print(split, i, len(q), round(time.time() - t), flush=True)
-        np.savez_compressed(dest, ids=np.array([r["id"] for r in rows]), owner=np.array(owner),
-                            gold=np.array(gold, np.int8), score=np.concatenate(scores),
-                            feat=np.concatenate(feats))
-        (HERE / "cache" / f"a1_{split}_meta.json").write_text(json.dumps(
-            {"questions": len(rows), "pairs": len(q), "seconds": round(time.time() - t)}))
+        np.savez_compressed(
+            dest,
+            ids=np.array([r["id"] for r in rows]),
+            owner=np.array(owner),
+            gold=np.array(gold, np.int8),
+            score=np.concatenate(scores),
+            feat=np.concatenate(feats),
+        )
+        (HERE / "cache" / f"a1_{split}_meta.json").write_text(
+            json.dumps({"questions": len(rows), "pairs": len(q), "seconds": round(time.time() - t)})
+        )
         print(split, "done", len(rows), "questions", round(time.time() - t), "s", flush=True)
 
 

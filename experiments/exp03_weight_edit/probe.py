@@ -21,11 +21,10 @@ import json
 
 import numpy as np
 import torch
+from data import gold_mask, load_eval, load_train, paragraphs_of, results_dir
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-from data import gold_mask, load_eval, load_train, paragraphs_of, results_dir
 
 BASE = "cross-encoder/ms-marco-MiniLM-L6-v2"
 N_DEV = 300
@@ -37,7 +36,10 @@ def pairs_of(rows):
     for k, r in enumerate(rows):
         _, paras = paragraphs_of(r)
         for para, g in zip(paras, gold_mask(r), strict=True):
-            q.append(r["question"]); p.append(para); y.append(g); qid.append(k)
+            q.append(r["question"])
+            p.append(para)
+            y.append(g)
+            qid.append(k)
     return q, p, np.array(y), np.array(qid)
 
 
@@ -46,8 +48,9 @@ def extract(model, tok, q, p, batch=32):
     """[CLS] after embeddings + each of 6 layers, pooled output, and the score."""
     cls, pooled, score = [], [], []
     for i in range(0, len(q), batch):
-        enc = tok(q[i:i + batch], p[i:i + batch], truncation=True, max_length=256,
-                  padding=True, return_tensors="pt")
+        enc = tok(
+            q[i : i + batch], p[i : i + batch], truncation=True, max_length=256, padding=True, return_tensors="pt"
+        )
         out = model(**enc, output_hidden_states=True)
         hs = torch.stack([h[:, 0] for h in out.hidden_states], 1)  # (b, 7, 384)
         cls.append(hs.numpy())
@@ -88,13 +91,15 @@ def main():
     feats = {f"layer{l}": (Htr[:, l], Hdv[:, l]) for l in range(7)}
     feats["pooler"] = (Ptr, Pdv)
     for name, (a, b) in feats.items():
-        mu = a[ytr == 1].mean(0) - a[ytr == 0].mean(0)       # allowed: mean difference
+        mu = a[ytr == 1].mean(0) - a[ytr == 0].mean(0)  # allowed: mean difference
         s_md = b @ mu
         clf = LogisticRegression(max_iter=2000, C=1.0).fit(a, ytr)  # upper bound only
         s_lr = clf.decision_function(b)
         res[name] = {
-            "meandiff_auc": roc_auc_score(ydv, s_md), "meandiff_top3": top3_both(s_md, ydv, qdv),
-            "probe_auc": roc_auc_score(ydv, s_lr), "probe_top3": top3_both(s_lr, ydv, qdv),
+            "meandiff_auc": roc_auc_score(ydv, s_md),
+            "meandiff_top3": top3_both(s_md, ydv, qdv),
+            "probe_auc": roc_auc_score(ydv, s_lr),
+            "probe_top3": top3_both(s_lr, ydv, qdv),
             # how aligned is the mean-difference direction with what A0 already reads out?
             "corr_meandiff_vs_A0score": float(np.corrcoef(s_md, Sdv)[0, 1]),
         }

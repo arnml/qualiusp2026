@@ -14,13 +14,11 @@ import argparse
 import json
 from pathlib import Path
 
-import numpy as np
-import torch
-from transformers import AutoTokenizer
-
 import editlib as el
+import torch
 from baselines import MODEL, bg3, flatten, score
 from data import load_eval
+from transformers import AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 torch.set_num_threads(8)
@@ -42,8 +40,13 @@ def main():
     model = el.build_model(MODEL, st, base)
     c = st.cost()
     full = el.EditState("C").cost()["encoder_gflops_per_question"]
-    out = {"run": args.run, "valid": not errs, "errors": errs, "cost": c,
-           "flops_fraction": c["encoder_gflops_per_question"] / full}
+    out = {
+        "run": args.run,
+        "valid": not errs,
+        "errors": errs,
+        "cost": c,
+        "flops_fraction": c["encoder_gflops_per_question"] / full,
+    }
 
     dev = load_eval("dev")[: args.eval_n]
     q, p, owner = flatten(dev)
@@ -57,10 +60,10 @@ def main():
     if bfile.exists() and args.eval_n == 300:
         rows = [r for r in json.loads(bfile.read_text()) if r["method"] != "layerdrop"]
         g = c["encoder_gflops_per_question"]
-        near = min({r["frac"] for r in rows if r["method"] != "A1_unedited"},
-                   key=lambda f: abs(f * full - g))
-        out["closest_baselines"] = {r["method"]: {"gflops": r["gflops"], "dev300_bg3": r["dev_bg3"]}
-                                    for r in rows if r["frac"] in (near, 1.0)}
+        near = min({r["frac"] for r in rows if r["method"] != "A1_unedited"}, key=lambda f: abs(f * full - g))
+        out["closest_baselines"] = {
+            r["method"]: {"gflops": r["gflops"], "dev300_bg3": r["dev_bg3"]} for r in rows if r["frac"] in (near, 1.0)
+        }
     (run / "eval.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
 

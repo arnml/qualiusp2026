@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import os
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 import numpy as np
@@ -17,8 +17,12 @@ import pyarrow.parquet as pq
 
 HERE = Path(__file__).resolve().parent
 DATA = Path(os.environ.get("DATA_DIR", HERE / "data"))
-FILES = {"hp_eval": ["hotpot_validation.parquet"], "hp_train": ["hotpot_train0.parquet", "hotpot_train1.parquet"],
-         "tw_eval": ["twowiki_dev.parquet"], "tw_train": ["twowiki_train.parquet"]}
+FILES = {
+    "hp_eval": ["hotpot_validation.parquet"],
+    "hp_train": ["hotpot_train0.parquet", "hotpot_train1.parquet"],
+    "tw_eval": ["twowiki_dev.parquet"],
+    "tw_train": ["twowiki_train.parquet"],
+}
 N_TRAIN, TRAIN_SEED = 1000, 16
 
 
@@ -29,7 +33,8 @@ def _norm_hotpot(r):
 
 
 def _norm_twowiki(r):
-    ctx = json.loads(r["context"]); sf = list(dict.fromkeys(s[0] for s in json.loads(r["supporting_facts"])))
+    ctx = json.loads(r["context"])
+    sf = list(dict.fromkeys(s[0] for s in json.loads(r["supporting_facts"])))
     return [c[0] for c in ctx], [" ".join(c[1]).strip() for c in ctx], sf, r["type"]
 
 
@@ -39,11 +44,17 @@ def _row(r, ds):
     chain = [pos[t] for t in sf if t in pos]
     assert len(chain) == len(sf), "supporting title missing from context"
     gold = [int(i in chain) for i in range(len(titles))]
-    return {"id": r["id"] if ds == "hp" else r["_id"], "question": r["question"],
-            "paras": [f"{t.strip()}. {x}" for t, x in zip(titles, texts)], "gold": gold, "chain": chain, "type": typ}
+    return {
+        "id": r["id"] if ds == "hp" else r["_id"],
+        "question": r["question"],
+        "paras": [f"{t.strip()}. {x}" for t, x in zip(titles, texts)],
+        "gold": gold,
+        "chain": chain,
+        "type": typ,
+    }
 
 
-@lru_cache(maxsize=None)
+@cache
 def _table(key):
     rows = []
     for f in FILES[key]:
@@ -56,10 +67,12 @@ def load(split):
     """split in {hp_test, hp_tune, tw_test, tw_tune, hp_train, tw_train}."""
     ds = split[:2]
     if split.endswith("train"):  # PROTOCOL: seeded sample of N_TRAIN sorted training ids
-        tab = _table(f"{ds}_train"); ids = sorted(tab)
+        tab = _table(f"{ds}_train")
+        ids = sorted(tab)
         ids = sorted(ids[i] for i in np.random.default_rng(TRAIN_SEED).permutation(len(ids))[:N_TRAIN])
     else:
-        tab = _table(f"{ds}_eval"); ids = json.loads((HERE / "split_ids.json").read_text())[split]
+        tab = _table(f"{ds}_eval")
+        ids = json.loads((HERE / "split_ids.json").read_text())[split]
     return [_row(tab[i], ds) for i in ids]
 
 

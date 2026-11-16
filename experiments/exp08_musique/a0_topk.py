@@ -1,13 +1,13 @@
 """Exploratory (not pre-registered): A0 (off-the-shelf MiniLM-L6) vs A1 top-k full recall on MuSiQue test,
 plus mean prompt tokens of sending all paragraphs. Writes results/a0_vs_a1_topk_test.json."""
+
 import json
 from pathlib import Path
 
 import numpy as np
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import build_retrieval_prompt, gold_mask, load, n_tokens, paragraphs_of
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 torch.set_num_threads(8)
@@ -15,7 +15,8 @@ torch.set_num_threads(8)
 
 @torch.no_grad()
 def scores(path, rows):
-    tok = AutoTokenizer.from_pretrained(str(path)); m = AutoModelForSequenceClassification.from_pretrained(str(path)).eval()
+    tok = AutoTokenizer.from_pretrained(str(path))
+    m = AutoModelForSequenceClassification.from_pretrained(str(path)).eval()
     out = []
     for r in rows:
         _, p = paragraphs_of(r)

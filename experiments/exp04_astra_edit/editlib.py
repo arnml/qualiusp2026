@@ -43,15 +43,21 @@ class EditState:
         self.heads: set[tuple[int, int]] = set()
         self.neurons: set[tuple[int, int]] = set()
         self.layers: set[int] = set()
-        self.scales: list[dict] = []          # {"name","axis","idx","f"}
+        self.scales: list[dict] = []  # {"name","axis","idx","f"}
         self.raw: dict[str, torch.Tensor] = {}  # Track R only
 
     # ---------------------------------------------------------------- persistence
     def save(self, d: Path):
         d = Path(d)
         d.mkdir(parents=True, exist_ok=True)
-        meta = {"track": self.track, "heads": sorted(self.heads), "neurons": sorted(self.neurons),
-                "layers": sorted(self.layers), "scales": self.scales, "raw": sorted(self.raw)}
+        meta = {
+            "track": self.track,
+            "heads": sorted(self.heads),
+            "neurons": sorted(self.neurons),
+            "layers": sorted(self.layers),
+            "scales": self.scales,
+            "raw": sorted(self.raw),
+        }
         (d / "state.json").write_text(json.dumps(meta))
         if self.raw:
             save_file({k: v.contiguous() for k, v in self.raw.items()}, str(d / "raw.safetensors"))
@@ -151,10 +157,11 @@ class EditState:
             params += qkvo + mlp + 3 * h * HEAD + HIDDEN + n + HIDDEN + 4 * HIDDEN  # biases + LNs
             fl += 2 * T * (qkvo + mlp) + 2 * 2 * T * T * h * HEAD  # matmuls + scores/context
         base_fl = 2 * T * HIDDEN * HIDDEN  # pooler on CLS is negligible; embeddings are lookups
-        return {"encoder_gflops_per_question": pairs * (fl + base_fl) / 1e9,
-                "encoder_params": params,
-                "removed": {"heads": len(self.heads), "neurons": len(self.neurons),
-                            "layers": sorted(self.layers)}}
+        return {
+            "encoder_gflops_per_question": pairs * (fl + base_fl) / 1e9,
+            "encoder_params": params,
+            "removed": {"heads": len(self.heads), "neurons": len(self.neurons), "layers": sorted(self.layers)},
+        }
 
 
 def build_model(model_dir: Path, state: EditState, base: dict | None = None):

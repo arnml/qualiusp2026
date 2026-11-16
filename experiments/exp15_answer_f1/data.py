@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import json
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 FILES = {"dev": "musique_ans_v1.0_dev.jsonl", "pool": "musique_ans_v1.0_train.jsonl"}
-SPLITS = {"dev_fresh": "dev", "f4_dev": "dev", "f4_train": "pool", "router_train": "pool", "dev300": "dev"}  # split -> source file
+SPLITS = {
+    "dev_fresh": "dev",
+    "f4_dev": "dev",
+    "f4_train": "pool",
+    "router_train": "pool",
+    "dev300": "dev",
+}  # split -> source file
 
 
-@lru_cache(maxsize=None)
+@cache
 def _file(src: str) -> dict:
     with open(HERE.parent / "exp08_musique" / "data" / FILES[src], encoding="utf-8") as fh:
         return {r["id"]: r for r in map(json.loads, fh)}

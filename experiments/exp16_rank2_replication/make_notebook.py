@@ -1,4 +1,5 @@
 """Writes exp16_colab.ipynb (edit this file, not the notebook).  python make_notebook.py <pinned commit>"""
+
 import json
 import sys
 
@@ -6,11 +7,16 @@ PIN = sys.argv[1]
 HP = "https://huggingface.co/datasets/hotpotqa/hotpot_qa/resolve/1908d6afbbead072334abe2965f91bd2709910ab/distractor"
 TW = "https://huggingface.co/datasets/xanhho/2WikiMultihopQA/resolve/612bc5039a457880d9e7d84c3b0a4cf154b70e4f"
 cells = [
-("markdown", """# exp16: rank-2 replication on 2WikiMultiHopQA and HotpotQA (Colab GPU)
+    (
+        "markdown",
+        """# exp16: rank-2 replication on 2WikiMultiHopQA and HotpotQA (Colab GPU)
 
 Runtime: T4 GPU, then *Run all*. A1 from Drive (`exp02_results/full/model`, sha-checked); datasets from pinned Hugging Face
-revisions (evaluation files sha-checked). Models and results go to `MyDrive/qualiusp2026/exp16_<commit>`. Code: public repo, pinned."""),
-("code", f"""from google.colab import drive
+revisions (evaluation files sha-checked). Models and results go to `MyDrive/qualiusp2026/exp16_<commit>`. Code: public repo, pinned.""",
+    ),
+    (
+        "code",
+        f"""from google.colab import drive
 drive.mount('/content/drive')
 import os, subprocess, hashlib, pathlib
 PIN = '{PIN}'
@@ -42,20 +48,42 @@ os.chdir('/content/qualiusp2026/experiments/exp16_rank2_replication')
 !pip -q install pyarrow
 import torch, transformers
 assert 'T4' in torch.cuda.get_device_name(0), torch.cuda.get_device_name(0)
-print('torch', torch.__version__, 'transformers', transformers.__version__, torch.cuda.get_device_name(0))"""),
-("markdown", "## Train the matched pairs (seed 0)"),
-("code", """for ds in ('tw', 'hp'):
+print('torch', torch.__version__, 'transformers', transformers.__version__, torch.cuda.get_device_name(0))""",
+    ),
+    ("markdown", "## Train the matched pairs (seed 0)"),
+    (
+        "code",
+        """for ds in ('tw', 'hp'):
     for mode in ('iter', 'ctrl'):
         !python train.py --ds {ds} --mode {mode} --tag {ds}_{mode} 2>&1 | grep -v -e Warning -e 'Token indices' | tail -n 3
-    !python train.py --ds {ds} --mode ctrl --tag {ds}_ctrl_s1 --seed 1 2>&1 | grep -v -e Warning -e 'Token indices' | tail -n 3"""),
-("markdown", "## Evaluate (tuning and test sets, all configurations), then the pre-registered analysis"),
-("code", """C = 'iter_iter ctrl_oneshot iter_oneshot ctrl_iter g_r1 g_r2 g_r4 g_r8 g_rand_r2 g_noise_r2'
+    !python train.py --ds {ds} --mode ctrl --tag {ds}_ctrl_s1 --seed 1 2>&1 | grep -v -e Warning -e 'Token indices' | tail -n 3""",
+    ),
+    ("markdown", "## Evaluate (tuning and test sets, all configurations), then the pre-registered analysis"),
+    (
+        "code",
+        """C = 'iter_iter ctrl_oneshot iter_oneshot ctrl_iter g_r1 g_r2 g_r4 g_r8 g_rand_r2 g_noise_r2'
 for ds in ('tw', 'hp'):
     for sp in ('tune', 'test'):
         !python evaluate.py --ds {ds} --split {ds}_{sp} --only {C} 2>&1 | grep -v -e Warning -e Loading -e 'Token indices'
-!python analyze.py"""),
+!python analyze.py""",
+    ),
 ]
-nb = {"cells": [{"cell_type": t, "metadata": {}, "source": s.splitlines(True), **({"outputs": [], "execution_count": None} if t == "code" else {})} for t, s in cells],
-      "metadata": {"accelerator": "GPU", "colab": {"gpuType": "T4"}, "kernelspec": {"name": "python3", "display_name": "Python 3"}},
-      "nbformat": 4, "nbformat_minor": 5}
+nb = {
+    "cells": [
+        {
+            "cell_type": t,
+            "metadata": {},
+            "source": s.splitlines(True),
+            **({"outputs": [], "execution_count": None} if t == "code" else {}),
+        }
+        for t, s in cells
+    ],
+    "metadata": {
+        "accelerator": "GPU",
+        "colab": {"gpuType": "T4"},
+        "kernelspec": {"name": "python3", "display_name": "Python 3"},
+    },
+    "nbformat": 4,
+    "nbformat_minor": 5,
+}
 open("exp16_colab.ipynb", "w").write(json.dumps(nb, indent=1))

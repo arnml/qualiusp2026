@@ -19,11 +19,7 @@ CACHE.mkdir(exist_ok=True)
 RESULTS.mkdir(exist_ok=True)
 
 # Same local snapshot the paper used (read-only).
-DATA_DIR = Path(
-    os.environ.get(
-        "HOTPOT_DIR", r"C:\code\cart-code\experiments\cache\hotpot_qa\distractor\validation"
-    )
-)
+DATA_DIR = Path(os.environ.get("HOTPOT_DIR", r"C:\code\cart-code\experiments\cache\hotpot_qa\distractor\validation"))
 EMBED_MODEL = "multi-qa-MiniLM-L6-cos-v1"  # as stated in the paper, 22M params, 384-d
 N_TEST = 400  # paper sample: random.Random(42).sample(range(len(ds)), 400)
 N_DEV = 1000  # disjoint validation questions, used only for threshold tuning
@@ -115,10 +111,8 @@ def embed_rows(rows: list[dict], tag: str) -> list[dict]:
         spans.append((start, len(paras)))
     vecs = model.encode(texts, batch_size=64, normalize_embeddings=True, show_progress_bar=True)
     items = []
-    for (s, n) in spans:
-        items.append(
-            {"q": vecs[s], "p": vecs[s + 1 : s + 1 + n], "qp": vecs[s + 1 + n : s + 1 + 2 * n]}
-        )
+    for s, n in spans:
+        items.append({"q": vecs[s], "p": vecs[s + 1 : s + 1 + n], "qp": vecs[s + 1 + n : s + 1 + 2 * n]})
     np.savez_compressed(path, items=np.array(items, dtype=object))
     return items
 
@@ -140,9 +134,7 @@ def jaccard_matrix(paras: list[str]) -> np.ndarray:
     return m
 
 
-def _redundancy_filter(
-    order: list[int], paras: list[str], rho: float, jac: np.ndarray | None = None
-) -> list[int]:
+def _redundancy_filter(order: list[int], paras: list[str], rho: float, jac: np.ndarray | None = None) -> list[int]:
     kept: list[int] = []
     for i in order:
         if jac is not None:
@@ -206,8 +198,6 @@ def select_hop_gate(
             raise ValueError(variant)
         bridge = np.maximum(bridge, e["p"] @ v)
 
-    hop2 = [
-        int(i) for i in np.argsort(-bridge) if int(i) not in hop1_set and bridge[i] >= tau2
-    ]
+    hop2 = [int(i) for i in np.argsort(-bridge) if int(i) not in hop1_set and bridge[i] >= tau2]
     first = [i for i in rank if i in hop1_set]
     return _redundancy_filter(first + hop2, paras, rho, e.get("jac"))

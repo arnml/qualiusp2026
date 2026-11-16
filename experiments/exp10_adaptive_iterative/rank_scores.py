@@ -12,9 +12,8 @@ import time
 from pathlib import Path
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import encode, load, paragraphs_of, query
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 E9 = HERE.parent / "exp09_iterative_rerank" / "models"
@@ -51,13 +50,20 @@ def main():
                 if not iterative:
                     order, sel = [i for _, i in ranked], [v for v, _ in ranked]
                     break
-                order.append(ranked[0][1]); sel.append(ranked[0][0]); last = ranked[1:]
+                order.append(ranked[0][1])
+                sel.append(ranked[0][0])
+                last = ranked[1:]
                 rest = [i for _, i in last]
             if iterative:  # tail ordered by the last step's scores (exp09)
-                order += [i for _, i in last]; sel += [v for v, _ in last]
+                order += [i for _, i in last]
+                sel += [v for v, _ in last]
             with open(path, "a", encoding="utf-8") as fh:
-                fh.write(json.dumps({"id": r["id"], "order": order, "sel": [round(v, 5) for v in sel],
-                                     "step_passes": step_passes}) + "\n")
+                fh.write(
+                    json.dumps(
+                        {"id": r["id"], "order": order, "sel": [round(v, 5) for v in sel], "step_passes": step_passes}
+                    )
+                    + "\n"
+                )
             if n % 100 == 0:
                 print(args.arm, split, n, len(rows), round(time.time() - t0), "s", flush=True)
         print(args.arm, split, "done", round(time.time() - t0), "s", flush=True)

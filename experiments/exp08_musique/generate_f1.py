@@ -18,7 +18,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
-
 from data import build_retrieval_prompt, load, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
@@ -48,9 +47,12 @@ def report(rows, conds):
             continue
         recs = {j["id"]: j for j in map(json.loads, f.read_text(encoding="utf-8").splitlines()) if j}
         per[c] = {q: f1(recs[q]["answer"], by[q]) for q in by if q in recs}
-        out[c] = {"n": len(per[c]), "f1": round(float(np.mean(list(per[c].values()))), 4),
-                  "input_tokens": round(float(np.mean([recs[q]["input_tokens"] for q in per[c]])), 1),
-                  "cost_usd": round(sum(recs[q]["cost_usd"] for q in per[c]), 4)}
+        out[c] = {
+            "n": len(per[c]),
+            "f1": round(float(np.mean(list(per[c].values()))), 4),
+            "input_tokens": round(float(np.mean([recs[q]["input_tokens"] for q in per[c]])), 1),
+            "cost_usd": round(sum(recs[q]["cost_usd"] for q in per[c]), 4),
+        }
     rng = np.random.default_rng(0)
     for i in range(0, len(conds), 2):
         a, b = per.get(conds[i]), per.get(conds[i + 1])
@@ -59,7 +61,8 @@ def report(rows, conds):
             bs = [d[rng.integers(0, len(d), len(d))].mean() for _ in range(5000)]
             out[f"paired_f1_{conds[i]}_minus_{conds[i + 1]}"] = {
                 "mean": round(float(d.mean()), 4),
-                "ci95": [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)]}
+                "ci95": [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)],
+            }
     (HERE / "results" / "f1_report.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
 
@@ -96,10 +99,15 @@ def main():
             prompt = build_retrieval_prompt(r["question"], [paras[i] for i in idx])
             resp = client.chat.completions.create(model=g2.MODEL, messages=[{"role": "user", "content": prompt}])
             u = resp.usage
-            rec = {"id": r["id"], "condition": name, "paragraphs": idx,
-                   "answer": (resp.choices[0].message.content or "").strip(),
-                   "input_tokens": u.prompt_tokens, "output_tokens": u.completion_tokens,
-                   "cost_usd": (u.prompt_tokens * g2.PRICE_IN + u.completion_tokens * g2.PRICE_OUT) / 1e6}
+            rec = {
+                "id": r["id"],
+                "condition": name,
+                "paragraphs": idx,
+                "answer": (resp.choices[0].message.content or "").strip(),
+                "input_tokens": u.prompt_tokens,
+                "output_tokens": u.completion_tokens,
+                "cost_usd": (u.prompt_tokens * g2.PRICE_IN + u.completion_tokens * g2.PRICE_OUT) / 1e6,
+            }
             with lock, open(path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
 

@@ -23,11 +23,10 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import editlib as el
 import numpy as np
 import torch
-
-import editlib as el
-from data import gold_mask, load_eval, load_train, paragraphs_of, SPLIT_IDS
+from data import SPLIT_IDS, gold_mask, load_train, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
 OUT_CAP = 10_000
@@ -35,25 +34,72 @@ EXEC_TIMEOUT = 900
 LIMIT_ITEMS, LIMIT_PAIRS, LIMIT_ATTN = 2048, 64, 8
 HANDOFF_EVERY = 40
 
-_FEATURES_OFF = ["shell_tool", "unified_exec", "unified_exec_tty", "apps", "browser_use",
-                 "browser_use_external", "computer_use", "image_generation", "in_app_browser",
-                 "multi_agent", "plugins", "view_image", "sleep_tool", "tool_suggest",
-                 "skill_search", "hooks", "goals", "code_mode_host"]
+_FEATURES_OFF = [
+    "shell_tool",
+    "unified_exec",
+    "unified_exec_tty",
+    "apps",
+    "browser_use",
+    "browser_use_external",
+    "computer_use",
+    "image_generation",
+    "in_app_browser",
+    "multi_agent",
+    "plugins",
+    "view_image",
+    "sleep_tool",
+    "tool_suggest",
+    "skill_search",
+    "hooks",
+    "goals",
+    "code_mode_host",
+]
 CODEX_OFF = [x for f in _FEATURES_OFF for x in ("--disable", f)]
 # Values without quotes: Codex falls back to the raw string when TOML parsing fails, which
 # avoids Windows cmd.exe quoting problems.
-CODEX_CFG = ["-c", "mcp_servers.node_repl.enabled=false", "-c", "mcp_servers.MCP_DOCKER.enabled=false",
-             "-c", "web_search=disabled"]
+CODEX_CFG = [
+    "-c",
+    "mcp_servers.node_repl.enabled=false",
+    "-c",
+    "mcp_servers.MCP_DOCKER.enabled=false",
+    "-c",
+    "web_search=disabled",
+]
 CODEX_BIN = __import__("shutil").which("codex") or "codex"
 ALLOWED_ITEMS = {"agent_message", "reasoning", "error"}
 
 # Hard bans: refused before execution. Soft flags: executed, recorded for the audit.
-HARD = [r"\.backward\s*\(", r"torch\.optim", r"autograd", r"requires_grad_\s*\(\s*True",
-        r"AutoModel", r"BertModel", r"from\s+transformers\s+import\s+(?!AutoTokenizer)",
-        r"\bsubprocess\b", r"\bsocket\b", r"urllib", r"requests\.", r"os\.system", r"editlib",
-        r"_BASE\b", r"kernel_api\._", r"EDIT_DIR", r"open\([^)]*state\.json"]
-SOFT = [r"lstsq", r"LogisticRegression", r"LinearRegression", r"Ridge", r"\bSVC\b", r"\.fit\s*\(",
-        r"torch\.nn\.functional", r"F\.gelu", r"softmax", r"layer_norm"]
+HARD = [
+    r"\.backward\s*\(",
+    r"torch\.optim",
+    r"autograd",
+    r"requires_grad_\s*\(\s*True",
+    r"AutoModel",
+    r"BertModel",
+    r"from\s+transformers\s+import\s+(?!AutoTokenizer)",
+    r"\bsubprocess\b",
+    r"\bsocket\b",
+    r"urllib",
+    r"requests\.",
+    r"os\.system",
+    r"editlib",
+    r"_BASE\b",
+    r"kernel_api\._",
+    r"EDIT_DIR",
+    r"open\([^)]*state\.json",
+]
+SOFT = [
+    r"lstsq",
+    r"LogisticRegression",
+    r"LinearRegression",
+    r"Ridge",
+    r"\bSVC\b",
+    r"\.fit\s*\(",
+    r"torch\.nn\.functional",
+    r"F\.gelu",
+    r"softmax",
+    r"layer_norm",
+]
 
 
 # ===================================================================== practice data
@@ -73,8 +119,16 @@ def build_practice(kind: str, n: int, seed: int = 0) -> list[dict]:
     out = []
     for r in rows:
         titles, paras = paragraphs_of(r)
-        out.append({"id": r["id"], "question": r["question"], "answer": r["answer"],
-                    "type": r["type"], "paragraphs": paras, "gold": gold_mask(r)})
+        out.append(
+            {
+                "id": r["id"],
+                "question": r["question"],
+                "answer": r["answer"],
+                "type": r["type"],
+                "paragraphs": paras,
+                "gold": gold_mask(r),
+            }
+        )
     return out
 
 
@@ -111,12 +165,14 @@ class Forward:
         hooks, acts = [], []
         if mlp:
             for layer in model.bert.encoder.layer:
-                hooks.append(layer.intermediate.register_forward_hook(
-                    lambda m, i, o: acts.append(o[:, 0].float().numpy())))
+                hooks.append(
+                    layer.intermediate.register_forward_hook(lambda m, i, o: acts.append(o[:, 0].float().numpy()))
+                )
         try:
             for s in range(0, len(q), 32):
-                enc = self.tok(q[s:s + 32], p[s:s + 32], truncation=True, max_length=256,
-                               padding=True, return_tensors="pt")
+                enc = self.tok(
+                    q[s : s + 32], p[s : s + 32], truncation=True, max_length=256, padding=True, return_tensors="pt"
+                )
                 acts.clear()
                 want_attn = attn_n > 0 and s == 0
                 o = model(**enc, output_hidden_states=cls, output_attentions=want_attn)
@@ -127,7 +183,9 @@ class Forward:
                     out["mlp"].append(np.stack(acts, 1))
                 if want_attn:
                     out["attn"] = [np.stack([a[k].numpy() for a in o.attentions]) for k in range(min(attn_n, len(q)))]
-                    out["attn_tokens"] = [self.tok.convert_ids_to_tokens(enc["input_ids"][k]) for k in range(min(attn_n, len(q)))]
+                    out["attn_tokens"] = [
+                        self.tok.convert_ids_to_tokens(enc["input_ids"][k]) for k in range(min(attn_n, len(q)))
+                    ]
         finally:
             for h in hooks:
                 h.remove()
@@ -166,7 +224,7 @@ class Forward:
             attn_n = min(int(req.get("attn_n") or 0), LIMIT_ATTN)
             try:
                 res = {}
-                for name in (["edited", "original"] if which == "both" else [which]):
+                for name in ["edited", "original"] if which == "both" else [which]:
                     m = self.edited_model() if name == "edited" else self.orig
                     r = self.run_model(m, q, p, bool(req.get("cls")), bool(req.get("mlp")), attn_n)
                     res.update({f"{k}_{name}": v for k, v in r.items()})
@@ -175,10 +233,21 @@ class Forward:
             self.used += 1
             path = self.run / "fwd" / f"pass_{self.used:03d}.npz"
             np.savez(path, **res)
-            self.log.write(json.dumps({"pass": self.used, "t": time.time(), "model": which,
-                                       "n": len(q), "kind": "items" if items is not None else "pairs",
-                                       "cls": bool(req.get("cls")), "mlp": bool(req.get("mlp")),
-                                       "attn_n": attn_n}) + "\n")
+            self.log.write(
+                json.dumps(
+                    {
+                        "pass": self.used,
+                        "t": time.time(),
+                        "model": which,
+                        "n": len(q),
+                        "kind": "items" if items is not None else "pairs",
+                        "cls": bool(req.get("cls")),
+                        "mlp": bool(req.get("mlp")),
+                        "attn_n": attn_n,
+                    }
+                )
+                + "\n"
+            )
             self.log.flush()
             return {"ok": True, "npz": str(path), "passes_left": self.budget - self.used}
 
@@ -208,9 +277,17 @@ class Kernel:
         self.start()
 
     def start(self):
-        self.p = subprocess.Popen([sys.executable, str(HERE / "kernel.py")], cwd=str(HERE),
-                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                  text=True, encoding="utf-8", env=self.env, bufsize=1)
+        self.p = subprocess.Popen(
+            [sys.executable, str(HERE / "kernel.py")],
+            cwd=str(HERE),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            env=self.env,
+            bufsize=1,
+        )
         self._read(120)
 
     def _read(self, timeout):
@@ -233,8 +310,10 @@ class Kernel:
         if out is None:
             self.p.kill()
             self.start()
-            return (f"[harness] execution exceeded {EXEC_TIMEOUT}s; the kernel was restarted. "
-                    "Variables are lost; saved edits and files in /work are kept.")
+            return (
+                f"[harness] execution exceeded {EXEC_TIMEOUT}s; the kernel was restarted. "
+                "Variables are lost; saved edits and files in /work are kept."
+            )
         return out
 
 
@@ -251,14 +330,21 @@ class AstraEditor:
 
     def send(self, msg: str, turn_dir: Path) -> tuple[str, dict]:
         base = [CODEX_BIN, "exec"] + (["resume", self.thread] if self.thread else [])
-        cmd = base + ["-m", self.model, *CODEX_OFF, *CODEX_CFG,
-                      "-c", f"model_reasoning_effort={self.effort}",
-                      "--skip-git-repo-check", "--json", "-"]
+        cmd = base + [
+            "-m",
+            self.model,
+            *CODEX_OFF,
+            *CODEX_CFG,
+            "-c",
+            f"model_reasoning_effort={self.effort}",
+            "--skip-git-repo-check",
+            "--json",
+            "-",
+        ]
         if not self.thread:
             cmd[2:2] = ["-s", "read-only"]
         t0 = time.time()
-        p = subprocess.run(cmd, input=msg, capture_output=True, text=True, encoding="utf-8",
-                           cwd=str(self.cwd))
+        p = subprocess.run(cmd, input=msg, capture_output=True, text=True, encoding="utf-8", cwd=str(self.cwd))
         (turn_dir / "events.jsonl").write_text(p.stdout, encoding="utf-8")
         (turn_dir / "stderr.txt").write_text(p.stderr, encoding="utf-8")
         texts, usage, bad = [], {}, []
@@ -277,8 +363,13 @@ class AstraEditor:
                     texts.append(item.get("text", ""))
                 elif item.get("type") not in ALLOWED_ITEMS:
                     bad.append(item.get("type"))
-        meta = {"usage": usage, "seconds": round(time.time() - t0, 1), "tool_items": bad,
-                "returncode": p.returncode, "thread": self.thread}
+        meta = {
+            "usage": usage,
+            "seconds": round(time.time() - t0, 1),
+            "tool_items": bad,
+            "returncode": p.returncode,
+            "thread": self.thread,
+        }
         return "\n\n".join(texts), meta
 
 
@@ -296,6 +387,7 @@ class ClaudeEditor:
         # Empty folder OUTSIDE the git repo: Claude Code would otherwise add git status and recent
         # commit messages (which contain our results) to the editor's context. No CLAUDE.md there.
         import tempfile
+
         self.cwd = Path(tempfile.gettempdir()) / "qualiusp_editor_cwd" / run.name
         self.cwd.mkdir(parents=True, exist_ok=True)
         (run / "editor_cwd.txt").write_text(str(self.cwd), encoding="utf-8")
@@ -304,13 +396,22 @@ class ClaudeEditor:
         self.thread = None
 
     def send(self, msg: str, turn_dir: Path) -> tuple[str, dict]:
-        cmd = [CLAUDE_BIN, "-p", "--model", self.model, "--effort", self.effort, *CLAUDE_OFF,
-               "--output-format", "stream-json", "--verbose"]
+        cmd = [
+            CLAUDE_BIN,
+            "-p",
+            "--model",
+            self.model,
+            "--effort",
+            self.effort,
+            *CLAUDE_OFF,
+            "--output-format",
+            "stream-json",
+            "--verbose",
+        ]
         if self.thread:
             cmd += ["--resume", self.thread]
         t0 = time.time()
-        p = subprocess.run(cmd, input=msg, capture_output=True, text=True, encoding="utf-8",
-                           cwd=str(self.cwd))
+        p = subprocess.run(cmd, input=msg, capture_output=True, text=True, encoding="utf-8", cwd=str(self.cwd))
         (turn_dir / "events.jsonl").write_text(p.stdout, encoding="utf-8")
         (turn_dir / "stderr.txt").write_text(p.stderr, encoding="utf-8")
         reply, usage, bad, cost = "", {}, [], None
@@ -330,13 +431,23 @@ class ClaudeEditor:
             if ev.get("type") == "result":
                 reply = ev.get("result") or ""
                 u = ev.get("usage", {})
-                usage = {"input_tokens": u.get("input_tokens", 0) + u.get("cache_read_input_tokens", 0)
-                         + u.get("cache_creation_input_tokens", 0),
-                         "output_tokens": u.get("output_tokens", 0), "raw": u}
+                usage = {
+                    "input_tokens": u.get("input_tokens", 0)
+                    + u.get("cache_read_input_tokens", 0)
+                    + u.get("cache_creation_input_tokens", 0),
+                    "output_tokens": u.get("output_tokens", 0),
+                    "raw": u,
+                }
                 cost = ev.get("total_cost_usd")
                 self.thread = ev.get("session_id", self.thread)
-        meta = {"usage": usage, "seconds": round(time.time() - t0, 1), "tool_items": bad,
-                "returncode": p.returncode, "thread": self.thread, "cost_usd_estimate": cost}
+        meta = {
+            "usage": usage,
+            "seconds": round(time.time() - t0, 1),
+            "tool_items": bad,
+            "returncode": p.returncode,
+            "thread": self.thread,
+            "cost_usd_estimate": cost,
+        }
         return reply, meta
 
 
@@ -392,19 +503,28 @@ def main():
     (run / "practice.json").write_text(json.dumps(practice), encoding="utf-8")
     fwd = Forward(run, Path(args.model_dir), args.track, args.budget, practice)
     port = serve(fwd)
-    env = dict(os.environ, RUN_DIR=str(run), MODEL_DIR=str(args.model_dir), TRACK=args.track,
-               FWD_URL=f"http://127.0.0.1:{port}/", PYTHONIOENCODING="utf-8")
+    env = dict(
+        os.environ,
+        RUN_DIR=str(run),
+        MODEL_DIR=str(args.model_dir),
+        TRACK=args.track,
+        FWD_URL=f"http://127.0.0.1:{port}/",
+        PYTHONIOENCODING="utf-8",
+    )
     kernel = Kernel(run, env)
 
     base_cost = el.EditState(args.track).cost()
     prompt = Path(args.prompt).read_text(encoding="utf-8")
-    for k, v in {"N": args.n, "B": args.budget, "TURN_CAP": args.turn_cap,
-                 "GFLOPS": round(base_cost["encoder_gflops_per_question"], 2),
-                 "PARAMS": base_cost["encoder_params"]}.items():
+    for k, v in {
+        "N": args.n,
+        "B": args.budget,
+        "TURN_CAP": args.turn_cap,
+        "GFLOPS": round(base_cost["encoder_gflops_per_question"], 2),
+        "PARAMS": base_cost["encoder_params"],
+    }.items():
         prompt = prompt.replace("{" + k + "}", str(v))
     (run / "prompt.md").write_text(prompt, encoding="utf-8")
-    json.dump(vars(args) | {"started": time.strftime("%Y-%m-%d %H:%M:%S")},
-              (run / "config.json").open("w"), indent=1)
+    json.dump(vars(args) | {"started": time.strftime("%Y-%m-%d %H:%M:%S")}, (run / "config.json").open("w"), indent=1)
 
     if args.editor == "astra":
         editor = AstraEditor(run, args.model_name, args.effort)
@@ -427,8 +547,7 @@ def main():
             hard, soft = audit_code(code)
             rec |= {"hard_flags": hard, "soft_flags": soft}
             if hard:
-                out = ("[harness] code refused before execution; it matches forbidden patterns "
-                       f"{hard}. See RULES.")
+                out = f"[harness] code refused before execution; it matches forbidden patterns {hard}. See RULES."
             else:
                 out = kernel.run(code)
         else:
@@ -439,8 +558,10 @@ def main():
         records.append(rec)
         (run / "run.json").write_text(json.dumps(records, indent=1), encoding="utf-8")
         left = fwd.budget - fwd.used
-        print(f"turn {turn}: code={bool(code)} passes_left={left} tools={meta['tool_items']} "
-              f"{meta['seconds']}s", flush=True)
+        print(
+            f"turn {turn}: code={bool(code)} passes_left={left} tools={meta['tool_items']} {meta['seconds']}s",
+            flush=True,
+        )
 
         if left == 0:
             after_budget += 1
@@ -448,30 +569,38 @@ def main():
                 break  # final reply after the budget was spent
             if after_budget > 3:
                 break
-        status = (f"Passes left: {left}/{args.budget}. Turn {turn}/{args.turn_cap}.")
+        status = f"Passes left: {left}/{args.budget}. Turn {turn}/{args.turn_cap}."
         if left == 0:
-            status += (" The forward-pass budget is used up. Code still runs (forward() is refused). "
-                       "Make sure your current removals are your final edit, then reply WITHOUT a code block "
-                       "with your final explanation (mechanism, changes, evidence).")
+            status += (
+                " The forward-pass budget is used up. Code still runs (forward() is refused). "
+                "Make sure your current removals are your final edit, then reply WITHOUT a code block "
+                "with your final explanation (mechanism, changes, evidence)."
+            )
         msg = f"OUTPUT:\n```\n{out}\n```\n{status}"
         since_handoff += 1
         if since_handoff >= HANDOFF_EVERY:
             editor.new_thread()
             since_handoff = 0
             notes = (run / "work" / "notes.md").read_text(encoding="utf-8")[-20000:]
-            msg = (prompt + "\n\n---\nHANDOFF: this continues an earlier session. Your notes "
-                   f"(the NOTES file):\n{notes}\n\nCurrent edit: kernel `edited()`; {status}\n"
-                   f"Last output:\n```\n{out[:3000]}\n```")
+            msg = (
+                prompt + "\n\n---\nHANDOFF: this continues an earlier session. Your notes "
+                f"(the NOTES file):\n{notes}\n\nCurrent edit: kernel `edited()`; {status}\n"
+                f"Last output:\n```\n{out[:3000]}\n```"
+            )
     kernel.p.kill()
     final = el.EditState.load(run / "work" / "edited", args.track)
-    summary = {"turns": len(records), "passes_used": fwd.used,
-               "tool_violations": sum(len(r["tool_items"]) for r in records),
-               "hard_flags": sum(len(r.get("hard_flags", [])) for r in records),
-               "soft_flag_turns": sum(bool(r.get("soft_flags")) for r in records),
-               "input_tokens": sum(r["usage"].get("input_tokens", 0) for r in records),
-               "output_tokens": sum(r["usage"].get("output_tokens", 0) for r in records),
-               "editor_seconds": sum(r["seconds"] for r in records),
-               "final_cost": final.cost(), "finished": time.strftime("%Y-%m-%d %H:%M:%S")}
+    summary = {
+        "turns": len(records),
+        "passes_used": fwd.used,
+        "tool_violations": sum(len(r["tool_items"]) for r in records),
+        "hard_flags": sum(len(r.get("hard_flags", [])) for r in records),
+        "soft_flag_turns": sum(bool(r.get("soft_flags")) for r in records),
+        "input_tokens": sum(r["usage"].get("input_tokens", 0) for r in records),
+        "output_tokens": sum(r["usage"].get("output_tokens", 0) for r in records),
+        "editor_seconds": sum(r["seconds"] for r in records),
+        "final_cost": final.cost(),
+        "finished": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
     (run / "summary.json").write_text(json.dumps(summary, indent=1), encoding="utf-8")
     print(json.dumps(summary, indent=1))
 

@@ -20,14 +20,17 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from data import encode, gold_mask, load, paragraphs_of, query
 from safetensors.torch import load_file
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from data import encode, gold_mask, load, paragraphs_of, query
-
 HERE = Path(__file__).resolve().parent
 E9 = HERE.parent / "exp09_iterative_rerank" / "models"
-DIRS = {"A1": HERE.parent / "exp04_astra_edit" / "models" / "a1", "M1": E9 / "m1" / "model", "M1-iter": E9 / "m1_iter" / "model"}
+DIRS = {
+    "A1": HERE.parent / "exp04_astra_edit" / "models" / "a1",
+    "M1": E9 / "m1" / "model",
+    "M1-iter": E9 / "m1_iter" / "model",
+}
 STEPS, KS = 4, (2, 3, 4, 5, 6, 8, 10, 15)
 torch.set_num_threads(8)
 
@@ -55,9 +58,11 @@ def lowrank(base, d, r, rand=False, seed=0):
             if rand:
                 R = torch.randn(d[n].shape[0], r, generator=g) @ torch.randn(r, d[n].shape[1], generator=g)
                 part = R * (part.norm() / R.norm())
-            out[n] = base[n] + part; n_par += r * sum(d[n].shape)
+            out[n] = base[n] + part
+            n_par += r * sum(d[n].shape)
         else:
-            out[n] = base[n] + d[n]; n_par += d[n].numel()
+            out[n] = base[n] + d[n]
+            n_par += d[n].numel()
     return out, n_par
 
 
@@ -65,7 +70,8 @@ def layer_only(base, d, layer):
     out, n_par = {}, 0
     for n in base:
         use = group_of(n) == layer
-        out[n] = base[n] + d[n] if use else base[n].clone(); n_par += d[n].numel() if use else 0
+        out[n] = base[n] + d[n] if use else base[n].clone()
+        n_par += d[n].numel() if use else 0
     return out, n_par
 
 
@@ -73,7 +79,8 @@ def configs(S):
     fam = {"it": ("M1", "M1-iter", True), "dom": ("A1", "M1", False)}
     c = {}
     for f, (b, t, iterative) in fam.items():
-        base = S[b]; d = {n: S[t][n] - base[n] for n in base}
+        base = S[b]
+        d = {n: S[t][n] - base[n] for n in base}
         c[f"{f}_base"] = (lambda base=base: ({n: v.clone() for n, v in base.items()}, 0), iterative)
         c[f"{f}_full"] = (lambda t=t: ({n: v.clone() for n, v in S[t].items()}, -1), iterative)
         for r in (1, 2, 4, 8, 16):
@@ -106,7 +113,8 @@ def rank_all(model, tok, rows, iterative):
             if not iterative:
                 order = ranked
                 break
-            order.append(ranked[0]); rest = ranked[1:]
+            order.append(ranked[0])
+            rest = ranked[1:]
         orders.append(order + (rest if iterative else []))
     return orders
 
@@ -119,18 +127,29 @@ def main():
     args = ap.parse_args()
     S = {k: state(k) for k in DIRS}
     tok = AutoTokenizer.from_pretrained(str(DIRS["A1"]))
-    rows = load(args.split)[:args.smoke or None]
+    rows = load(args.split)[: args.smoke or None]
     out = HERE / "results" / f"grafts_{args.split}{f'_smoke{args.smoke}' if args.smoke else ''}.jsonl"
     done = {json.loads(x)["config"] for x in out.read_text().splitlines()} if out.exists() else set()
     for name, (make, iterative) in configs(S).items():
         if (args.only and name not in args.only) or name in done:
             continue
-        t0 = time.time(); sd, n_par = make()
+        t0 = time.time()
+        sd, n_par = make()
         orders = rank_all(build(sd), tok, rows, iterative)
-        hits = {k: [int(np.array(gold_mask(r), bool)[o[:k]].sum() == sum(gold_mask(r))) for r, o in zip(rows, orders)] for k in KS}
-        rec = {"config": name, "iterative": iterative, "params_grafted": int(n_par),
-               "recall": {k: round(float(np.mean(v)), 4) for k, v in hits.items()},
-               "hit5": hits[5], "hit10": hits[10], "ids": [r["id"] for r in rows], "seconds": round(time.time() - t0)}
+        hits = {
+            k: [int(np.array(gold_mask(r), bool)[o[:k]].sum() == sum(gold_mask(r))) for r, o in zip(rows, orders)]
+            for k in KS
+        }
+        rec = {
+            "config": name,
+            "iterative": iterative,
+            "params_grafted": int(n_par),
+            "recall": {k: round(float(np.mean(v)), 4) for k, v in hits.items()},
+            "hit5": hits[5],
+            "hit10": hits[10],
+            "ids": [r["id"] for r in rows],
+            "seconds": round(time.time() - t0),
+        }
         with out.open("a") as fh:
             fh.write(json.dumps(rec) + "\n")
         print(name, rec["recall"][5], rec["recall"][10], rec["seconds"], "s", flush=True)

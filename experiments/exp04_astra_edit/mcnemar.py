@@ -1,6 +1,6 @@
 """Paired McNemar (exact) on dev questions: an editor run vs Wanda at a given FLOPs fraction.
 
-  uv run python mcnemar.py --run s2_C_B10 --frac 0.7276 --eval-n 1000
+uv run python mcnemar.py --run s2_C_B10 --frac 0.7276 --eval-n 1000
 """
 
 from __future__ import annotations
@@ -10,14 +10,13 @@ import json
 from math import comb
 from pathlib import Path
 
+import editlib as el
 import numpy as np
 import torch
-from transformers import AutoTokenizer
-
-import editlib as el
 from baselines import MODEL, flatten, greedy_state, importances, score
 from data import gold_mask, load_eval
 from harness import build_practice
+from transformers import AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 torch.set_num_threads(8)
@@ -48,9 +47,16 @@ def main():
     wa = per_q(greedy_state(*imp["wanda"], args.frac))
     b, c = int((ed & ~wa).sum()), int((~ed & wa).sum())
     n = b + c
-    pval = min(1.0, 2 * sum(comb(n, i) for i in range(min(b, c) + 1)) / 2 ** n) if n else 1.0
-    res = {"run": args.run, "frac": args.frac, "editor": float(ed.mean()), "wanda": float(wa.mean()),
-           "editor_only": b, "wanda_only": c, "mcnemar_exact_p": pval}
+    pval = min(1.0, 2 * sum(comb(n, i) for i in range(min(b, c) + 1)) / 2**n) if n else 1.0
+    res = {
+        "run": args.run,
+        "frac": args.frac,
+        "editor": float(ed.mean()),
+        "wanda": float(wa.mean()),
+        "editor_only": b,
+        "wanda_only": c,
+        "mcnemar_exact_p": pval,
+    }
     (run / f"mcnemar_dev{args.eval_n}.json").write_text(json.dumps(res, indent=1))
     print(json.dumps(res))
 

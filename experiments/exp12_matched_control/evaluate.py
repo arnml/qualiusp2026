@@ -16,18 +16,19 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from data import encode, gold_mask, load, paragraphs_of, query
 from safetensors.torch import load_file
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-from data import encode, gold_mask, load, paragraphs_of, query
 
 HERE = Path(__file__).resolve().parent
 E9 = HERE.parent / "exp09_iterative_rerank" / "models"
 MODELS = Path(os.environ.get("MODELS_DIR", HERE / "models"))
-DIRS = {"A1": Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1")),
-        "M1": Path(os.environ.get("M1_DIR", E9 / "m1" / "model")),
-        "M1-iter": Path(os.environ.get("M1_ITER_DIR", E9 / "m1_iter" / "model")),
-        "M1-ctrl": MODELS / "m1_ctrl" / "model"}
+DIRS = {
+    "A1": Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1")),
+    "M1": Path(os.environ.get("M1_DIR", E9 / "m1" / "model")),
+    "M1-iter": Path(os.environ.get("M1_ITER_DIR", E9 / "m1_iter" / "model")),
+    "M1-ctrl": MODELS / "m1_ctrl" / "model",
+}
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
 STEPS = 4
 torch.set_num_threads(8)
@@ -62,8 +63,12 @@ def configs():
     (m1_ctrl); D = m1_iter_s0 - m1_ctrl; 2x2 model x inference; seeds 1-2 in their native inference."""
     it, ct = tagged("m1_iter_s0"), tagged("m1_ctrl")
     d = {n: it[n] - ct[n] for n in ct}
-    c = {"iter_iter": (lambda: it, True), "ctrl_oneshot": (lambda: ct, False),       # primary system comparison
-         "iter_oneshot": (lambda: it, False), "ctrl_iter": (lambda: ct, True)}      # 2x2 (descriptive); ctrl_iter = graft base
+    c = {
+        "iter_iter": (lambda: it, True),
+        "ctrl_oneshot": (lambda: ct, False),  # primary system comparison
+        "iter_oneshot": (lambda: it, False),
+        "ctrl_iter": (lambda: ct, True),
+    }  # 2x2 (descriptive); ctrl_iter = graft base
     for r in (1, 2, 4, 8):
         c[f"g_r{r}"] = (lambda r=r: lowrank(ct, d, r), True)
     c["g_rand_r2"] = (lambda: lowrank(ct, d, 2, rand=True), True)
@@ -83,6 +88,7 @@ def build(sd):
 @torch.no_grad()
 def rank_all(model, tok, rows, iterative):
     """exp09 inference: one-shot sort, or 4 greedy steps with the tail ordered by the step-3 scores."""
+
     def score(q, ps):
         return model(**encode(tok, [q] * len(ps), ps).to(DEV)).logits.float().cpu().squeeze(-1).reshape(-1).tolist()
 
@@ -96,7 +102,8 @@ def rank_all(model, tok, rows, iterative):
             if not iterative:
                 order = ranked
                 break
-            order.append(ranked[0]); rest = ranked[1:]
+            order.append(ranked[0])
+            rest = ranked[1:]
         orders.append(order + (rest if iterative else []))
     return orders
 
@@ -108,10 +115,13 @@ def main():
     ap.add_argument("--smoke", type=int, default=0)
     args = ap.parse_args()
     tok = AutoTokenizer.from_pretrained(str(DIRS["A1"]))
-    rows = load(args.split)[:args.smoke or None]
+    rows = load(args.split)[: args.smoke or None]
     ids = json.loads((HERE / "split_ids.json").read_text())
     assert not set(ids["dev300"]) & set(ids["test"]) and not set(ids["train"]) & set(ids["dev300"] + ids["test"])
-    out = Path(os.environ.get("RESULTS_DIR", HERE / "results")) / f"eval_{args.split}{f'_smoke{args.smoke}' if args.smoke else ''}.jsonl"
+    out = (
+        Path(os.environ.get("RESULTS_DIR", HERE / "results"))
+        / f"eval_{args.split}{f'_smoke{args.smoke}' if args.smoke else ''}.jsonl"
+    )
     done = {json.loads(x)["config"] for x in out.read_text().splitlines()} if out.exists() else set()
     for name, (make, iterative) in configs().items():
         if (args.only and name not in args.only) or name in done:
@@ -120,9 +130,19 @@ def main():
         orders = rank_all(build(make()), tok, rows, iterative)
         hit5 = [int(np.array(gold_mask(r), bool)[o[:5]].sum() == sum(gold_mask(r))) for r, o in zip(rows, orders)]
         with out.open("a") as fh:
-            fh.write(json.dumps({"config": name, "iterative": iterative, "ids": [r["id"] for r in rows],
-                                 "orders": orders, "recall5": round(float(np.mean(hit5)), 4),
-                                 "seconds": round(time.time() - t0)}) + "\n")
+            fh.write(
+                json.dumps(
+                    {
+                        "config": name,
+                        "iterative": iterative,
+                        "ids": [r["id"] for r in rows],
+                        "orders": orders,
+                        "recall5": round(float(np.mean(hit5)), 4),
+                        "seconds": round(time.time() - t0),
+                    }
+                )
+                + "\n"
+            )
         print(name, round(float(np.mean(hit5)), 4), round(time.time() - t0), "s", flush=True)
 
 

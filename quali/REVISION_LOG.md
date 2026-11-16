@@ -75,6 +75,23 @@ Every repeated number matches the results files. The following were fixed:
 9. **Seed-noise control:** it was run on the two replication datasets only, and the text now says so.
 10. **Smaller fixes:** the cost sentence in the summary, status words in the appendix, F1 wording in the abstract, router inputs, threats about evaluation data, and the rank set {1, 2, 4, 8}.
 
+## Round 4, 2026-11-16: repository link and code cleanup
+
+- **Repository link.** The public link `https://github.com/arnml/qualiusp2026` now appears in the Introduction (Organization), the research protocol (Section 4.6) and the experiment index.
+- **Root README.** A new `README.md` describes the research question, main results, repository layout, the experiment list, the research protocol and how to reproduce an experiment.
+- **Code cleanup** (67 project files in `experiments/`; behaviour unchanged):
+  - formatting with ruff (line length 120; configuration in `ruff.toml`);
+  - imports sorted and 5 unused imports removed;
+  - `lru_cache(maxsize=None)` replaced by its equivalent `cache`;
+  - constant word lists written as list literals.
+- **Excluded from the cleanup:**
+  - the recorded LLM-agent code in `exp04_astra_edit/runs/` (research data, kept verbatim);
+  - the generated Colab notebooks.
+- **How behaviour was checked:**
+  - Every file's syntax tree was compared with the previous commit, ignoring formatting, comments and docstrings. The only differences are the equivalent rewrites listed above.
+  - All files compile.
+  - The exp14 analysis was re-run from the rankings stored in the repository and compared with its saved output.
+
 ## Open items for the author
 
 - Replace the schedule's month numbers with calendar months (`\todo` in Chapter 6).

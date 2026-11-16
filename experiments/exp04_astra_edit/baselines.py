@@ -19,10 +19,9 @@ import argparse
 import json
 from pathlib import Path
 
+import editlib as el
 import numpy as np
 import torch
-
-import editlib as el
 from data import gold_mask, load_eval, paragraphs_of
 from harness import build_practice
 
@@ -36,7 +35,9 @@ def flatten(qs):
     for k, r in enumerate(qs):
         paras = r["paragraphs"] if "paragraphs" in r else paragraphs_of(r)[1]
         for para in paras:
-            q.append(r["question"]); p.append(para); owner.append(k)
+            q.append(r["question"])
+            p.append(para)
+            owner.append(k)
     return q, p, np.array(owner)
 
 
@@ -53,7 +54,7 @@ def bg3(scores, rows, owner):
 def score(model, tok, q, p, bs=64):
     out = []
     for i in range(0, len(q), bs):
-        enc = tok(q[i:i + bs], p[i:i + bs], truncation=True, max_length=256, padding=True, return_tensors="pt")
+        enc = tok(q[i : i + bs], p[i : i + bs], truncation=True, max_length=256, padding=True, return_tensors="pt")
         out.append(model(**enc).logits.squeeze(-1).numpy())
     return np.concatenate(out)
 
@@ -71,25 +72,33 @@ def importances(model, tok, practice):
     act_norm = torch.zeros(L, el.FFN)
     hooks = []
     for l, layer in enumerate(model.bert.encoder.layer):
+
         def pre(mod, args, l=l):
             x = args[0]
             ctx_norm[l] += x.detach().reshape(*x.shape[:-1], el.N_HEADS, el.HEAD).pow(2).sum((0, 1, 3))
             x = (x.reshape(*x.shape[:-1], el.N_HEADS, el.HEAD) * hmask[l][:, None]).reshape(x.shape)
             return (x,) + args[1:]
+
         def post(mod, inp, out, l=l):
             act_norm[l] += out.detach().pow(2).sum((0, 1))
             return out * nmask[l]
+
         hooks.append(layer.attention.output.dense.register_forward_pre_hook(pre))
         hooks.append(layer.intermediate.register_forward_hook(post))
     model.train(False)
     for i in range(0, len(q), 32):
-        enc = tok(q[i:i + 32], p[i:i + 32], truncation=True, max_length=256, padding=True, return_tensors="pt")
+        enc = tok(q[i : i + 32], p[i : i + 32], truncation=True, max_length=256, padding=True, return_tensors="pt")
         logit = model(**enc).logits.squeeze(-1)
-        torch.nn.functional.binary_cross_entropy_with_logits(logit, y[i:i + 32], reduction="sum").backward()
+        torch.nn.functional.binary_cross_entropy_with_logits(logit, y[i : i + 32], reduction="sum").backward()
     for h in hooks:
         h.remove()
     sd = model.state_dict()
-    wo_head = torch.stack([sd[el.O.format(l=l) + ".weight"].reshape(el.HIDDEN, el.N_HEADS, el.HEAD).pow(2).sum((0, 2)).sqrt() for l in range(L)])
+    wo_head = torch.stack(
+        [
+            sd[el.O.format(l=l) + ".weight"].reshape(el.HIDDEN, el.N_HEADS, el.HEAD).pow(2).sum((0, 2)).sqrt()
+            for l in range(L)
+        ]
+    )
     wo_neur = torch.stack([sd[el.FO.format(l=l) + ".weight"].pow(2).sum(0).sqrt() for l in range(L)])
     return {
         "taylor": (hmask.grad.abs().numpy(), nmask.grad.abs().numpy()),
@@ -117,16 +126,20 @@ def greedy_state(head_imp, neur_imp, frac, rng=None):
         if kind == "h":
             if sum(1 for a, _ in st.heads if a == l) >= el.N_HEADS - 1:
                 continue  # keep at least one head per layer
-            st.heads.add((l, i)); cur -= one_head
+            st.heads.add((l, i))
+            cur -= one_head
         else:
             if sum(1 for a, _ in st.neurons if a == l) >= el.FFN - 8:
                 continue
-            st.neurons.add((l, i)); cur -= one_neur
+            st.neurons.add((l, i))
+            cur -= one_neur
     return st
 
 
 def _cost_with(heads=(), neurons=()):
-    s = el.EditState("C"); s.heads = set(heads); s.neurons = set(neurons)
+    s = el.EditState("C")
+    s.heads = set(heads)
+    s.neurons = set(neurons)
     return s.cost()["encoder_gflops_per_question"]
 
 
@@ -161,17 +174,28 @@ def main():
     rows.append({"method": "A1_unedited", "frac": 1.0, "gflops": full, "dev_bg3": ref})
     print(rows[-1], flush=True)
     for frac in args.fractions:
-        cands = {"layerdrop": layerdrop_state(frac),
-                 "taylor": greedy_state(*imp["taylor"], frac),
-                 "wanda": greedy_state(*imp["wanda"], frac),
-                 "random": greedy_state(*imp["taylor"], frac, rng=np.random.default_rng(0))}
+        cands = {
+            "layerdrop": layerdrop_state(frac),
+            "taylor": greedy_state(*imp["taylor"], frac),
+            "wanda": greedy_state(*imp["wanda"], frac),
+            "random": greedy_state(*imp["taylor"], frac, rng=np.random.default_rng(0)),
+        }
         for name, st in cands.items():
             if name not in args.methods:
                 continue
             g = st.cost()["encoder_gflops_per_question"]
             s = bg3(score(el.build_model(MODEL, st, base), tok, q, p), dev, owner)
-            rows.append({"method": name, "frac": frac, "gflops": g, "dev_bg3": s,
-                         "heads": len(st.heads), "neurons": len(st.neurons), "layers": sorted(st.layers)})
+            rows.append(
+                {
+                    "method": name,
+                    "frac": frac,
+                    "gflops": g,
+                    "dev_bg3": s,
+                    "heads": len(st.heads),
+                    "neurons": len(st.neurons),
+                    "layers": sorted(st.layers),
+                }
+            )
             print(rows[-1], flush=True)
     out = HERE / "results"
     out.mkdir(exist_ok=True)

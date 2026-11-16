@@ -1,8 +1,8 @@
 """Fine-tune A1 on MuSiQue train (copied from exp09; exp12 adds --mode ctrl, see PROTOCOL.md). Resumable; checkpoints every --save-every steps.
 
-  uv run python train.py --mode iter --tag m1_iter      # all steps t = 0..h-1
-  uv run python train.py --mode step0 --tag m1          # step-0 examples only (same draw)
-  uv run python train.py --mode iter --tag smoke --smoke 40   # throughput test, nothing kept
+uv run python train.py --mode iter --tag m1_iter      # all steps t = 0..h-1
+uv run python train.py --mode step0 --tag m1          # step-0 examples only (same draw)
+uv run python train.py --mode iter --tag smoke --smoke 40   # throughput test, nothing kept
 """
 
 from __future__ import annotations
@@ -10,17 +10,15 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
 
-import os
-
 import numpy as np
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import chain, encode, load, paragraphs_of, query
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 HERE = Path(__file__).resolve().parent
 A1 = Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1"))
@@ -65,7 +63,9 @@ def main():
     pairs = examples(rows, args.mode)
     if args.mode == "ctrl":  # PROTOCOL: identical (paragraph, label) sequence to iter; only the query differs
         ref = examples(rows, "iter")
-        assert len(ref) == len(pairs) and all(a[1:] == b[1:] for a, b in zip(ref, pairs)), "ctrl pairs do not match iter"
+        assert len(ref) == len(pairs) and all(a[1:] == b[1:] for a, b in zip(ref, pairs)), (
+            "ctrl pairs do not match iter"
+        )
     out = MODELS / args.tag
     out.mkdir(parents=True, exist_ok=True)
     ckpt = out / "checkpoint.pt"
@@ -77,11 +77,14 @@ def main():
     total = math.ceil(len(pairs) / args.batch)
     warm = max(1, int(0.1 * total))
     sched = torch.optim.lr_scheduler.LambdaLR(
-        opt, lambda s: min(1.0, (s + 1) / warm) * max(0.0, (total - s) / max(1, total - warm)))
+        opt, lambda s: min(1.0, (s + 1) / warm) * max(0.0, (total - s) / max(1, total - warm))
+    )
     step, secs = 0, 0.0
     if ckpt.exists() and not args.smoke:
         st = torch.load(ckpt, map_location=DEV)
-        model.load_state_dict(st["model"]); opt.load_state_dict(st["opt"]); sched.load_state_dict(st["sched"])
+        model.load_state_dict(st["model"])
+        opt.load_state_dict(st["opt"])
+        sched.load_state_dict(st["sched"])
         step, secs = st["step"], st["secs"]
         print(f"resumed at step {step}/{total}", flush=True)
     order = list(range(len(pairs)))
@@ -89,28 +92,58 @@ def main():
     model.train()
     t0 = time.time()
     while step < total:
-        idx = order[step * args.batch:(step + 1) * args.batch]
+        idx = order[step * args.batch : (step + 1) * args.batch]
         q, p, y = zip(*(pairs[i] for i in idx))
         enc = encode(tok, list(q), list(p), args.max_len).to(DEV)
-        loss = torch.nn.functional.binary_cross_entropy_with_logits(model(**enc).logits.squeeze(-1), torch.tensor(y, device=DEV))
-        opt.zero_grad(); loss.backward()
+        loss = torch.nn.functional.binary_cross_entropy_with_logits(
+            model(**enc).logits.squeeze(-1), torch.tensor(y, device=DEV)
+        )
+        opt.zero_grad()
+        loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-        opt.step(); sched.step(); step += 1
+        opt.step()
+        sched.step()
+        step += 1
         if step % 50 == 0 or (args.smoke and step % 10 == 0):
             el = secs + time.time() - t0
-            print(f"step {step}/{total} loss {loss.item():.4f} {el / 60:.1f} min, eta {el / step * (total - step) / 60:.0f} min",
-                  flush=True)
+            print(
+                f"step {step}/{total} loss {loss.item():.4f} {el / 60:.1f} min, eta {el / step * (total - step) / 60:.0f} min",
+                flush=True,
+            )
         if args.smoke and step >= args.smoke:
             rate = (time.time() - t0) / step
-            print(json.dumps({"sec_per_step": round(rate, 2), "steps": total, "projected_h": round(rate * total / 3600, 2)}))
+            print(
+                json.dumps(
+                    {"sec_per_step": round(rate, 2), "steps": total, "projected_h": round(rate * total / 3600, 2)}
+                )
+            )
             return
         if step % args.save_every == 0:
-            torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(),
-                        "step": step, "secs": secs + time.time() - t0}, ckpt)
-    model.save_pretrained(out / "model"); tok.save_pretrained(out / "model")
-    (out / "train_info.json").write_text(json.dumps(
-        {**vars(args), "device": DEV, "questions": len(rows), "pairs": len(pairs), "steps": total,
-         "train_minutes": round((secs + time.time() - t0) / 60, 1)}, indent=1))
+            torch.save(
+                {
+                    "model": model.state_dict(),
+                    "opt": opt.state_dict(),
+                    "sched": sched.state_dict(),
+                    "step": step,
+                    "secs": secs + time.time() - t0,
+                },
+                ckpt,
+            )
+    model.save_pretrained(out / "model")
+    tok.save_pretrained(out / "model")
+    (out / "train_info.json").write_text(
+        json.dumps(
+            {
+                **vars(args),
+                "device": DEV,
+                "questions": len(rows),
+                "pairs": len(pairs),
+                "steps": total,
+                "train_minutes": round((secs + time.time() - t0) / 60, 1),
+            },
+            indent=1,
+        )
+    )
     ckpt.unlink(missing_ok=True)
     print("done", flush=True)
 

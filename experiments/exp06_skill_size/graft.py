@@ -17,7 +17,6 @@ import time
 
 import numpy as np
 import torch
-
 from common import A0_DIR, A1_DIR, HERE, build, metrics, prep, score, state
 
 ASTRA_CAP = 108_000
@@ -48,11 +47,13 @@ def sparse(a0, d, k: int, scope=lambda n: True, rand: bool = False, seed: int = 
         idx = torch.from_numpy(np.random.default_rng(seed).choice(flat.numel(), k, replace=False))
     else:
         idx = torch.topk(flat.abs(), k).indices
-    mask = torch.zeros_like(flat, dtype=torch.bool); mask[idx] = True
+    mask = torch.zeros_like(flat, dtype=torch.bool)
+    mask[idx] = True
     out, off = {}, 0
     for n in a0:
         if n in names:
-            m = mask[off:off + d[n].numel()].view_as(d[n]); off += d[n].numel()
+            m = mask[off : off + d[n].numel()].view_as(d[n])
+            off += d[n].numel()
             out[n] = a0[n] + d[n] * m
         else:
             out[n] = a0[n].clone()
@@ -68,7 +69,8 @@ def lowrank(a0, d, r: int):
             out[n] = a0[n] + (U[:, :r] * S[:r]) @ Vh[:r]
             n_par += r * sum(d[n].shape)
         else:
-            out[n] = a0[n] + d[n]; n_par += d[n].numel()
+            out[n] = a0[n] + d[n]
+            n_par += d[n].numel()
     return out, n_par
 
 
@@ -88,8 +90,10 @@ def groups(a0, d, keep: set[str] | None = None, drop: set[str] | None = None, on
 def configs(a0, a1, d):
     total = sum(v.numel() for v in d.values())
     L = [f"L{i}" for i in range(6)]
-    c = {"A0": lambda: ({n: v.clone() for n, v in a0.items()}, 0),
-         "A1": lambda: ({n: v.clone() for n, v in a1.items()}, total)}
+    c = {
+        "A0": lambda: ({n: v.clone() for n, v in a0.items()}, 0),
+        "A1": lambda: ({n: v.clone() for n, v in a1.items()}, total),
+    }
     for f in (0.1, 0.01, 0.001, 0.0001):
         c[f"sparse_top_{f:g}"] = lambda f=f: sparse(a0, d, int(f * total))
     c["sparse_random_0.01"] = lambda: sparse(a0, d, int(0.01 * total), rand=True)
@@ -129,9 +133,14 @@ def main():
         t = time.time()
         sd, n_par = make()
         changed = sum(int((sd[n] != a0[n]).sum()) for n in a0)
-        row = {"config": name, "params_grafted": int(n_par), "entries_changed": changed,
-               "fraction_of_all": changed / total, **metrics(items, score(build(sd), items)),
-               "seconds": round(time.time() - t)}
+        row = {
+            "config": name,
+            "params_grafted": int(n_par),
+            "entries_changed": changed,
+            "fraction_of_all": changed / total,
+            **metrics(items, score(build(sd), items)),
+            "seconds": round(time.time() - t),
+        }
         with out.open("a") as f:
             f.write(json.dumps(row) + "\n")
         print(json.dumps(row), flush=True)

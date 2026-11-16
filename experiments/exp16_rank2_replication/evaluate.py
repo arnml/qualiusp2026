@@ -14,10 +14,9 @@ import time
 from pathlib import Path
 
 import torch
+from data import encode, load, query
 from safetensors.torch import load_file
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-from data import encode, load, query
 
 HERE = Path(__file__).resolve().parent
 A1 = Path(os.environ.get("A1_DIR", HERE.parent / "exp04_astra_edit" / "models" / "a1"))
@@ -47,10 +46,15 @@ def lowrank(base, d, r, rand=False, seed=0):
 
 
 def configs(ds):
-    it, ct, c1 = sd(f"{ds}_iter"), sd(f"{ds}_ctrl"), sd(f"{ds}_ctrl_s1"); d = {n: it[n] - ct[n] for n in ct}
+    it, ct, c1 = sd(f"{ds}_iter"), sd(f"{ds}_ctrl"), sd(f"{ds}_ctrl_s1")
+    d = {n: it[n] - ct[n] for n in ct}
     noise = {n: c1[n] - ct[n] for n in ct}  # seed-noise null: same training, different seed
-    c = {"iter_iter": (lambda: it, True), "ctrl_oneshot": (lambda: ct, False),
-         "iter_oneshot": (lambda: it, False), "ctrl_iter": (lambda: ct, True)}
+    c = {
+        "iter_iter": (lambda: it, True),
+        "ctrl_oneshot": (lambda: ct, False),
+        "iter_oneshot": (lambda: it, False),
+        "ctrl_iter": (lambda: ct, True),
+    }
     for r in (1, 2, 4, 8):
         c[f"g_r{r}"] = (lambda r=r: lowrank(ct, d, r), True)
     c["g_rand_r2"] = (lambda: lowrank(ct, d, 2, rand=True), True)
@@ -65,17 +69,21 @@ def rank_all(model, tok, rows, iterative):
 
     orders = []
     for r in rows:
-        paras = r["paras"]; rest, order, qlen = list(range(len(paras))), [], []
+        paras = r["paras"]
+        rest, order, qlen = list(range(len(paras))), [], []
         for _ in range(STEPS if iterative else 1):
             if not rest:
                 break
-            q = query(r["question"], [paras[i] for i in order]); qlen.append(len(tok(q)["input_ids"]))
+            q = query(r["question"], [paras[i] for i in order])
+            qlen.append(len(tok(q)["input_ids"]))
             s = score(q, [paras[i] for i in rest])
             ranked = [i for _, i in sorted(zip(s, rest), key=lambda z: -z[0])]
             if not iterative:
-                order = ranked; rest = []
+                order = ranked
+                rest = []
                 break
-            order.append(ranked[0]); rest = ranked[1:]
+            order.append(ranked[0])
+            rest = ranked[1:]
         order = order + rest
         assert sorted(order) == list(range(len(paras)))
         orders.append((order, max(qlen)))
@@ -90,21 +98,40 @@ def main():
     args = ap.parse_args()
     assert DEV == "cuda" or os.environ.get("ALLOW_CPU"), "PROTOCOL: Colab GPU"
     assert args.split.startswith(args.ds)
-    tok = AutoTokenizer.from_pretrained(str(A1)); rows = load(args.split)
+    tok = AutoTokenizer.from_pretrained(str(A1))
+    rows = load(args.split)
     out = Path(os.environ.get("RESULTS_DIR", HERE / "results")) / f"eval_{args.split}.jsonl"
     done = {json.loads(x)["config"] for x in out.read_text().splitlines()} if out.exists() else set()
-    hashes = {t: hashlib.sha256((MODELS / t / "model" / "model.safetensors").read_bytes()).hexdigest()[:16] for t in (f"{args.ds}_iter", f"{args.ds}_ctrl", f"{args.ds}_ctrl_s1")}
+    hashes = {
+        t: hashlib.sha256((MODELS / t / "model" / "model.safetensors").read_bytes()).hexdigest()[:16]
+        for t in (f"{args.ds}_iter", f"{args.ds}_ctrl", f"{args.ds}_ctrl_s1")
+    }
     cf = configs(args.ds)
     for name in args.only:
         if name in done:
             continue
-        make, iterative = cf[name]; t0 = time.time()
-        m = AutoModelForSequenceClassification.from_pretrained(str(A1)); m.load_state_dict(make(), strict=False); m = m.eval().to(DEV)
-        res = rank_all(m, tok, rows, iterative); orders = [o for o, _ in res]
+        make, iterative = cf[name]
+        t0 = time.time()
+        m = AutoModelForSequenceClassification.from_pretrained(str(A1))
+        m.load_state_dict(make(), strict=False)
+        m = m.eval().to(DEV)
+        res = rank_all(m, tok, rows, iterative)
+        orders = [o for o, _ in res]
         with out.open("a") as fh:
-            fh.write(json.dumps({"config": name, "iterative": iterative, "ids": [r["id"] for r in rows], "orders": orders,
-                                 "max_query_tokens": [q for _, q in res], "model_sha": hashes,
-                                 "gpu": torch.cuda.get_device_name(0) if DEV == "cuda" else "cpu"}) + "\n")
+            fh.write(
+                json.dumps(
+                    {
+                        "config": name,
+                        "iterative": iterative,
+                        "ids": [r["id"] for r in rows],
+                        "orders": orders,
+                        "max_query_tokens": [q for _, q in res],
+                        "model_sha": hashes,
+                        "gpu": torch.cuda.get_device_name(0) if DEV == "cuda" else "cpu",
+                    }
+                )
+                + "\n"
+            )
         print(args.split, name, round(time.time() - t0), "s", flush=True)
 
 

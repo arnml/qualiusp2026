@@ -7,10 +7,9 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from data import build_retrieval_prompt, gold_mask, load_eval, n_tokens, paragraphs_of
 from safetensors.torch import load_file
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
-from data import build_retrieval_prompt, gold_mask, load_eval, n_tokens, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
 MODELS = HERE.parent / "exp04_astra_edit" / "models"  # git-ignored; see exp04 README
@@ -35,10 +34,16 @@ def prep(split: str, n: int | None = None):
     items = []
     for r in rows:
         _, paras = paragraphs_of(r)
-        items.append({"id": r["id"], "question": r["question"], "paragraphs": paras,
-                      "gold": np.array(gold_mask(r), bool),
-                      "base": n_tokens(build_retrieval_prompt(r["question"], [])),
-                      "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)])})
+        items.append(
+            {
+                "id": r["id"],
+                "question": r["question"],
+                "paragraphs": paras,
+                "gold": np.array(gold_mask(r), bool),
+                "base": n_tokens(build_retrieval_prompt(r["question"], [])),
+                "ptok": np.array([n_tokens(f"[{i + 1}] {p}\n\n") for i, p in enumerate(paras)]),
+            }
+        )
     return items
 
 
@@ -52,11 +57,13 @@ def score(model, items, bs: int = 64) -> dict[str, np.ndarray]:
     q, p, owner = [], [], []
     for k, it in enumerate(items):
         for para in it["paragraphs"]:
-            q.append(it["question"]); p.append(para); owner.append(k)
+            q.append(it["question"])
+            p.append(para)
+            owner.append(k)
     owner = np.array(owner)
     out = []
     for i in range(0, len(q), bs):
-        enc = _TOK(q[i:i + bs], p[i:i + bs], truncation=True, max_length=256, padding=True, return_tensors="pt")
+        enc = _TOK(q[i : i + bs], p[i : i + bs], truncation=True, max_length=256, padding=True, return_tensors="pt")
         out.append(model(**enc).logits.squeeze(-1).numpy())
     s = np.concatenate(out)
     return {it["id"]: s[owner == k] for k, it in enumerate(items)}

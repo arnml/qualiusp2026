@@ -20,7 +20,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
-
 from data import _load, build_retrieval_prompt, paragraphs_of
 
 HERE = Path(__file__).resolve().parent
@@ -56,17 +55,22 @@ def report(rows):
             continue
         recs = {j["id"]: j for j in map(json.loads, f.read_text(encoding="utf-8").splitlines()) if j}
         per[c] = {q: g2.f1_em(recs[q]["answer"], gt[q])[0] for q in gt if q in recs}
-        out[c] = {"n": len(per[c]), "f1": round(float(np.mean(list(per[c].values()))), 4),
-                  "input_tokens": round(float(np.mean([recs[q]["input_tokens"] for q in per[c]])), 1),
-                  "cost_usd": round(sum(recs[q]["cost_usd"] for q in per[c]), 4)}
+        out[c] = {
+            "n": len(per[c]),
+            "f1": round(float(np.mean(list(per[c].values()))), 4),
+            "input_tokens": round(float(np.mean([recs[q]["input_tokens"] for q in per[c]])), 1),
+            "cost_usd": round(sum(recs[q]["cost_usd"] for q in per[c]), 4),
+        }
     rng = np.random.default_rng(0)
     for t in ("0.9", "0.95"):
         a, b = per.get(f"adaptive_full_{t}"), per.get(f"a1_thresh_{t}")
         if a and b and set(a) == set(b):
             d = np.array([a[q] - b[q] for q in a])
             bs = [d[rng.integers(0, len(d), len(d))].mean() for _ in range(5000)]
-            out[f"paired_f1_diff_{t}"] = {"mean": round(float(d.mean()), 4),
-                                         "ci95": [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)]}
+            out[f"paired_f1_diff_{t}"] = {
+                "mean": round(float(d.mean()), 4),
+                "ci95": [round(float(np.percentile(bs, 2.5)), 4), round(float(np.percentile(bs, 97.5)), 4)],
+            }
     (HERE / "results" / "f1_report.json").write_text(json.dumps(out, indent=1))
     print(json.dumps(out, indent=1))
 
@@ -101,10 +105,15 @@ def main():
             prompt = build_retrieval_prompt(r["question"], [paras[i] for i in idx])
             resp = client.chat.completions.create(model=g2.MODEL, messages=[{"role": "user", "content": prompt}])
             u = resp.usage
-            rec = {"id": r["id"], "condition": name, "paragraphs": idx,
-                   "answer": (resp.choices[0].message.content or "").strip(),
-                   "input_tokens": u.prompt_tokens, "output_tokens": u.completion_tokens,
-                   "cost_usd": (u.prompt_tokens * g2.PRICE_IN + u.completion_tokens * g2.PRICE_OUT) / 1e6}
+            rec = {
+                "id": r["id"],
+                "condition": name,
+                "paragraphs": idx,
+                "answer": (resp.choices[0].message.content or "").strip(),
+                "input_tokens": u.prompt_tokens,
+                "output_tokens": u.completion_tokens,
+                "cost_usd": (u.prompt_tokens * g2.PRICE_IN + u.completion_tokens * g2.PRICE_OUT) / 1e6,
+            }
             with lock, open(path, "a", encoding="utf-8") as fh:
                 fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
 

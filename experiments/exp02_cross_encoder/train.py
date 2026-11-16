@@ -18,9 +18,8 @@ import random
 import time
 
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from data import gold_mask, load_train, paragraphs_of, results_dir
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 BASE = "cross-encoder/ms-marco-MiniLM-L6-v2"
 
@@ -79,8 +78,8 @@ def main():
 
     def save():
         torch.save(
-            {"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(),
-             "step": step}, ckpt)
+            {"model": model.state_dict(), "opt": opt.state_dict(), "sched": sched.state_dict(), "step": step}, ckpt
+        )
 
     model.train()
     t0 = time.time()
@@ -91,12 +90,12 @@ def main():
         for b in range(step % steps_per_epoch, steps_per_epoch):
             idx = order[b * args.batch : (b + 1) * args.batch]
             q, p, y = zip(*(pairs[i] for i in idx), strict=True)
-            enc = tok(list(q), list(p), truncation=True, max_length=args.max_len,
-                      padding=True, return_tensors="pt").to(dev)
+            enc = tok(list(q), list(p), truncation=True, max_length=args.max_len, padding=True, return_tensors="pt").to(
+                dev
+            )
             with torch.autocast(device_type=dev, dtype=torch.float16, enabled=dev == "cuda"):
                 logits = model(**enc).logits.squeeze(-1)
-            loss = torch.nn.functional.binary_cross_entropy_with_logits(
-                logits.float(), torch.tensor(y, device=dev))
+            loss = torch.nn.functional.binary_cross_entropy_with_logits(logits.float(), torch.tensor(y, device=dev))
             opt.zero_grad()
             scaler.scale(loss).backward()
             scaler.unscale_(opt)
@@ -115,9 +114,11 @@ def main():
 
     model.save_pretrained(out / "model")
     tok.save_pretrained(out / "model")
-    (out / "train_args.json").write_text(json.dumps(
-        {**vars(args), "base": BASE, "n_questions": len(rows), "n_pairs": len(pairs),
-         "steps": total}, indent=1))
+    (out / "train_args.json").write_text(
+        json.dumps(
+            {**vars(args), "base": BASE, "n_questions": len(rows), "n_pairs": len(pairs), "steps": total}, indent=1
+        )
+    )
     if ckpt.exists():
         ckpt.unlink()  # final model saved; drop optimizer state to save Drive space
     print(f"saved {out / 'model'}")

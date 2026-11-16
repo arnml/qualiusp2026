@@ -1,6 +1,6 @@
 """Build exp02_colab.ipynb from the .py sources (single source of truth).
 
-  uv run python make_notebook.py
+uv run python make_notebook.py
 """
 
 from __future__ import annotations
@@ -17,8 +17,13 @@ def md(text):
 
 
 def code(text):
-    return {"cell_type": "code", "metadata": {}, "execution_count": None, "outputs": [],
-            "source": text.strip().splitlines(True)}
+    return {
+        "cell_type": "code",
+        "metadata": {},
+        "execution_count": None,
+        "outputs": [],
+        "source": text.strip().splitlines(True),
+    }
 
 
 cells = [
@@ -53,10 +58,14 @@ for name in SOURCES:
 cells += [
     md("## A0: zero-shot (off-the-shelf ms-marco MiniLM-L6, 22.7M params)"),
     code("!python score.py --model zeroshot"),
-    md("## A2: data-matched baselines (N = 50 / 200 train questions)\nThese are the fair baselines for the LLM weight-editing arm (exp03)."),
+    md(
+        "## A2: data-matched baselines (N = 50 / 200 train questions)\nThese are the fair baselines for the LLM weight-editing arm (exp03)."
+    ),
     code("!python train.py --n-train 50 --epochs 20 --tag n50 && python score.py --model n50"),
     code("!python train.py --n-train 200 --epochs 10 --tag n200 && python score.py --model n200"),
-    md("## A1: full fine-tune (~90k questions, ~900k pairs, 1 epoch)\nResumes from the Drive checkpoint if the runtime disconnected."),
+    md(
+        "## A1: full fine-tune (~90k questions, ~900k pairs, 1 epoch)\nResumes from the Drive checkpoint if the runtime disconnected."
+    ),
     code("!python train.py --n-train 0 --epochs 1 --tag full && python score.py --model full"),
     md("## Analysis"),
     code("!python analyze.py"),
@@ -76,8 +85,11 @@ files.download(shutil.make_archive('/content/exp02_results', 'zip', pack))
 
 nb = {
     "cells": cells,
-    "metadata": {"accelerator": "GPU", "colab": {"gpuType": "T4", "provenance": []},
-                 "kernelspec": {"name": "python3", "display_name": "Python 3"}},
+    "metadata": {
+        "accelerator": "GPU",
+        "colab": {"gpuType": "T4", "provenance": []},
+        "kernelspec": {"name": "python3", "display_name": "Python 3"},
+    },
     "nbformat": 4,
     "nbformat_minor": 0,
 }
