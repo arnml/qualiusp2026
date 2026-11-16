@@ -3,11 +3,11 @@
   box/.style={draw, rounded corners, align=center, minimum height=0.9cm, font=\small},
   arr/.style={-{Latex[length=2mm]}, thick}]
   \node[box, minimum width=2.4cm] (q) at (0, 0) {question +\\paragraphs};
-  \node[box, fill=gray!15, minimum width=2.6cm] (sel) at (3.6, 0) {one-shot\\selector};
-  \node[box, minimum width=2.0cm] (rt) at (6.9, 0) {router};
-  \node[box, fill=gray!15, minimum width=3.4cm] (keep) at (11.0, 1.1) {keep one-shot\\selection};
-  \node[box, fill=orange!15, minimum width=3.4cm] (ad) at (11.0, -1.1) {selector + rank-2 adapter,\\iterative selection};
-  \node[box, fill=blue!8, minimum width=1.8cm] (llm) at (14.6, 0) {LLM\\reader};
+  \node[box, fill=gray!15, minimum width=2.4cm] (sel) at (3.5, 0) {one-shot\\selector};
+  \node[box, minimum width=1.8cm] (rt) at (6.7, 0) {router};
+  \node[box, fill=gray!15, minimum width=3.8cm] (keep) at (12.4, 1.3) {keep one-shot\\selection};
+  \node[box, fill=orange!15, minimum width=3.8cm] (ad) at (12.4, -1.3) {selector + rank-2 adapter,\\iterative selection};
+  \node[box, fill=blue!8, minimum width=1.8cm] (llm) at (16.4, 0) {LLM\\reader};
   \draw[arr] (q) -- (sel);
   \draw[arr] (sel) -- node[above, font=\scriptsize] {scores} (rt);
   \draw[arr] (rt.east) -- node[above, sloped, font=\scriptsize] {no benefit predicted} (keep.west);
