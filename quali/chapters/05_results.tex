@@ -1,16 +1,16 @@
 \chapter{Preliminary Results}
 \label{chap:results}
 
-The results first measure how many tokens a small selector saves, then test whether conditioning on already-selected paragraphs improves multi-hop evidence selection and, finally, answer quality. Each section states the pre-registered question, the result and its status. Test estimates are on held-out questions; tuning-set analyses are marked as such. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
+This chapter answers the research questions in turn: the token savings of a small selector (RQ1, Sections~\ref{sec:res_selector}--\ref{sec:res_adaptive}), what limits them on MuSiQue (RQ2, Section~\ref{sec:res_bottleneck}), the structure of the weight change behind iterative selection (RQ4, Sections~\ref{sec:res_rank}--\ref{sec:res_replication}), and whether and where iterative selection improves the evidence when training data are matched (RQ3, Sections~\ref{sec:res_matched} and \ref{sec:res_long}--\ref{sec:res_cascade}). Each section states the pre-registered question, the result and its status. Test estimates are on held-out questions; tuning-set analyses are marked as such. Binary per-question outcomes (recall) are tested with exact McNemar tests; differences in tokens, F1 and recovery are summarized by 95\% paired bootstrap confidence intervals.
 
-\section{A small selector saves most of the tokens (HotpotQA)}
+\section{Token reduction with a fine-tuned selector (HotpotQA)}
 \label{sec:res_selector}
 
-A1, the fine-tuned 22.7M cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set. The reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. Table~\ref{tab:hotpot} shows that all A1 rules used 68--77\% fewer prompt tokens, with small F1 differences whose 95\% CIs included zero; no non-inferiority margin was registered for this comparison, so it does not establish equivalence. The gold-paragraphs condition had 0.040 higher F1 than $k=10$ (CI $[0.017, 0.064]$), which is consistent with irrelevant context reducing answer quality.
+A1, the fine-tuned 22.7M-parameter cross-encoder, was compared with sending all ten paragraphs ($k=10$) on the 400 HotpotQA test questions. Selection rules were tuned on the development set, and the reader was \texttt{gpt-5.4-mini} with the prompt of \citeonline{lavado2027noisegate}. All A1 rules used 68--77\% fewer prompt tokens, with F1 differences whose 95\% confidence intervals included zero (Table~\ref{tab:hotpot}). No non-inferiority margin was registered for this comparison, so it does not establish equivalence. Giving the reader only the gold paragraphs raised F1 by 0.040 over $k=10$ (CI $[0.017, 0.064]$), which is consistent with irrelevant context reducing answer quality.
 
 \begin{table}[htbp]
 \centering
-\caption{HotpotQA test (400 questions): answer quality and prompt tokens. $\Delta$F1 is paired against $k=10$.}
+\caption{HotpotQA test set (400 questions): answer quality and mean prompt tokens per question. Threshold rules send the paragraphs whose score exceeds a threshold tuned on the development set to reach the stated recall. Gold paragraphs: only the annotated supporting paragraphs (an upper bound). $\Delta$F1 is paired against $k=10$.}
 \label{tab:hotpot}
 \small
 \begin{tabular}{lrrrl}
@@ -21,117 +21,158 @@ All 10 paragraphs ($k=10$) & 0.782 & 0.620 & 1,448 & --- \\
 A1, threshold for recall 0.95 & 0.796 & 0.630 & 467 ($-68\%$) & $+0.014$ $[-0.013, +0.043]$ \\
 A1, threshold for recall 0.90 & 0.778 & 0.623 & 397 ($-73\%$) & $-0.004$ $[-0.033, +0.026]$ \\
 A1, top-2 & 0.780 & 0.628 & 330 ($-77\%$) & $-0.001$ $[-0.033, +0.030]$ \\
-Gold paragraphs (oracle) & 0.822 & 0.670 & 329 & $+0.040$ $[+0.017, +0.064]$ \\
+Gold paragraphs & 0.822 & 0.670 & 329 & $+0.040$ $[+0.017, +0.064]$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Adaptive stopping saves further tokens}
+\section{Adaptive stopping}
 \label{sec:res_adaptive}
 
-On HotpotQA, choosing between two and four paragraphs per question with a learned stopping rule saved 57 and 71 tokens per question against A1's threshold at recall targets 0.90 and 0.95 (CIs $[-71, -44]$ and $[-91, -53]$), with recall differences not significant. On MuSiQue, adaptive stopping beat the pre-registered fixed-$k$ policy of the iterative ranker at recall 0.95 ($-244$ tokens, CI $[-296, -192]$) but not at 0.90 ($-43$, CI $[-95, +9]$), and the iterative ranker's scores were not a better stopping signal than one-shot scores (a refuted secondary). Descriptively, adaptive stopping on the one-shot in-domain ranker reached recall 0.95 with 1,554 tokens and 20 passes per question, against 2,535 tokens for sending all paragraphs. Adaptive-$k$ \cite{taguchi2025adaptivek} with its default buffer of five paragraphs, applied to the same cross-encoder scores, spent the same tokens as the learned rule but recovered fewer complete chains (0.815 vs 0.868; exploratory, test set); without the buffer it cut after 3.7 paragraphs on average (recall 0.50). This agrees with its failure on cosine scores in \citeonline{lavado2027noisegate}.
+On HotpotQA, a learned stopping rule that chooses between two and four paragraphs per question saved 57 and 71 tokens per question relative to A1's threshold rule at recall targets 0.90 and 0.95 (CIs $[-71, -44]$ and $[-91, -53]$), with recall differences that were not significant.
 
-\section{On MuSiQue, ranking quality limits cost}
+On MuSiQue, adaptive stopping applied to the iterative selector used fewer tokens than the pre-registered fixed-$k$ policy (sending the same number $k$ of paragraphs for every question) at recall 0.95 ($-244$ tokens, CI $[-296, -192]$), but not at 0.90 ($-43$, CI $[-95, +9]$). The pre-registered secondary hypothesis, that the iterative selector's scores are a better stopping signal than one-shot scores, was not supported. Descriptively, adaptive stopping on the one-shot selector fine-tuned on MuSiQue (M1) reached recall 0.95 with 1,554 tokens and 20 passes per question, against 2,535 tokens for sending all paragraphs.
+
+Adaptive-$k$ \cite{taguchi2025adaptivek}, applied to the same cross-encoder scores with its default buffer of five paragraphs, used the same number of tokens as the learned rule but reached a lower recall (0.815 vs 0.868; exploratory, test set). Without the buffer it stopped after 3.7 paragraphs on average, with recall 0.50. This is consistent with its behaviour on cosine-similarity scores in \citeonline{lavado2027noisegate}.
+
+\section{Ranking quality limits cost on MuSiQue}
 \label{sec:res_bottleneck}
 
-With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets; the pre-registered comparison was declared not testable. The results below, from later experiments, suggest that ranking quality is the main limiting factor. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised full-support recall@5 from 0.355 to 0.682, and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter, trained on more pairs than M1, reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). Because of the difference in training data, this comparison is confounded (Section~\ref{sec:res_matched}).
+With A1 (trained on HotpotQA), the top ten paragraphs contained all supporting paragraphs for only 68\% of MuSiQue questions, so no stopping rule limited to $k\le10$ could reach the planned recall targets, and the pre-registered comparison was declared not testable. Later experiments suggest that ranking quality is the main limiting factor on this dataset. Fine-tuning A1 on 1,000 MuSiQue questions (M1) raised recall@5 from 0.355 to 0.682 and reduced the tokens needed for recall 0.90 from 1,957 to 1,533. The iterative model M1-iter, trained on more pairs than M1, reached 0.750 (McNemar $p=0.0067$ against M1), with the largest gain on four-hop questions (0.58 vs 0.36). Because the two models were trained on different numbers of examples, this comparison is confounded; Section~\ref{sec:res_matched} removes the confound.
 
-\section{The iteration change is functionally rank 2}
+\section{First evidence on structure: the iteration change is low-rank}
 \label{sec:res_rank}
 
-The weight difference $\Delta = \text{M1-iter} - \text{M1}$ was grafted onto M1 at ranks 1 to 16 (Equation~\ref{eq:recovery}), and the model was run iteratively. These are the CPU-trained models of the iterative-reranking experiment, so $\Delta$ here still includes the training-data confound addressed in Section~\ref{sec:res_matched}. Without the graft, M1 run iteratively reached recall@5 of 0.45 on the tuning set (\texttt{dev300}), against 0.74 for M1-iter. Recovery was 74\% at rank 1 and 95\% at rank 2, and stayed flat at higher ranks (97\% at ranks 4 and 8). A random rank-4 change of the same norm (one draw, tuning set) recovered 9\%. On the test set, the rank-2 graft recovered 84.7\% of the gain (CI $[73.6\%, 96.2\%]$); it remained below the full model (14 vs 31 discordant questions, $p=0.016$). Grafting single layers showed that layers 3 and 4 contribute most (43\% and 40\%), but layers 0--2 also contribute about 30\% each, a flatter profile than for the HotpotQA skill (A1 $-$ A0), where a rank-4 graft recovered 80\% of a token-based measure of the gain and the middle layers dominated. Ranks 2 to 8 differ by about two questions on \texttt{dev300}; the result is a plateau from rank 2, not a strict ordering.
+The weight change $\Delta = \text{M1-iter} - \text{M1}$ was grafted onto M1 at ranks 1 to 16 (Equation~\ref{eq:recovery}), and the grafted model was run iteratively. Because M1 and M1-iter are the models of Section~\ref{sec:res_bottleneck}, this $\Delta$ still includes the effect of the additional training data. On the tuning set (\texttt{dev300}), M1 run iteratively reached recall@5 of 0.45, against 0.74 for M1-iter. Recovery was 74\% at rank 1, 95\% at rank 2 and 97\% at ranks 4 and 8, so $r^*_{0.8}=2$; ranks 2 to 8 differ by about two questions, which indicates a plateau from rank 2 rather than a strict ordering. A random rank-4 change of the same norm (one draw, tuning set) recovered 9\%. On the test set, the rank-2 graft recovered 84.7\% of the gain (CI $[73.6\%, 96.2\%]$) and remained below the full model (14 vs 31 discordant questions, $p=0.016$).
+
+\textbf{Where the change is located.} Grafting the full change of single layers showed that layers 3 and 4 contribute most (43\% and 40\%), while layers 0--2 contribute about 30\% each. This profile is flatter than for the change learned on HotpotQA ($\text{A1}-\text{A0}$), where the middle layers dominated and a rank-4 graft recovered 80\% of the token saving at recall 0.90.
 
 \section{Pair-matched control}
 \label{sec:res_matched}
 
-Figure~\ref{fig:matched} illustrates the design. With identical training pairs, M1-iter run iteratively beat M1-ctrl run one-shot by 0.040 recall@5 on the test set (0.7475 vs 0.7075, CI $[-0.005, 0.085]$, $p=0.11$): the pre-registered primary test failed. All three seed estimates were positive ($+0.040$, $+0.028$, $+0.033$; re-trainings evaluated on the same questions, not independent replications), but the primary test did not establish an overall gain; with a minimum detectable effect of about 0.07, it cannot exclude a small one either. Training on more pairs alone accounted for about 0.025 of the original gain (M1-ctrl vs M1, $p=0.013$, descriptive).
+Figure~\ref{fig:matched} illustrates the design. With identical training pairs, M1-iter run iteratively exceeded M1-ctrl run one-shot by 0.040 recall@5 on the test set (0.7475 vs 0.7075, CI $[-0.005, 0.085]$, $p=0.11$), so the pre-registered primary hypothesis was not supported. The test had a minimum detectable effect of about 0.07 and therefore cannot exclude a smaller gain; the three seed estimates were all positive ($+0.040$, $+0.028$, $+0.033$; re-trainings evaluated on the same questions, not independent replications). Training on more pairs alone accounted for about 0.025 of the original gain (M1-ctrl vs M1, $p=0.013$, descriptive).
 
 \begin{figure}[htbp]
 \centering
 \input{figures/matched_control}
-\caption{Pair-matched control. Both models start from A1 and see the same paragraphs, labels and order; only the query differs. Each is evaluated in the inference mode it was trained for, and their weight difference $\Delta$ is analysed by grafting.}
+\caption{Pair-matched control. Both models start from A1 and see the same paragraphs, labels and order; only the query differs. Each is evaluated in the inference mode it was trained for. Their weight difference $\Delta$ is the conditioning change analysed by grafting in Sections~\ref{sec:res_matched}--\ref{sec:res_replication}.}
 \label{fig:matched}
 \end{figure}
 
-The pre-registered secondary test asked whether the pure conditioning change, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is also low-rank. Grafted onto M1-ctrl at rank 2, it recovered 86.8\% of the gap between M1-ctrl run iteratively and M1-iter on the test set (CI $[77.7\%, 95.8\%]$), while a random rank-2 change of the same norm recovered 7\% (one draw, tuning set). Without this change, M1-ctrl collapses when run iteratively (recall@5 of 0.41); the result supports the interpretation that $\Delta$ is what lets the model use a conditioned query. Recovery here is the fraction of the gap between that collapsed baseline and M1-iter that the rank-2 graft closes: overall, the grafted model run iteratively (0.7025) did not beat M1-ctrl run one-shot (0.7075). On the 64 four-hop test questions it reached 0.500, between one-shot (0.391) and the full M1-iter (0.578) (descriptive).
+The pre-registered secondary test asked whether the \emph{conditioning change}, $\Delta = \text{M1-iter} - \text{M1-ctrl}$, is low-rank. Run iteratively without this change, M1-ctrl reaches only 0.41 recall@5, against 0.748 for M1-iter. Recovery is the fraction of this gap that a graft closes. On the tuning set, rank 1 recovered 72.8\% and rank 2 85.1\%, so $r^*_{0.8}=2$. On the test set, the rank-2 graft recovered 86.8\% of the gap (CI $[77.7\%, 95.8\%]$), against 7\% for a random rank-2 change of the same norm (one draw, tuning set). The change is therefore necessary for iterative use, and its rank-2 truncation is sufficient for most of it. Conversely, conditioning slightly reduces one-shot quality: M1-iter run one-shot reached 0.685, against 0.7075 for M1-ctrl (descriptive). The graft restores iterative selection but does not outperform one-shot selection over all questions (0.7025 vs 0.7075); on the 64 four-hop test questions it reached 0.500, between one-shot selection (0.391) and the full M1-iter (0.578) (descriptive).
 
-\section{The effect is concentrated on long chains}
+\section{Replication on 2WikiMultiHopQA and HotpotQA}
+\label{sec:res_replication}
+
+The results above were obtained on MuSiQue only. A pre-registered replication repeated the rank analysis of the matched control on 2WikiMultiHopQA and HotpotQA. For each dataset, an iterative model and a pair-matched one-shot model were trained from A1 on 1,000 training questions, and their difference $\Delta$ was grafted at the fixed rank 2 onto the one-shot model, which was then run iteratively. With ten paragraphs per question, recall@5 is close to its ceiling, so the primary metric was recall@($|\text{gold}|+1$), which allows one paragraph of slack. The decision rule, fixed in advance, required on each dataset a test recovery of at least 80\% with the lower confidence bound above 50\%, and random and seed-noise controls below half of the rank-2 recovery on the tuning set. Replication required both datasets to pass.
+
+\begin{table}[htbp]
+\centering
+\caption{Recovery of the conditioning change on three datasets. Base: the one-shot model run iteratively; full: the iterative model. Recall is recall@5 on MuSiQue and recall@($|\text{gold}|+1$) on the other datasets; test sets have 400 (MuSiQue) and 1,000 questions. Rank 1 is measured on the tuning set; the controls are single draws on the tuning set.}
+\label{tab:replication}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Dataset & Base & Full & Rank 1 (tuning) & Rank 2, test [95\% CI] & Random & Seed noise \\
+\midrule
+MuSiQue & 0.41 & 0.748 & 72.8\% & 86.8\% $[77.7, 95.8]$ & 7\% & --- \\
+2WikiMultiHopQA & 0.385 & 0.932 & 87.7\% & 97.1\% $[94.1, 100]$ & 3\% & $-3$\% \\
+HotpotQA & 0.839 & 0.940 & 84.4\% & 92.1\% $[81.6, 102.8]$ & 22\% & $-3$\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Both datasets passed (Table~\ref{tab:replication}), so the pre-registered rank-2 criterion holds on three multi-hop datasets. On the test sets, recovery remained high at recall@5 (97\% on 2WikiMultiHopQA, 98\% on HotpotQA) and at ranks 4 and 8 (98--99\%). In terms of Definition~\ref{def:functional_rank}, the functional rank of the conditioning change is 2 on MuSiQue and 1 on 2WikiMultiHopQA and HotpotQA, where rank 1 already exceeds the 80\% threshold on the tuning set (test: 91\% and 84\%). On HotpotQA the gap between base and full model is small (0.10), which widens the confidence interval and makes the random control less stable. The replication concerns the structure of the change, not its benefit: on these mostly two-hop datasets the iterative model did not outperform the one-shot model ($-0.011$ and $-0.004$, not significant; descriptive).
+
+\section{Long evidence chains}
 \label{sec:res_long}
 
-An exploratory reading of the matched control suggested that the gain was concentrated on four-hop questions. This was tested on 566 four-hop questions never used before (166 unused development questions and 400 unused training questions; ``fresh'' below means unused, not a new dataset). M1-iter (iterative) beat M1-ctrl (one-shot) by 0.055 recall@5 (0.500 vs 0.445, CI $[0.007, 0.102]$, $p=0.035$), positive in both sources but heterogeneous ($+0.139$, $p=0.006$, and $+0.020$, not significant) and positive for all three seeds. On all 1,017 fresh development questions (exploratory), the gain was about zero on two-hop questions, $+0.078$ on three-hop ($p=0.010$) and $+0.139$ on four-hop questions ($p=0.006$).
+An exploratory reading of the matched control suggested that the gain of iterative selection was concentrated on four-hop questions. This was tested on 566 unused four-hop questions (166 development and 400 training questions). M1-iter (iterative) exceeded M1-ctrl (one-shot) by 0.055 recall@5 (0.500 vs 0.445, CI $[0.007, 0.102]$, $p=0.035$), and the pre-registered hypothesis was supported.
 
-A cascade that runs the one-shot ranker for every question and the iterative one only for questions predicted to be four-hop did not help: it routed 29\% of questions, reached 0.702 recall@5 with 41.5 passes, against 0.693 for one-shot (20 passes) and 0.745 for always-iterative (74 passes), and failed both pre-registered tests. The router predicted hop count reasonably (four-hop recall 0.76, precision 0.43), but not the questions where iteration actually helps.
-
-A second cascade, pre-registered after this failure, trained its router directly on benefit: on 4,000 unused training questions, a gradient-boosted regressor learned to predict, from the question text and the one-shot model's scores, whether the iterative ranking would improve the top five. The models of the earlier experiments were stored on a cloud account that was no longer accessible, so the two models were re-trained with the same code, data and seed; their weights differ slightly, but they reproduced hit@5 on all 400 earlier test questions. On 2,000 further unused training questions (natural hop mix, mostly two-hop), the benefit cascade sent 28\% of the questions to the iterative ranker and reached 0.872 recall@5 with 40.8 passes, against 0.845 for one-shot (20 passes) and 0.867 for always-iterative (74 passes). The pre-registered primary, the gain over one-shot, was $+0.027$ (CI $[0.016, 0.039]$, $p<0.001$), and the cascade also beat the hop-count router ($+0.029$, exploratory). The router predicted benefit only weakly (AUC 0.60), and an oracle router (an upper bound, not a usable router) would reach 0.94 with 27 passes, so better predictors have room to improve. The router fit was not bit-reproducible across software environments: a re-run gave $+0.023$ ($p<0.001$), but turned the exploratory non-inferiority to always-iterative ranking (margin 0.01) from a pass into a narrow failure, so the cascade is best described as matching always-iterative within about 0.01.
+The effect was positive in both sources but heterogeneous: $+0.139$ on the development questions ($p=0.006$) and $+0.020$ on the training questions (not significant). It was positive for all three seeds. On all 1,017 unused development questions (exploratory), the gain was close to zero on two-hop questions, $+0.078$ on three-hop questions ($p=0.010$) and $+0.139$ on four-hop questions ($p=0.006$).
 
 \section{Answer quality}
 \label{sec:res_f1}
 
-A final pre-registered test asked whether the recall gain reaches the reader's answers. \texttt{gpt-5.4-mini} answered the 1,017 unused development questions from the top-5 sets of M1-ctrl and M1-iter, with the passages in a fixed order so that only the selected set differs (Table~\ref{tab:f1}). On questions with three or more hops (the pre-registered primary, $n=488$, averaged over two reader draws), M1-iter's evidence improved answer F1 by 0.076 (CI $[0.041, 0.112]$). Over all questions the difference was $+0.038$ (CI $[0.011, 0.064]$), and on two-hop questions it was non-inferior (exploratory). Both five-paragraph contexts gave higher F1 than sending all paragraphs, with 69\% fewer input tokens. The three-or-more-hop subgroup was chosen from the recall results on the same questions, which is declared in the protocol.
+A pre-registered test asked whether the recall gain reaches the reader's answers. \texttt{gpt-5.4-mini} answered the 1,017 unused development questions from the top-5 sets of M1-ctrl and M1-iter, with the paragraphs in a fixed order so that only the selected set differs (Table~\ref{tab:f1}). On questions with three or more hops (the pre-registered primary subgroup, $n=488$, averaged over two reader draws), M1-iter's evidence improved answer F1 by 0.076 (CI $[0.041, 0.112]$). Over all questions the difference was $+0.038$ (CI $[0.011, 0.064]$), and on two-hop questions it was non-inferior (exploratory). Both five-paragraph contexts gave higher F1 than sending all paragraphs, with 69\% fewer input tokens. The subgroup was chosen from the recall results on the same questions, as declared in the protocol.
 
 \begin{table}[htbp]
 \centering
-\caption{Answer quality on the 1,017 unused MuSiQue development questions (reader \texttt{gpt-5.4-mini}). Top-5 contexts are in paragraph-index order.}
+\caption{Answer quality on the 1,017 unused MuSiQue development questions (reader \texttt{gpt-5.4-mini}). Tokens: mean prompt tokens per question. Top-5 contexts are in paragraph-index order. Gold paragraphs: only the annotated supporting paragraphs (an upper bound).}
 \label{tab:f1}
 \small
 \begin{tabular}{lrrrrr}
 \toprule
-Context & F1 & EM & Tokens & F1, 3-hop & F1, 4-hop \\
+Context & F1 & EM & Tokens & F1 (3-hop only) & F1 (4-hop only) \\
 \midrule
 All paragraphs ($\approx$20) & 0.506 & 0.394 & 2,525 & 0.518 & 0.502 \\
 M1-ctrl top 5 (one-shot) & 0.538 & 0.438 & 793 & 0.566 & 0.465 \\
 M1-iter top 5 (iterative) & 0.576 & 0.475 & 783 & 0.625 & 0.540 \\
-Gold paragraphs (oracle) & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
+Gold paragraphs & 0.716 & 0.603 & 463 & 0.736 & 0.661 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\section{The rank-2 result replicates on two more datasets}
-\label{sec:res_replication}
+\section{Routing iterative selection where it helps}
+\label{sec:res_cascade}
 
-Up to this point the rank-2 result rested on one dataset. A pre-registered replication repeated the rank-2 analysis of the matched control on 2WikiMultiHopQA and HotpotQA. For each dataset, an iterative model and a pair-matched one-shot model were trained from A1 on 1,000 training questions, and their difference $\Delta$ was grafted at the fixed rank 2 onto the one-shot model, which was then run iteratively. With ten paragraphs per question, recall@5 is close to its ceiling, so the primary metric was full-support recall at $|\text{gold}|+1$ (one paragraph of slack). The decision rule, fixed in advance, required on each dataset a test recovery of at least 80\% with the lower confidence bound above 50\%, and random and seed-noise controls below half of the rank-2 recovery on the tuning set. The seed-noise control grafts the rank-2 part of the difference between two one-shot models that differ only in their random seed; it asks whether any rank-2 slice of training noise would do as well. Replication required both datasets to pass.
+Two cascades (Section~\ref{sec:method_inference}) were tested, each with its own pre-registered protocol (Table~\ref{tab:cascade}). The first router predicted whether a question has four hops. On the 1,017 unused development questions it routed 29\% of the questions and reached 0.702 recall@5 with 41.5 passes, against 0.693 for one-shot selection (20 passes) and 0.745 for always-iterative selection (74 passes); neither pre-registered test was passed. The router identified four-hop questions with recall 0.76 and precision 0.43, but it did not identify the questions where iteration improves the top five.
+
+The second router, registered after this result, was trained directly on the benefit of iteration: on 4,000 unused training questions, a gradient-boosted regressor learned to predict this benefit from the question text and the one-shot scores. It was evaluated on 2,000 further unused training questions with the natural mix of hops (mostly two-hop). The benefit cascade routed 28\% of the questions and reached 0.872 recall@5 with 40.8 passes, against 0.845 for one-shot selection and 0.867 for always-iterative selection. The pre-registered primary difference over one-shot selection was $+0.027$ (CI $[0.016, 0.039]$, $p<0.001$), and the hypothesis was supported. The benefit cascade also outperformed the hop-count router refitted on the same data ($+0.029$, exploratory).
 
 \begin{table}[htbp]
 \centering
-\caption{Rank-2 recovery of the conditioning change on three datasets. The base is the one-shot model run iteratively; full is the iterative model. Recall is recall@5 on MuSiQue and recall@($|\text{gold}|+1$) on the others; test sets of 400 (MuSiQue) and 1,000 questions. Controls are single draws on the tuning set.}
-\label{tab:replication}
+\caption{Cascades. The two blocks use different question sets, so only rows within a block are comparable. Passes: mean forward passes per question. The oracle router knows the benefit in advance and is an upper bound.}
+\label{tab:cascade}
 \small
-\begin{tabular}{lccccc}
+\begin{tabular}{lrrrl}
 \toprule
-Dataset & Base & Full & Rank-2 recovery [95\% CI] & Random & Seed noise \\
+System & Routed & Recall@5 & Passes & $\Delta$ vs one-shot [95\% CI] \\
 \midrule
-MuSiQue (Section~\ref{sec:res_matched}) & 0.41 & 0.748 & 86.8\% $[77.7, 95.8]$ & 7\% & --- \\
-2WikiMultiHopQA & 0.385 & 0.932 & 97.1\% $[94.1, 100]$ & 3\% & $-3$\% \\
-HotpotQA & 0.839 & 0.940 & 92.1\% $[81.6, 102.8]$ & 22\% & $-3$\% \\
+\multicolumn{5}{l}{\emph{Unused development questions ($n=1{,}017$; hop-count router)}} \\
+One-shot selection & --- & 0.693 & 20 & --- \\
+Hop-count cascade & 29\% & 0.702 & 41.5 & $+0.009$ (not significant) \\
+Always-iterative selection & 100\% & 0.745 & 74 & $+0.052$ \\
+\midrule
+\multicolumn{5}{l}{\emph{Unused training questions ($n=2{,}000$; benefit router)}} \\
+One-shot selection & --- & 0.845 & 20 & --- \\
+Hop-count cascade (refitted) & 12\% & 0.843 & 28.7 & $-0.002$ \\
+Benefit cascade & 28\% & 0.872 & 40.8 & $+0.027$ $[+0.016, +0.039]$ \\
+Always-iterative selection & 100\% & 0.867 & 74 & $+0.022$ $[+0.004, +0.040]$ \\
+Oracle router & 10\% & 0.940 & 27.0 & $+0.095$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Both datasets passed (Table~\ref{tab:replication}). On the test sets, recovery stayed high at recall@5 (97\% on 2WikiMultiHopQA, 98\% on HotpotQA) and at ranks 4 and 8 (98--99\%), and rank 1 already recovered 91\% and 84\%. On HotpotQA the gap between base and full model is small (0.10), which widens the interval and makes the random control less stable. Together with MuSiQue, the pre-registered rank-2 criterion passed on three multi-hop datasets. Because rank 1 already recovers most of the effect, rank 2 is best read as an upper bound on the functional rank rather than an exact value, and the controls are single draws on tuning data. The replication concerns the structure of the change, not its benefit: as on MuSiQue overall, the iterative model did not beat the one-shot model on these mostly two-hop datasets ($-0.011$ and $-0.004$, not significant; descriptive).
+The router predicted the benefit of iteration with low accuracy (AUC 0.60), whereas the oracle router reached 0.94 recall@5 with 27 passes; a better predictor of benefit therefore has considerable potential. Two results qualify the comparison with always-iterative selection. First, the exploratory non-inferiority test against it (margin 0.01) depended on the software environment: the router fit was not bit-reproducible, and a re-run of the analysis gave a primary difference of $+0.023$ ($p<0.001$) but moved the non-inferiority bound from $-0.0065$ to $-0.0105$. The cascade is therefore within 0.01 of always-iterative selection, without a robust non-inferiority result. Second, the comparison of the two routers shows that the number of hops is not the variable that determines whether iteration helps a given question: on average the benefit concentrates on long chains, but per question it is better predicted from the one-shot scores.
 
 \section{Summary}
+\label{sec:res_summary}
 
-Table~\ref{tab:claims} lists the claims and their status. The main result is that the weight change behind chain-following in a small selector is recovered by a rank-2 graft on three multi-hop datasets. Conditioning-trained iteration improved the registered four-hop outcome and the reader's answers on questions with three or more hops; exploratory analyses suggest no gain on two-hop questions, a hop-count router does not capture the benefit, but a router trained on benefit improves on one-shot ranking ($+0.027$) with 55\% of the passes of always-iterative ranking, which it roughly matches (exploratory). On the cost side, on these datasets and with this reader, a small in-domain selector with adaptive stopping gave the lowest cost found so far.
+Table~\ref{tab:claims} lists the claims and their status. The main result is that the weight change that lets a small selector use already-selected evidence is recovered by a rank-2 graft on three multi-hop datasets, with a functional rank of 1 on two of them. Conditioning-trained iterative selection improved the pre-registered four-hop outcome and the reader's answer F1 on questions with three or more hops, and exploratory analyses show no gain on two-hop questions. A router trained on the benefit of iteration improved on one-shot selection ($+0.027$) with 55\% of the passes of always-iterative selection, while a hop-count router did not. As a consequence for cost, on these datasets and with this reader, an in-domain selector with adaptive stopping gave the lowest token cost among the configurations tested.
 
 \begin{table}[htbp]
 \centering
-\caption{Claims and their status (C = confirmed by a pre-registered test; N = null; E = exploratory).}
+\caption{Claims and their status (C: confirmed by a pre-registered primary test; N: pre-registered test not passed; E: exploratory or not testable).}
 \label{tab:claims}
 \small
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xll}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}Xl>{\raggedright\arraybackslash}p{3.6cm}l}
 \toprule
-Claim & Status & Section \\
+Claim & RQ & Status & Section \\
 \midrule
-Small selector: 68--77\% fewer tokens, F1 differences not significant (HotpotQA) & C & \ref{sec:res_selector} \\
-Adaptive stopping saves tokens at a recall target & C (HotpotQA; MuSiQue at 0.95 only) & \ref{sec:res_adaptive} \\
-Iteration beats one-shot at matched training data & N ($+0.040$, $p=0.11$) & \ref{sec:res_matched} \\
-A rank-2 graft recovers the conditioning change (MuSiQue) & C (86.8\%) & \ref{sec:res_rank}, \ref{sec:res_matched} \\
-The rank-2 result replicates on 2WikiMultiHopQA and HotpotQA & C (97.1\%, 92.1\%) & \ref{sec:res_replication} \\
-Iteration helps four-hop chains & C ($+0.055$, heterogeneous by source) & \ref{sec:res_long} \\
-Iteration helps three-hop chains; two-hop non-inferior & E & \ref{sec:res_long} \\
-Answer F1 improves on $\ge$3-hop questions (subgroup chosen from recall) & C ($+0.076$) & \ref{sec:res_f1} \\
-A hop-count router gives a useful cascade & N & \ref{sec:res_long} \\
-A router trained on benefit beats one-shot in a cascade & C ($+0.027$, 41 of 74 passes) & \ref{sec:res_long} \\
+A rank-2 graft recovers the conditioning change (MuSiQue) & RQ4 & C (86.8\%) & \ref{sec:res_matched} \\
+The rank-2 result replicates on 2WikiMultiHopQA and HotpotQA & RQ4 & C (97.1\%, 92.1\%) & \ref{sec:res_replication} \\
+The iteration change ($\text{M1-iter}-\text{M1}$) is rank 2 & RQ4 & C (84.7\%; confounded) & \ref{sec:res_rank} \\
+Iterative selection improves recall@5 on four-hop questions & RQ3 & C ($+0.055$; heterogeneous by source) & \ref{sec:res_long} \\
+Answer F1 improves on questions with $\ge$3 hops & RQ3 & C ($+0.076$; subgroup chosen from recall) & \ref{sec:res_f1} \\
+A benefit router improves on one-shot selection in a cascade & RQ3 & C ($+0.027$, 41 of 74 passes) & \ref{sec:res_cascade} \\
+Iterative selection outperforms one-shot at matched training data & RQ3 & N ($+0.040$, $p=0.11$) & \ref{sec:res_matched} \\
+A hop-count router gives a useful cascade & RQ3 & N & \ref{sec:res_cascade} \\
+Recall gain on three-hop questions, none on two-hop & RQ3 & E & \ref{sec:res_long} \\
+Answer F1 on two-hop questions is non-inferior & RQ3 & E & \ref{sec:res_f1} \\
+Ranking quality, not stopping, limits cost on MuSiQue & RQ2 & E (planned test not testable) & \ref{sec:res_bottleneck} \\
+Small selector: 68--77\% fewer tokens, F1 differences not significant (HotpotQA) & RQ1 & C & \ref{sec:res_selector} \\
+Adaptive stopping saves tokens at a recall target & RQ1 & C (HotpotQA; MuSiQue at 0.95 only) & \ref{sec:res_adaptive} \\
 \bottomrule
 \end{tabularx}
 \end{table}

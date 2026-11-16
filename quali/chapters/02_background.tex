@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{chap:background}
 
-This chapter introduces the concepts the experiments measure: what a RAG system pays for (Section~\ref{sec:bg_rag}), why multi-hop questions are hard to select evidence for, how the selector scores paragraphs, how a fine-tuning change can be described, and how results are evaluated and tested.
+This chapter introduces the concepts used in the rest of the text. Sections~\ref{sec:bg_rag}--\ref{sec:bg_cross} describe what a RAG system pays for, why multi-hop questions are hard for evidence selection and how a cross-encoder selector scores paragraphs; they support RQ1--RQ3. Section~\ref{sec:bg_svd} defines the singular value decomposition and the low-rank approximation used to describe weight changes (RQ4). Sections~\ref{sec:bg_metrics} and~\ref{sec:bg_tests} define the metrics and statistical tests of Chapter~\ref{chap:results}.
 
 \section{Parametric and non-parametric knowledge}
 \label{sec:bg_rag}
@@ -11,35 +11,72 @@ A Transformer language model \cite{vaswani2017attention} stores what it learned 
 Retrieval-augmented models add a \emph{non-parametric} memory. REALM \cite{pmlr-v119-guu20a} trains a retriever jointly with a masked language model; RAG \cite{3495724.3496517} conditions a generator on passages from a dense retriever. In the systems studied here the LLM is used as a fixed reader: a retriever returns candidate paragraphs, a selector chooses some of them, and the LLM answers from the selected ones.
 
 \section{Multi-hop question answering}
+\label{sec:bg_multihop}
 
-A question is \emph{multi-hop} when its answer requires combining several pieces of evidence. HotpotQA \cite{yang2018hotpotqa} provides two-hop questions with ten candidate paragraphs each, two of them supporting and eight distractors. MuSiQue \cite{trivedi2022musique} composes two- to four-hop questions from single-hop ones and filters out questions that can be answered by shortcuts; each question has about twenty candidate paragraphs. In both datasets the supporting paragraphs are annotated, so evidence recall can be measured without an LLM. 2WikiMultiHopQA \cite{ho2020twowiki}, built from Wikipedia and Wikidata with ten candidate paragraphs per question, is used to replicate the rank analysis.
+A question is \emph{multi-hop} when its answer requires combining several pieces of evidence. HotpotQA \cite{yang2018hotpotqa} provides two-hop questions with ten candidate paragraphs each, two of them supporting and eight distractors. MuSiQue \cite{trivedi2022musique} composes two- to four-hop questions from single-hop ones and removes questions that can be answered through shortcuts; each question has about twenty candidate paragraphs. 2WikiMultiHopQA \cite{ho2020twowiki}, built from Wikipedia and Wikidata, has ten candidate paragraphs per question and two to four supporting paragraphs. In the three datasets the supporting paragraphs are annotated, so the quality of a selection can be measured without an LLM.
 
-\section{Cross-encoder reranking}
+\section{Cross-encoder selection}
+\label{sec:bg_cross}
 
-A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. Because it models the interaction between question and paragraph, it is typically more accurate than a bi-encoder \cite{reimers2019sentence}, but it needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. Scoring the twenty paragraphs of a MuSiQue question takes twenty forward passes.
+A \emph{bi-encoder} embeds the question and each paragraph separately and compares the embeddings, which is fast but loses the interactions between them \cite{reimers2019sentence}. A \emph{cross-encoder} reads the question and the paragraph together and outputs a single relevance score \cite{nogueira2019passage}. Because it models the interaction between question and paragraph, it is typically more accurate than a bi-encoder \cite{reimers2019sentence}, but it needs one forward pass per (question, paragraph) pair. This work uses \texttt{ms-marco-MiniLM-L6-v2}, a six-layer MiniLM \cite{wang2020minilm} cross-encoder with 22.7M parameters trained for passage reranking on MS MARCO \cite{bajaj2016msmarco}. The model has hidden size 384, so most of its weight matrices are $384\times384$ or $384\times1536$.
 
-\textbf{One-shot and iterative reranking.} A one-shot reranker scores every paragraph against the question once and sorts them. An \emph{iterative} reranker selects one paragraph at a time and re-scores the remaining ones with a query that contains the question and the paragraphs already selected. Iterative selection can follow a chain from one piece of evidence to the next, at the cost of more passes \cite{xiong2021mdr,zhang2024beamretrieval}.
+\textbf{One-shot and iterative selection.} One-shot selection scores every paragraph against the question once and sorts the paragraphs by score. Iterative selection picks one paragraph at a time and re-scores the remaining ones with a query that contains the question and the paragraphs already picked. This query is called a \emph{conditioned query}, and a selector trained on such queries is said to be \emph{conditioned} on the selected paragraphs. Iterative selection can follow a chain from one piece of evidence to the next, at the cost of more forward passes \cite{xiong2021mdr,zhang2024beamretrieval}.
 
-\section{Structure of fine-tuning updates}
+\section{Fine-tuning updates and the singular value decomposition}
+\label{sec:bg_svd}
 
-Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$ into $W_1 = W_0 + \Delta$. Several lines of work show that useful updates are often well approximated in a low-dimensional subspace. \citeonline{aghajanyan2021intrinsic} measure a low intrinsic dimension of fine-tuning, and LoRA \cite{hu2022lora} trains only a low-rank update $\Delta = BA$ with $B \in \mathbb{R}^{m \times r}$, $A \in \mathbb{R}^{r \times n}$ and small $r$. Given a full update, its best rank-$r$ approximation in the Frobenius norm is the truncated singular value decomposition,
+Fine-tuning changes a pretrained weight matrix $W_0 \in \mathbb{R}^{m \times n}$ into $W_1 = W_0 + \Delta$. Several lines of work show that useful updates are often well approximated in a low-dimensional subspace: \citeonline{aghajanyan2021intrinsic} measure a low intrinsic dimension of fine-tuning, and LoRA \cite{hu2022lora} trains only a low-rank update $\Delta = BA$ with $B \in \mathbb{R}^{m \times r}$, $A \in \mathbb{R}^{r \times n}$ and small $r$. This section defines the tools used in this work to describe a full update $\Delta$.
+
+\textbf{Singular value decomposition.} Let $p=\min(m,n)$. Every real matrix $\Delta\in\mathbb{R}^{m\times n}$ has a \emph{singular value decomposition} (SVD) \cite{golub2013matrix}
 \begin{equation}
-\Delta_r = \sum_{i=1}^{r} \sigma_i u_i v_i^\top,
+\Delta \;=\; U\Sigma V^\top \;=\; \sum_{i=1}^{p}\sigma_i\,u_i v_i^\top ,
+\label{eq:svdfull}
+\end{equation}
+where $U=[u_1,\dots,u_p]\in\mathbb{R}^{m\times p}$ and $V=[v_1,\dots,v_p]\in\mathbb{R}^{n\times p}$ have orthonormal columns ($U^\top U=V^\top V=I_p$), and $\Sigma=\operatorname{diag}(\sigma_1,\dots,\sigma_p)$ holds the \emph{singular values} $\sigma_1\ge\sigma_2\ge\dots\ge\sigma_p\ge 0$. The vectors $u_i$ and $v_i$ are the left and right singular vectors, and $\rank(\Delta)$ is the number of nonzero singular values. The Frobenius norm and the spectral norm of $\Delta$ are
+\begin{equation}
+\|\Delta\|_F=\Big(\sum_{j,k}\Delta_{jk}^2\Big)^{1/2}=\Big(\sum_{i=1}^{p}\sigma_i^2\Big)^{1/2},
+\qquad \|\Delta\|_2=\sigma_1 .
+\end{equation}
+
+\textbf{Truncated SVD.} For $r\le p$, the \emph{truncated SVD} keeps the $r$ terms with the largest singular values:
+\begin{equation}
+\Delta_r=\sum_{i=1}^{r}\sigma_i\,u_i v_i^\top=U_r\Sigma_r V_r^\top ,
 \label{eq:svd}
 \end{equation}
-where $\sigma_1 \ge \sigma_2 \ge \dots$ are the singular values of $\Delta$ and $u_i, v_i$ the corresponding singular vectors (the Eckart--Young theorem \cite{eckart1936approximation}).
+where $U_r$ and $V_r$ are the first $r$ columns of $U$ and $V$, and $\Sigma_r=\operatorname{diag}(\sigma_1,\dots,\sigma_r)$. Writing $B=U_r\Sigma_r$ and $A=V_r^\top$ gives $\Delta_r=BA$, which is the form of a LoRA update: a rank-$r$ truncation is stored with $r(m+n)$ parameters instead of $mn$. For a $384\times384$ matrix, the full change has $384^2=147{,}456$ parameters and its rank-2 truncation has $2\times(384+384)=1{,}536$. Extracting low-rank adapters from fine-tuned checkpoints in this way is the operation used by PHLoRA \cite{vasani2025phlora}. The truncation is optimal in the following sense.
 
-Intuitively, each term $\sigma_i u_i v_i^\top$ is one \emph{direction of change}: a column vector times a row vector, so every row of the term is the same pattern, only scaled. A rank-1 change moves the matrix along a single such direction; a rank-2 change is the sum of two. The rank therefore measures how simple a change is. For a $384\times384$ matrix, a full change has about 147,000 numbers, while a rank-2 approximation needs $2\times(384+384)\approx1{,}500$. When a rank-$r$ approximation reproduces most of a fine-tuned model's behaviour, we call the change \emph{functionally} rank~$r$: keeping $r$ directions is enough for the behaviour, although the full change may contain many more small directions. PHLoRA \cite{vasani2025phlora} uses this operation to extract adapters from fine-tuned checkpoints. Task vectors, the differences between fine-tuned and base weights, can also be added, negated or merged to combine or remove the behaviours of fine-tuned models \cite{ilharco2023taskarithmetic,yadav2023ties}.
+\begin{theorem}[Eckart--Young]
+\label{thm:eckart}
+For every matrix $X\in\mathbb{R}^{m\times n}$ with $\rank(X)\le r$,
+\[
+\|\Delta-\Delta_r\|_F\;\le\;\|\Delta-X\|_F,
+\qquad\text{and}\qquad
+\|\Delta-\Delta_r\|_F^2=\sum_{i=r+1}^{p}\sigma_i^2 .
+\]
+\end{theorem}
+
+The result is due to \citeonline{eckart1936approximation}; \citeonline{mirsky1960symmetric} extended it to the spectral norm and to every unitarily invariant norm. The minimizer is unique when $\sigma_r>\sigma_{r+1}$.
+
+\textbf{Interpretation.} Each term $\sigma_i u_i v_i^\top$ is the outer product of a column vector and a row vector: every row of the term is a multiple of $v_i^\top$ and every column a multiple of $u_i$. Each term is therefore one \emph{direction of change}, and a rank-$r$ change is the sum of $r$ such directions. Two spectral summaries describe how concentrated a change is. The \emph{energy} retained at rank $r$ is
+\begin{equation}
+E_r(\Delta)=\frac{\sum_{i\le r}\sigma_i^2}{\sum_{i\le p}\sigma_i^2}=1-\frac{\|\Delta-\Delta_r\|_F^2}{\|\Delta\|_F^2},
+\end{equation}
+and the \emph{stable rank} is $\|\Delta\|_F^2/\|\Delta\|_2^2\le\rank(\Delta)$ \cite{rudelson2007sampling}. Both depend only on the matrix. The claims of this work are instead \emph{functional}: they ask how much of a model's behaviour a truncation preserves when it replaces the full change (Definition~\ref{def:functional_rank} in Chapter~\ref{chap:method}). A change can be functionally rank 2 while much of its energy lies in other directions, and spectral measures of fine-tuning updates need a noise baseline before they are interpreted \cite{altaf2026noisebaseline}.
+
+\textbf{Task vectors.} The difference between fine-tuned and base weights is also called a \emph{task vector}. Task vectors can be added, negated or merged to combine or remove the behaviours of fine-tuned models \cite{ilharco2023taskarithmetic,yadav2023ties}. Adding a truncated change $\Delta_r$ back to a base model is called a \emph{graft} in this work (Section~\ref{sec:method_graft}).
 
 \section{Metrics}
+\label{sec:bg_metrics}
 
 \begin{description}
-  \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than per-paragraph recall: it measures whether the selected set contains every annotated supporting paragraph.
-  \item[Tokens.] The number of input tokens of the reader's prompt with the selected paragraphs, counted with the reader's tokenizer (\texttt{o200k\_base}) or as reported by the API.
+  \item[Full-support recall@$k$.] The fraction of questions whose top-$k$ selected paragraphs contain \emph{all} supporting paragraphs. A question with three supporting paragraphs counts only if all three are selected. This is stricter than per-paragraph recall. In the rest of the text, recall@$k$ always denotes full-support recall@$k$.
+  \item[Tokens.] The number of input tokens of the reader's prompt with the selected paragraphs, counted with the reader's tokenizer (\texttt{o200k\_base}) or as reported by the API, averaged over questions.
   \item[Passes.] Cross-encoder forward passes per question, the selector's compute cost.
   \item[Answer F1 and EM.] Token-level F1 and exact match between the reader's answer and the reference answer (maximum over aliases), after standard normalization.
+  \item[AUC.] The area under the ROC curve of a binary predictor: 0.5 corresponds to chance and 1.0 to perfect prediction.
 \end{description}
 
 \section{Statistical tests}
+\label{sec:bg_tests}
 
-All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. A non-significant difference is not evidence of equivalence \cite{card2020power}; the later experiments therefore test ``no worse'' claims as non-inferiority with a margin fixed in advance, while the early ones report the interval only.
+All comparisons are paired: two systems are evaluated on the same questions. For binary per-question outcomes (for example, whether all supporting paragraphs are in the top five), the exact McNemar test uses only the discordant questions \cite{mcnemar1947}. For differences in means (tokens, F1, recovery), 95\% confidence intervals are obtained with the paired bootstrap over questions \cite{efron1979bootstrap}. These choices follow the recommendations of \citeonline{dror2018hitchhiker}. A non-significant difference is not evidence of equivalence \cite{card2020power}; the later experiments therefore test ``no worse'' claims as non-inferiority with a margin fixed in advance, while the early ones report the interval only. The \emph{minimum detectable effect} of a test is the smallest difference it would detect with 80\% probability at the chosen significance level.

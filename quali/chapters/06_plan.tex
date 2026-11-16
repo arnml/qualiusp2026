@@ -1,76 +1,132 @@
 \chapter{Research Plan}
 \label{chap:plan}
 
-\section{Expected contribution}
+This chapter turns the preliminary results into the plan for the dissertation. Section~\ref{sec:plan_contrib} states the expected contribution and the system that will be evaluated, Section~\ref{sec:followups} the follow-up experiments, Section~\ref{sec:threats} the threats to validity, Section~\ref{sec:plan_rq} how each research question will be closed, and Sections~\ref{sec:plan_outline}--\ref{sec:plan_schedule} the dissertation outline and the schedule.
 
-The remaining work tests whether one small selector can serve short questions cheaply and switch on iterative selection only where it improves the evidence for long chains. The dissertation will defend the hypothesis of Chapter~\ref{chap:intro} and deliver a reusable artifact (Figure~\ref{fig:pipeline}):
+\section{Expected contribution}
+\label{sec:plan_contrib}
+
+The dissertation will test the hypothesis of Chapter~\ref{chap:intro} in full: that the ability of a small selector to use already-selected evidence is carried by a low-rank weight change, that this change can be learned and reused as a separate module, and that it improves selection where a router predicts a benefit. It will evaluate a selection system built on these results (Figure~\ref{fig:pipeline}):
 \begin{enumerate}
   \item a small one-shot selector, fine-tuned for multi-hop evidence, with adaptive stopping;
-  \item a \emph{chain adapter}: a rank-2 update (about 180,000 parameters, under 1\% of the model) that lets the one-shot selector run iteratively, so a single base model serves both modes. Its value must be shown where iteration helps (long chains): the extracted rank-2 graft restored iterative use but did not beat one-shot ranking overall;
+  \item a \emph{chain adapter}: a rank-2 update of about 180,000 parameters (under 1\% of the model) that lets the one-shot selector run iteratively, so that a single base model serves both selection modes. Its benefit is expected where iteration helps: the extracted rank-2 graft restored iterative selection but did not outperform one-shot selection over all questions;
   \item a router that decides, per question, whether to activate the adapter;
-  \item an evaluation script that reports tokens, passes, full-support recall and answer quality against fixed top-$k$, Adaptive-$k$ and always-iterative baselines.
+  \item an evaluation that reports tokens, passes, full-support recall and answer quality against fixed top-$k$, Adaptive-$k$ and always-iterative baselines.
 \end{enumerate}
-The adapter saves memory and deployment complexity, not passes: activating it still costs iterative inference. Savings in passes depend on the router: with the benefit router, the cascade used 55\% of the passes of always-iterative ranking (Section~\ref{sec:res_long}).
+The adapter reduces the number of stored parameters and allows one base model to serve both selection modes; it does not reduce forward passes, because an activated adapter still requires iterative inference. Savings in passes come from the router: with the benefit router, the cascade used 55\% of the passes of always-iterative selection (Section~\ref{sec:res_cascade}).
 
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{\input{figures/pipeline}}
-\caption{Planned system. The cheap one-shot selector runs for every question; the router activates the rank-2 chain adapter only where iteration is expected to help; adaptive stopping decides how many paragraphs reach the LLM.}
+\caption{Planned system. The one-shot selector runs for every question; a router trained on the benefit of iteration activates the rank-2 chain adapter only where iterative selection is expected to help; adaptive stopping decides how many paragraphs reach the LLM.}
 \label{fig:pipeline}
 \end{figure}
 
-\section{Remaining work}
+\section{Follow-up experiments}
+\label{sec:followups}
 
-\begin{description}
-  \item[W1. Train the adapter directly.] So far the rank-2 change was extracted from a full fine-tuning run. Training a rank-1, 2 and 4 LoRA \cite{hu2022lora} on the same pairs will show whether the artifact can be built directly, and how it compares with the extracted one \cite{biderman2024loralearnsless,shuttleworth2025illusion}.
-  \item[W2. Router trained on benefit.] The hop-count router failed, and a router trained on benefit succeeded (Section~\ref{sec:res_long}). Its prediction is weak (AUC 0.60) while an oracle reaches 0.94 recall@5 with 27 passes; the remaining work tries better benefit predictors (for example, features from a cheap first iterative step) and evaluates the cascade on long-chain data.
-  \item[W3. Answer quality.] Repeat the answer-quality test with the chain adapter and the router, and with a second reader model.
-  \item[W4. Geometry with noise baselines.] Singular-value energy, stable rank and principal angles of the conditioning change, compared with seed-to-seed differences and random matrices \cite{altaf2026noisebaseline}, to separate functional rank from spectral structure.
-  \item[W5. Transfer.] Graft the adapter onto other one-shot rerankers (A1, the off-the-shelf MS MARCO model) and across datasets. The rank-2 structure already replicates on 2WikiMultiHopQA \cite{ho2020twowiki} and HotpotQA (Section~\ref{sec:res_replication}); whether one dataset's adapter works on another is open. Transfer of a behaviour, not only a domain, between rerankers would be the main novelty \cite{braga2025taskarithmetic}.
-\end{description}
-
-\section{Threats to validity}
-
-\begin{itemize}
-  \item \textbf{Effect size.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources.
-  \item \textbf{Single architecture and data source.} All selectors are MiniLM-L6. The rank-2 result holds on three datasets, but the benefit of iteration was measured on MuSiQue only. W5 addresses the architecture.
-  \item \textbf{Evaluation sets.} MuSiQue test labels are not public; evaluation uses disjoint subsets of the development split, and one fresh set has been used twice (with the second use declared in advance).
-  \item \textbf{Multiplicity.} Each experiment has a single primary test; across experiments no correction is applied. The headline claims will be re-tested on a locked set before the defence.
-\end{itemize}
-
-\section{Research questions and evidence}
-
-Table~\ref{tab:rq} maps the research questions of Chapter~\ref{chap:intro} to the evidence so far and to the remaining work.
+Each follow-up experiment will be pre-registered with the protocol of Section~\ref{sec:protocol} before any evaluation data are scored. Table~\ref{tab:followups} states its question, design, decision rule and the outcome expected from the current evidence. Thresholds are provisional and will be fixed in each protocol together with a power calculation; software versions will be fixed as well.
 
 \begin{table}[htbp]
 \centering
-\caption{Research questions, current evidence and remaining work.}
+\caption{Follow-up experiments. ``Base'' is the one-shot model run iteratively; recovery is Equation~\ref{eq:recovery}.}
+\label{tab:followups}
+\scriptsize
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{1.5cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{2.3cm}}
+\toprule
+Experiment & Question & Design & Decision rule & Expected outcome \\
+\midrule
+W1. Direct training &
+Can the conditioning change be learned directly as a low-rank adapter instead of being extracted by SVD? &
+Train LoRA adapters \cite{hu2022lora} of rank 1, 2 and 4 on M1-ctrl with M1-iter's conditioned pairs (same order and schedule, three seeds); compare with the extracted rank-2 graft and with full fine-tuning on the three datasets. Principal angles between the learned and extracted subspaces (descriptive). &
+Primary: the rank-2 LoRA, run iteratively, is non-inferior to the extracted rank-2 graft (margin 0.02 recall, one-sided 95\% bound). Secondary: recovery $\ge 0.8$ on each dataset. &
+Non-inferior; the learned directions may differ from the SVD directions \cite{biderman2024loralearnsless,shuttleworth2025illusion}. \\
+\addlinespace
+W2. Better router &
+Can a better predictor of benefit close part of the gap to the oracle router (0.94 recall@5 with 27 passes)? &
+Same splits as the benefit-router experiment, plus long-chain data. Candidate predictors: score-distribution features, a classifier on the one-shot model's internal representation, and features from one iterative step. Cost counts all passes, including those of the predictor. &
+Primary: the new cascade exceeds the current benefit cascade by $\ge 0.01$ recall@5 at no more passes (McNemar). Secondary: AUC $\ge 0.70$. &
+A small gain; the per-question benefit is noisy. \\
+\addlinespace
+W3. Answer quality &
+Do the chain adapter and the router preserve the answer-F1 gain, with a second reader? &
+Repeat the answer-quality experiment with M1-ctrl plus the adapter and with the cascade, using \texttt{gpt-5.4-mini} and one open-weight reader. Runs after W1 and W2. &
+Primary: F1 on questions with $\ge 3$ hops, cascade vs one-shot selection, confidence interval above 0. &
+The gain is retained, possibly smaller. \\
+\addlinespace
+W4. Geometry &
+Is the conditioning change also spectrally low-rank, and are its directions stable across seeds and datasets? &
+For each layer, dataset and seed: energy $E_r$, stable rank and principal angles between the rank-2 subspaces (Section~\ref{sec:bg_svd}). Baselines: seed-to-seed differences and Gaussian matrices of equal norm \cite{altaf2026noisebaseline}. A rank-0 graft (one-dimensional changes only). &
+Directions are shared if the first principal angle across seeds (and datasets) is smaller than the 5th percentile of the seed-noise baseline. The rank-0 graft recovers $<0.2$. &
+Shared across seeds, partly shared across datasets. \\
+\addlinespace
+W5. Transfer &
+Does a change extracted on one dataset or model work on another? &
+All replication models start from A1, so $\Delta_2$ from dataset $A$ can be grafted onto the one-shot model of dataset $B$ (six ordered pairs), then onto A1 and A0. Random and seed-noise controls on the target. &
+Transfer if recovery $\ge 0.5$ with lower bound $>0.25$ and above both controls, per pair. &
+Transfer across datasets; weaker onto A0. \\
+\addlinespace
+Locked-set confirmation &
+Do the headline claims hold on data frozen now and not inspected before? &
+Freeze the identifiers of all still-unused MuSiQue training questions and of unused 2WikiMultiHopQA and HotpotQA development questions; test at most three claims: rank-2 recovery, benefit cascade and long-chain gain. &
+The original decision rules, with a Holm correction over the three claims. &
+Rank-2 recovery holds; the long-chain test may be underpowered (about 200 four-hop questions). \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Threats to validity}
+\label{sec:threats}
+
+\begin{itemize}
+  \item \textbf{Effect size and multiplicity.} The confirmed gain on long chains is modest ($+0.055$ recall@5 on four-hop questions) and heterogeneous between data sources. About twelve experiments each had one pre-registered primary test, and no correction is applied across experiments. Under a Bonferroni correction over these tests, the four-hop recall gain ($p=0.035$) would not remain significant, whereas the rank-2 recoveries, the answer-F1 gain and the benefit cascade would. The four-hop claim is therefore treated as supported but awaiting the locked-set confirmation.
+  \item \textbf{One architecture.} All selectors are MiniLM-L6. The rank-2 result holds on three datasets, but the benefit of iteration was measured on MuSiQue only. W5 tests transfer across rerankers of the same architecture; other architectures are outside the planned scope.
+  \item \textbf{One seed per analysed change, single control draws.} The grafting analyses use the seed-0 models, and the random and seed-noise controls are single draws on the tuning sets. W4 adds the remaining seeds and repeated draws.
+  \item \textbf{One-dimensional changes.} Each graft adds the bias and normalization changes in full (about 30,000 parameters). The random and seed-noise controls keep them too, so they bound their contribution indirectly; W4 adds a direct test (rank-0 graft).
+  \item \textbf{Truncation.} Iterative queries can exceed the 512-token limit (28\% of iterative queries on 2WikiMultiHopQA, 6\% on HotpotQA); in the benefit-router experiment the gain over one-shot selection was negative on such questions.
+  \item \textbf{Evaluation data.} MuSiQue test labels are not public. Evaluation uses disjoint subsets of the development split, which is now exhausted, and later experiments use unused training questions, whose distribution differs (mostly two-hop). One unused development set was used twice, with the second use declared in advance.
+  \item \textbf{Construct validity.} Full-support recall depends on the annotated supporting paragraphs; iterative selection could find valid evidence that is not annotated.
+  \item \textbf{One reader.} Answer quality was measured with one closed API model; W3 adds a second, open-weight reader.
+  \item \textbf{Sequential design.} Later experiments were designed after earlier results (for example, the benefit router after the hop-count router). Pre-registration controls each test, and the locked-set confirmation addresses the sequence as a whole.
+\end{itemize}
+
+\section{Research questions and evidence}
+\label{sec:plan_rq}
+
+Table~\ref{tab:rq} maps the research questions of Chapter~\ref{chap:intro} to the evidence so far and to the follow-up experiments.
+
+\begin{table}[htbp]
+\centering
+\caption{Research questions, current evidence and follow-up experiments.}
 \label{tab:rq}
 \small
-\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.2cm}}
+\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{3.0cm}}
 \toprule
-RQ & Evidence so far & Remaining \\
+RQ & Evidence so far & Follow-up \\
 \midrule
-RQ1 & 68--77\% fewer tokens on HotpotQA; top-5 selection beats sending all paragraphs on MuSiQue answers with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
-RQ2 & Ranking quality limits cost on MuSiQue (Section~\ref{sec:res_bottleneck}) & --- \\
-RQ3 & Small overall effect, not significant; confirmed gains on long chains in recall and answer F1; a benefit router improves on one-shot ranking with 55\% of the passes of always-iterative ranking (Sections~\ref{sec:res_matched}, \ref{sec:res_long}, \ref{sec:res_f1}) & W2 \\
-RQ4 & Functionally rank 2 on three datasets (Sections~\ref{sec:res_rank}, \ref{sec:res_matched}, \ref{sec:res_replication}) & W1, W4, W5 \\
+RQ1 & 68--77\% fewer tokens on HotpotQA without a significant F1 change; top-5 selection improves on sending all paragraphs on MuSiQue with 69\% fewer tokens (Sections~\ref{sec:res_selector}, \ref{sec:res_adaptive}, \ref{sec:res_f1}) & --- \\
+RQ2 & Ranking quality, not the stopping rule, limits cost on MuSiQue (exploratory; Section~\ref{sec:res_bottleneck}) & --- \\
+RQ3 & No significant overall gain at matched training data; confirmed gains on long chains in recall and answer F1; a benefit router improves on one-shot selection with 55\% of the passes of always-iterative selection (Sections~\ref{sec:res_matched}, \ref{sec:res_long}--\ref{sec:res_cascade}) & W2, W3, locked set \\
+RQ4 & Functional rank at most two on three datasets, rank 1 on two of them (Sections~\ref{sec:res_rank}--\ref{sec:res_replication}) & W1, W4, W5, locked set \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Proposed dissertation outline}
+\label{sec:plan_outline}
 
 \begin{enumerate}
   \item Introduction: cost of evidence in multi-hop RAG, research questions, contributions.
   \item Background and related work.
-  \item Cheap evidence selection: small selectors and adaptive stopping (RQ1, RQ2).
-  \item Chain-following as a low-rank change: grafting, matched control, long-chain effect (RQ3, RQ4).
-  \item The chain adapter: direct low-rank training, routing, transfer and answer quality.
+  \item The structure of a retrieval behaviour: grafting, pair-matched control, functional rank, replication and geometry (RQ4).
+  \item Where the behaviour helps: long chains, answer quality and routing (RQ3).
+  \item Cost of evidence selection: small selectors and adaptive stopping (RQ1, RQ2).
+  \item The chain adapter: direct low-rank training, routing and transfer.
   \item Conclusion and limitations.
 \end{enumerate}
 
 \section{Schedule}
+\label{sec:plan_schedule}
 
 Table~\ref{tab:schedule} lists the planned activities by month after the qualification exam. \todo[inline]{Author: replace month numbers with calendar months once the qualification date is set.}
 
@@ -83,10 +139,10 @@ Table~\ref{tab:schedule} lists the planned activities by month after the qualifi
 \toprule
 Activity & Months \\
 \midrule
-W1 adapter trained directly; W3 answer quality & 1--2 \\
-W2 better benefit predictor & 1--3 \\
-W4 geometry with noise baselines & 3--4 \\
-W5 transfer across rerankers and datasets & 4--7 \\
+W1 adapter trained directly; W4 geometry with noise baselines & 1--3 \\
+W2 better benefit predictor & 2--4 \\
+W3 answer quality with the adapter, the router and a second reader & 4--5 \\
+W5 transfer across datasets and rerankers & 4--7 \\
 Locked-set confirmation of the headline claims & 7--8 \\
 Paper submission & 8 \\
 Dissertation writing & 7--11 \\

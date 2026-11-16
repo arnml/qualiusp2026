@@ -1,28 +1,32 @@
 \chapter{Materials and Methods}
 \label{chap:method}
 
-This chapter specifies the controlled comparisons needed to separate three effects that are easily confused: token savings from selection, the effect of conditioning the selector on already-selected paragraphs, and the effect of simply training on more data.
+This chapter describes the data, models and procedures used to answer RQ1--RQ4. The comparisons are designed to separate three effects that are easily confused: the token savings from selection, the effect of conditioning the selector on already-selected paragraphs, and the effect of training on more data. Section~\ref{sec:method_graft} describes how the weight change is analysed (RQ4), and Section~\ref{sec:protocol} the research protocol.
 
 \section{Data}
+\label{sec:method_data}
 
 \textbf{HotpotQA} \cite{yang2018hotpotqa} (distractor setting) is used with the same 400 test questions as \citeonline{lavado2027noisegate} and 1,000 disjoint development questions, fixed by identifier. Each question has ten candidate paragraphs, two of them supporting.
 
 \textbf{MuSiQue-Ans} \cite{trivedi2022musique} is used for the multi-hop experiments. The official test labels are not public, so all evaluation sets are drawn from the labelled development split, disjoint from each other and fixed in advance:
 \begin{itemize}
-  \item a 400-question test set and a 300-question tuning set (\texttt{dev300}), used up to the matched-control experiment;
-  \item a \emph{fresh} set of all 1,017 development questions not used before (529, 322 and 166 two-, three- and four-hop), used for the confirmation experiment.
+  \item a 400-question test set and a 300-question \emph{tuning set} (\texttt{dev300}). The tuning set is used only to choose settings such as thresholds and ranks, never to report final results;
+  \item an \emph{unused} set: all 1,017 development questions not used by any earlier experiment (529 two-hop, 322 three-hop and 166 four-hop questions).
 \end{itemize}
-Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning and further disjoint samples for fitting stopping rules and routers. \textbf{2WikiMultiHopQA} \cite{ho2020twowiki} and HotpotQA are also used to replicate the rank analysis. For each, 1,000 training questions are sampled from the training split, and a 300-question tuning set and a 1,000-question test set from the development split; the HotpotQA sets exclude every question used in the earlier HotpotQA experiments. Both datasets have ten candidate paragraphs per question, with two supporting paragraphs (HotpotQA) or two to four (2WikiMultiHopQA).
+Training questions come from the MuSiQue training split: 1,000 questions for fine-tuning, and further disjoint samples for fitting stopping rules and routers and, when the development split was exhausted, for evaluation.
 
-Every split was written to a file and committed before any model was scored on it.
+\textbf{2WikiMultiHopQA} \cite{ho2020twowiki} and HotpotQA are also used to replicate the rank analysis. For each, 1,000 training questions are sampled from the training split, and a 300-question tuning set and a 1,000-question test set from the development split; the HotpotQA sets exclude every question used in the earlier HotpotQA experiments. Both datasets have ten candidate paragraphs per question, with two supporting paragraphs (HotpotQA) or two to four (2WikiMultiHopQA).
+
+Every split was written to a file and committed to version control before any model was scored on it.
 
 \section{Models}
+\label{sec:method_models}
 
-All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning on MuSiQue uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, the query side is truncated (if a paragraph alone exceeds the limit, both sides are truncated).
+All selectors are the same 22.7M-parameter MiniLM cross-encoder; only the weights differ (Table~\ref{tab:models}). Training uses a pointwise binary cross-entropy loss: each training example is a (query, paragraph) pair labelled 1 if the paragraph is supporting and 0 otherwise. Fine-tuning from A1 (on MuSiQue, and in the replication on 2WikiMultiHopQA and HotpotQA) uses AdamW with learning rate $2\times10^{-5}$, batch size 16, one epoch and a maximum length of 512 tokens; when the input is too long, the query side is truncated (if a paragraph alone exceeds the limit, both sides are truncated).
 
 \begin{table}[htbp]
 \centering
-\caption{Selectors. All share the MiniLM-L6 architecture (22.7M parameters).}
+\caption{Selectors. All share the MiniLM-L6 architecture (22.7M parameters). The replication on 2WikiMultiHopQA and HotpotQA trains the analogues of M1-iter and M1-ctrl on each dataset.}
 \label{tab:models}
 \small
 \begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}X}
@@ -41,23 +45,48 @@ M1-ctrl & Pair-matched control: exactly M1-iter's pairs, in the same order, with
 \textbf{The confound and its control.} M1-iter sees about 2.2 times as many training pairs as M1, so a comparison of the two mixes the effect of conditioning with the effect of more training. M1-ctrl removes this confound: it receives the same paragraphs, labels, order, number of steps and learning-rate schedule as M1-iter, and differs only in the query text. M1-iter and M1-ctrl were trained with three seeds each.
 
 \section{Inference}
+\label{sec:method_inference}
 
-\textbf{One-shot.} Every paragraph is scored against the question and the list is sorted; this costs one pass per paragraph (about 20 on MuSiQue).
+\textbf{One-shot.} Every paragraph is scored against the question and the list is sorted; this costs one pass per paragraph (20 on MuSiQue, 10 on the other datasets).
 
-\textbf{Iterative.} For four greedy steps, the remaining paragraphs are scored against a query made of the question followed by the paragraphs selected so far (most recent first, separated by a special token), and the highest-scoring paragraph is selected. The remaining paragraphs are then ordered by their scores in the last step. This costs about $20+19+18+17 = 74$ passes per question.
+\textbf{Iterative.} For four greedy steps, the remaining paragraphs are scored against a query made of the question followed by the paragraphs selected so far (most recent first, separated by a special token), and the highest-scoring paragraph is selected. The remaining paragraphs are then ordered by their scores in the last step. On MuSiQue this costs $20+19+18+17 = 74$ passes per question.
 
-\textbf{Adaptive stopping.} Instead of a fixed $k$, a logistic regression estimates, for each $k$, the probability that the top $k$ contains all supporting paragraphs, from features of the selector's scores (the sorted scores, the score at position $k$ and $k{+}1$, and their gap). The system sends the smallest $k$ whose probability exceeds a threshold $\tau$; $\tau$ is chosen on a tuning set as the value with the fewest tokens that reaches a recall target (0.90 or 0.95), and applied once to the test set.
+\textbf{Adaptive stopping.} Instead of a fixed number $k$ of paragraphs, a logistic regression estimates, for each $k$, the probability that the top $k$ contains all supporting paragraphs, from features of the selector's scores (the sorted scores, the scores at positions $k$ and $k{+}1$, and their gap). The system sends the smallest $k$ whose probability exceeds a threshold $\tau$; $\tau$ is chosen on a tuning set as the value with the fewest tokens that reaches a recall target (0.90 or 0.95), and applied once to the test set.
 
-\section{Delta grafting}
+\textbf{Cascade and router.} In a \emph{cascade}, the one-shot selector runs on every question. A \emph{router}, a model fitted on separate training questions, then decides from the question text and the one-shot scores whether to also run the iterative selector, whose ranking replaces the one-shot ranking for the routed questions. Two routers are tested: one that predicts whether a question has four hops, and one that predicts the \emph{benefit} of iteration, defined per question as the difference between the full-support hit@5 of the iterative and of the one-shot ranking. An \emph{oracle} router, which knows the benefit in advance, is reported as an upper bound only.
 
-To study the structure of a fine-tuning update, the difference between two models is \emph{grafted}, partly, onto the first one. Given a base model with weights $\{W^{(b)}\}$ and a target model $\{W^{(t)}\}$, the delta of each weight matrix is $\Delta = W^{(t)} - W^{(b)}$. A rank-$r$ graft replaces every two-dimensional $\Delta$ by its truncated SVD $\Delta_r$ (Equation~\ref{eq:svd}) and keeps one-dimensional parameters (biases, layer norms) in full. A layer graft adds the full delta of a single Transformer layer only. The effect of a graft $g$ is summarized by its \emph{recovery},
+\section{Weight-change analysis by grafting}
+\label{sec:method_graft}
+
+To study the structure of a fine-tuning update, the difference between two models is added back, partly, to the first one. Given a base model with parameters $\{W^{(b,\ell)}\}$ and a target model $\{W^{(t,\ell)}\}$, indexed by parameter tensor $\ell$, the change of each tensor is $\Delta^{(\ell)}=W^{(t,\ell)}-W^{(b,\ell)}$.
+
+\begin{definition}[Rank-$r$ graft]
+The rank-$r$ graft $g_r$ sets each two-dimensional tensor to $W^{(b,\ell)}+\Delta^{(\ell)}_r$, where $\Delta^{(\ell)}_r$ is the truncated SVD of Equation~\ref{eq:svd}, and each one-dimensional tensor (biases and normalization parameters) to $W^{(b,\ell)}+\Delta^{(\ell)}$.
+\end{definition}
+
+For MiniLM-L6, the rank-2 truncations of all two-dimensional tensors and the full one-dimensional changes together contain about 180,000 parameters, under 1\% of the model; the one-dimensional changes account for about 30,000 of them. A \emph{layer graft} adds the full change of a single Transformer layer only. The effect of a graft $g$ is measured as the fraction of the gap between the base and the target model that it closes:
 \begin{equation}
 \mathrm{rec}(g) = \frac{R(g) - R(\text{base})}{R(\text{target}) - R(\text{base})},
 \label{eq:recovery}
 \end{equation}
-where $R$ is full-support recall@5 under the target's inference mode. As a control, each $\Delta_r$ is replaced by a random rank-$r$ matrix with the same Frobenius norm; if random matrices recovered as much, ``low-rank'' would be indistinguishable from ``any perturbation of that size''. The graft is chosen without looking at data, so the tuning set can be used to select the smallest rank with at least 80\% recovery, which is then confirmed once on a held-out set with a paired bootstrap confidence interval for the recovery ratio.
+where $R$ is the dataset's primary full-support recall (recall@5 on MuSiQue, recall@$(|\text{gold}|+1)$ on HotpotQA and 2WikiMultiHopQA), with all models run in the target's inference mode. A recovery of 0 means no effect and a recovery of 1 the full effect.
+
+\begin{definition}[Functional rank]
+\label{def:functional_rank}
+For a threshold $\theta\in(0,1]$, the functional rank of a change $\Delta$ is
+\[
+r^*_\theta(\Delta)=\min\{\,r\in\{1,2,4,8,16\}:\mathrm{rec}(g_r)\ge\theta\,\},
+\]
+measured on the tuning set. This work uses $\theta=0.8$. A change is said to be \emph{functionally rank $r$} when $r^*_{0.8}(\Delta)\le r$ and a held-out recovery confirms it, with a lower confidence bound above a value fixed in advance.
+\end{definition}
+
+\textbf{Controls.} The two-dimensional part $\Delta_r$ is replaced by (i) a random rank-$r$ matrix $GH^\top$ with Gaussian factors $G\in\mathbb{R}^{m\times r}$, $H\in\mathbb{R}^{n\times r}$, rescaled to the Frobenius norm of $\Delta_r$, or (ii) the rank-$r$ truncation of the difference between two base models trained with different seeds (\emph{seed noise}). If random matrices recovered as much, ``low-rank'' would be indistinguishable from ``any perturbation of that size''; the seed-noise control asks whether any low-rank part of training noise would do as well. In both controls the one-dimensional changes are kept in full, so the controls also bound what the one-dimensional changes alone recover. Because grafting chooses no parameters from data, the tuning set can be used to estimate $r^*_{0.8}$, which is then confirmed once on a held-out set with a paired bootstrap confidence interval for the recovery.
 
 \section{Research protocol}
 \label{sec:protocol}
 
-Every experiment was pre-registered: its question, data splits, metrics, decision rules and budget were committed to version control before any model was scored on evaluation data \cite{nosek2018preregistration}, and deviations were recorded. Each experiment has one primary test; exploratory results are reported as such and are not promoted to confirmed claims without a new registered test on unused data. Recent protocols also state the minimum detectable effect \cite{card2020power}. Because the project uses AI tools for coding, analysis and drafting, each protocol was reviewed before running by an independent model instructed to argue for the null hypothesis, every citation was checked against its official source, and results copied between machines were recomputed and compared. Code, protocols, results and a ledger of all claims are kept in the project repository.
+\textbf{Pre-registration.} Every experiment was pre-registered: its question, data splits, metrics, decision rules and budget were committed to version control before any model was scored on evaluation data \cite{nosek2018preregistration}. Each experiment has one primary test; exploratory results are reported as such and are not promoted to confirmed claims without a new registered test on unused data. Recent protocols also state the minimum detectable effect \cite{card2020power}. The registration commit of each experiment is recorded in its report, so any reader can verify with the version history that each protocol predates its results.
+
+\textbf{AI-assisted work.} The project uses AI tools for coding, analysis and drafting. Each protocol was therefore reviewed before running by a second language model (OpenAI Codex), instructed to argue for the null hypothesis; the reviews are kept in the repository. Every citation was checked against its official source, and results copied between machines were recomputed and compared. Code, protocols, results and a ledger of all claims, including null results, are kept in the project repository.
+
+\textbf{Deviations.} Deviations from a protocol were recorded before the affected data were scored. Two of them touch the evidence reported in Chapter~\ref{chap:results}. In the benefit-router experiment (Section~\ref{sec:res_cascade}), the weights of the earlier models were not available, so M1-ctrl and M1-iter were re-trained with the same code, data and seed; their weights differ slightly, but they reproduced recall@5 on every one of the 400 earlier test questions. In the same experiment, the router fit was not bit-reproducible across software environments, because the library version had not been fixed in the protocol; both results are reported. In the answer-quality experiment (Section~\ref{sec:res_f1}), the subgroup of questions with three or more hops was chosen from recall results on the same questions, and this choice is declared in the protocol.

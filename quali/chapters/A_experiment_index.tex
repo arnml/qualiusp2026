@@ -1,31 +1,33 @@
 \chapter{Experiment Index}
 \label{app:index}
 
-All experiments are in the project repository, each with a pre-registered protocol and a results report. Experiments not used in the main text are kept for later work.
+Table~\ref{tab:index} lists every experiment carried out so far, in the order in which it was run. Each experiment answers one question. Its protocol was registered in the project repository before the evaluation data were scored, and its report is kept with the code (directory \texttt{experiments/expNN}). The status column follows Table~\ref{tab:claims}: \emph{confirmed} means the pre-registered primary test succeeded, \emph{null} that it failed, \emph{exploratory} that the result was not the registered primary test, and \emph{context} that the experiment motivated later work but is not used as evidence. Experiments marked ``---'' in the last column are not used in the main text.
 
 \begin{table}[htbp]
 \centering
-\small
-\begin{tabularx}{\textwidth}{l>{\raggedright\arraybackslash}Xl}
+\caption{Experiments carried out so far: question, answer and where they are discussed.}
+\label{tab:index}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}r>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}Xl@{}}
 \toprule
-ID & Question and outcome & In text \\
+No. & Question & Answer (status) & Section \\
 \midrule
-exp01 & Training-free second-hop threshold on embeddings: 6--10\% fewer tokens than Noise-Gate & no \\
-exp02 & Fine-tuned 22.7M selector: 68--77\% fewer tokens at equal F1 & \ref{sec:res_selector} \\
-exp03 & Linear probe for multi-hop relevance in A0: probe failed (not evidence of absence) & no \\
-exp04 & LLM agents editing the selector's weights: compression ties magnitude pruning; no repair & no \\
-exp05 & Failure analysis: missed paragraphs are bridge paragraphs that do not name the question's entity & no \\
-exp06 & A1 $-$ A0 is low-rank (rank 4: 80\%) and mid-layer; sparse grafts fail & \ref{sec:res_rank} \\
-exp07 & Adaptive stopping on HotpotQA: $-57$ / $-71$ tokens & \ref{sec:res_adaptive} \\
-exp08 & A1 on MuSiQue: top-10 recall 0.68; planned comparison not testable & \ref{sec:res_bottleneck} \\
-exp09 & In-domain and iterative fine-tuning: recall@5 0.682 / 0.750 (confounded) & \ref{sec:res_bottleneck} \\
-exp10 & Adaptive stopping on the iterative ranker; Adaptive-$k$ addendum & \ref{sec:res_adaptive} \\
-exp11 & The iteration change is rank 2 (84.7\%) & \ref{sec:res_rank} \\
-exp12 & Pair-matched control: $+0.040$ (n.s.); conditioning change rank 2 (86.8\%) & \ref{sec:res_matched} \\
-exp13 & Fresh four-hop confirmation ($+0.055$); hop-count cascade fails & \ref{sec:res_long} \\
-exp14 & Router trained on benefit: $+0.027$ vs one-shot with 41 of 74 passes & \ref{sec:res_long} \\
-exp15 & Answer F1 on $\ge$3-hop questions: $+0.076$; top 5 beats all paragraphs & \ref{sec:res_f1} \\
-exp16 & Rank-2 replication: 97.1\% (2WikiMultiHopQA), 92.1\% (HotpotQA) & \ref{sec:res_replication} \\
+1 & Can a training-free embedding threshold select the second-hop paragraph? & Slightly: 6--10\% fewer tokens than Noise-Gate (context) & --- \\
+2 & How many prompt tokens does a small fine-tuned selector save on HotpotQA? & 68--77\% fewer tokens; F1 differences not significant (confirmed) & \ref{sec:res_selector} \\
+3 & Does the off-the-shelf reranker already encode multi-hop relevance (linear probe)? & The probe failed, which does not show that the information is absent (context) & --- \\
+4 & Can LLM agents edit the selector's weights to compress or repair it? & Compression matched magnitude pruning; no repair was found (context) & --- \\
+5 & Which supporting paragraphs does the selector miss? & Bridge paragraphs that do not name the question's entity (context) & --- \\
+6 & Is the HotpotQA fine-tuning change low-rank or sparse? & Low-rank: rank 4 recovers 80\%, mostly in the middle layers; sparse changes fail (confirmed) & \ref{sec:res_rank} \\
+7 & Does a learned stopping rule save tokens on HotpotQA? & Yes: 57 and 71 fewer tokens per question at recall 0.90 and 0.95 (confirmed) & \ref{sec:res_adaptive} \\
+8 & Does the HotpotQA selector transfer to MuSiQue? & Only partly: the top ten contain all supporting paragraphs for 68\% of questions; the planned test was not testable & \ref{sec:res_bottleneck} \\
+9 & Do in-domain and iterative fine-tuning improve MuSiQue selection? & Recall@5 0.682 and 0.750; the comparison is confounded by training data (confirmed, confounded) & \ref{sec:res_bottleneck} \\
+10 & Does adaptive stopping reduce the cost of the iterative ranker? & At recall 0.95 yes, at 0.90 no; iterative scores are not a better stopping signal (mixed) & \ref{sec:res_adaptive} \\
+11 & Is the weight change behind iteration low-rank? & A rank-2 graft recovers 84.7\% of its effect (confirmed) & \ref{sec:res_rank} \\
+12 & With identical training data, does iteration beat one-shot ranking, and is the conditioning change rank 2? & No significant overall gain ($+0.040$, null); a rank-2 graft recovers 86.8\% (confirmed) & \ref{sec:res_matched} \\
+13 & Does iteration help four-hop chains, and does a hop-count router make a useful cascade? & Four-hop gain $+0.055$ (confirmed); the hop-count cascade did not pass its tests (null) & \ref{sec:res_long}, \ref{sec:res_cascade} \\
+14 & Does a router trained on iteration benefit make a useful cascade? & $+0.027$ over one-shot selection with 55\% of the passes of always-iterative selection; models re-trained with the same recipe (confirmed) & \ref{sec:res_cascade} \\
+15 & Does the evidence gain improve the reader's answers? & Answer F1 $+0.076$ on questions with three or more hops (confirmed) & \ref{sec:res_f1} \\
+16 & Does the rank-2 result hold on other datasets? & Yes: 97.1\% on 2WikiMultiHopQA and 92.1\% on HotpotQA (confirmed) & \ref{sec:res_replication} \\
 \bottomrule
 \end{tabularx}
 \end{table}

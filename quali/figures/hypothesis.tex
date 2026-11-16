@@ -1,4 +1,4 @@
-% Central hypothesis (TikZ): a rank-2 "chain adapter" on top of a cheap one-shot selector, switched on for long chains.
+% Central hypothesis (TikZ): a rank-2 "chain adapter" on top of a cheap one-shot selector, activated where a router predicts a benefit.
 \begin{tikzpicture}[
   box/.style={draw, rounded corners, align=center, minimum height=0.9cm, font=\small},
   mat/.style={draw, minimum width=1.1cm, minimum height=1.1cm, font=\small},
@@ -17,18 +17,18 @@
   \node[vec, minimum width=0.25cm, minimum height=1.1cm] (u2) at (5.3, 0.7) {};
   \node[vec, minimum width=1.0cm, minimum height=0.25cm, anchor=west] (v2) at (5.5, 1.12) {};
   \node[font=\scriptsize, align=center] at (0, -0.3) {selector\\(one-shot)};
-  \node[font=\scriptsize, align=center] at (1.9, -0.3) {full change\\$\approx$147{,}000 numbers};
-  \node[font=\scriptsize, align=center] at (4.45, -0.3) {two directions (rank 2)\\$\approx$1{,}500 numbers: the \emph{chain adapter}};
+  \node[font=\scriptsize, align=center] at (1.9, -0.3) {full change\\147{,}456 parameters};
+  \node[font=\scriptsize, align=center] at (4.45, -0.3) {$\sigma_1u_1v_1^\top+\sigma_2u_2v_2^\top$ (rank 2)\\1{,}536 parameters: the \emph{chain adapter}};
   % (b) use
-  \node[font=\small\bfseries, anchor=west] at (7.6, 2.6) {(b) Use: switch the adapter on only where it helps};
+  \node[font=\small\bfseries, anchor=west] at (7.6, 2.6) {(b) Use: activate the adapter only where it helps};
   \node[box, minimum width=2.0cm] (q) at (8.6, 0.7) {question +\\paragraphs};
   \node[box, fill=gray!15, minimum width=2.8cm] (short) at (13.2, 1.75) {selector, one-shot\\(cheap)};
   \node[box, fill=orange!15, minimum width=2.8cm] (long) at (13.2, -0.35) {selector + adapter,\\iterative};
   \node[box, fill=blue!8, minimum width=1.6cm] (llm) at (16.4, 0.7) {LLM\\reader};
   \draw[arr] (q.east) -- (short.west);
   \draw[arr] (q.east) -- (long.west);
-  \node[font=\scriptsize, anchor=south] at (10.6, 1.45) {short chain};
-  \node[font=\scriptsize, anchor=north] at (10.6, -0.05) {long chain};
+  \node[font=\scriptsize, anchor=south] at (10.6, 1.45) {no benefit predicted};
+  \node[font=\scriptsize, anchor=north] at (10.6, -0.05) {benefit predicted};
   \draw[arr] (short.east) -- (llm.west);
   \draw[arr] (long.east) -- (llm.west);
 \end{tikzpicture}
