@@ -33,7 +33,7 @@ The central hypothesis is that \textbf{the ability of a small selector to use al
 \begin{figure}[htbp]
 \centering
 \resizebox{\textwidth}{!}{\input{figures/hypothesis}}
-\caption{Central hypothesis. (a) The weight change that lets a small selector use already-selected evidence is approximated, in each weight matrix, by its first two singular directions (rank 2): 1,536 instead of 147,456 parameters for a $384\times384$ matrix. Over the whole model this is about 180,000 parameters. (b) The one-shot selector scores every question; a router uses these scores to activate this \emph{chain adapter} only where iterative selection is predicted to help.}
+\caption{Central hypothesis. The one-shot selector scores the paragraphs of every question. A router uses these scores to activate a rank-2 \emph{chain adapter}, which lets the selector use the paragraphs it has already selected, only where iterative selection is predicted to help; the other questions keep the one-shot selection.}
 \label{fig:hypothesis}
 \end{figure}
 
